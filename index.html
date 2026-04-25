@@ -22,14 +22,22 @@
   --brand-red: #D32F2F;
   --brand-red-light: #fff0f0;
   --brand-red-hover: #B71C1C;
+  --brand-green: #1B5E20;
+  --brand-green-light: #E8F5E9;
+  --brand-green-hover: #0D3311;
   --brand-grey: #616161;
   --brand-grey-light: #f2f2f2;
   --brand-grey-dark: #424242;
 
-  --cx-color: var(--brand-red);
-  --cx-bg: #fff0f0;
+  --cx-color: var(--brand-green);
+  --cx-bg: var(--brand-green-light);
   --annex-color: var(--brand-grey-dark);
   --annex-bg: var(--brand-grey-light);
+
+  /* Dynamic Theme Variables (Default to Red) */
+  --theme-main: var(--brand-red);
+  --theme-light: var(--brand-red-light);
+  --theme-hover: var(--brand-red-hover);
 
   /* Status Indicators */
   --status-green: #2e7d32;
@@ -63,6 +71,21 @@
   --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
 }
 
+body.theme-cx {
+  --theme-main: var(--brand-green);
+  --theme-light: var(--brand-green-light);
+  --theme-hover: var(--brand-green-hover);
+}
+body.theme-annex {
+  --theme-main: var(--brand-red);
+  --theme-light: var(--brand-red-light);
+  --theme-hover: var(--brand-red-hover);
+}
+
+html, body {
+  width: 100%;
+}
+
 body {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
@@ -70,7 +93,6 @@ body {
   font-size: 14px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden; /* Replaced aggressive html/body combo to fix trackpad scrolling */
 }
 
 /* ── NAV ── */
@@ -89,7 +111,7 @@ nav {
   display: flex; align-items: center; gap: 6px;
 }
 .nav-brand:hover { opacity: 0.7; }
-.nav-brand span { color: var(--brand-red); }
+.nav-brand span { color: var(--theme-main); }
 .nav-tabs { display: flex; gap: 6px; }
 .nav-tab {
   padding: 7px 16px; border-radius: var(--radius-pill);
@@ -98,14 +120,14 @@ nav {
   transition: all 0.2s; font-family: inherit;
 }
 .nav-tab:hover { background: var(--brand-grey-light); color: var(--text-primary); }
-.nav-tab.active { background: var(--brand-red); color: #fff; border-color: var(--brand-red); }
+.nav-tab.active { background: var(--theme-main); color: #fff; border-color: var(--theme-main); }
 .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .nav-date { font-size: 11px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
 .nav-badge {
   font-size: 10px; font-weight: 800; padding: 3px 10px;
   border-radius: var(--radius-pill); letter-spacing: 0.04em; text-transform: uppercase;
 }
-.badge-cx { background: var(--cx-bg); color: var(--cx-color); }
+.badge-cx { background: var(--brand-green-light); color: var(--brand-green); }
 .badge-annex { background: var(--annex-bg); color: var(--annex-color); }
 .nav-project-btn { cursor: pointer; opacity: 0.35; transition: opacity 0.2s; }
 .nav-project-btn:hover { opacity: 0.7; }
@@ -143,11 +165,11 @@ nav {
   padding-bottom: env(safe-area-inset-bottom, 0px);
   -webkit-tap-highlight-color: transparent;
 }
-.bottom-nav-btn.active { color: var(--brand-red); }
+.bottom-nav-btn.active { color: var(--theme-main); }
 .bottom-nav-btn.active .bnav-dot { display: block; }
 .bnav-icon { font-size: 20px; line-height: 1; }
 .bnav-label { font-size: 10px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
-.bnav-dot { display: none; width: 4px; height: 4px; border-radius: 50%; background: var(--brand-red); position: absolute; top: 8px; }
+.bnav-dot { display: none; width: 4px; height: 4px; border-radius: 50%; background: var(--theme-main); position: absolute; top: 8px; }
 
 /* ── PAGES ── */
 .page { display: none; margin-top: var(--nav-h); min-height: calc(100vh - var(--nav-h)); padding-top: 16px; }
@@ -183,8 +205,8 @@ nav {
 .landing-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
 .landing-btn:active { transform: translateY(0); }
 .landing-btn small { font-size: 11px; font-weight: 500; opacity: 0.75; }
-.btn-cx { background: var(--brand-red); }
-.btn-cx:hover { background: var(--brand-red-hover); }
+.btn-cx { background: var(--brand-green); }
+.btn-cx:hover { background: var(--brand-green-hover); }
 .btn-annex { background: var(--brand-grey-dark); }
 .btn-annex:hover { background: #1a1a1a; }
 
@@ -257,7 +279,7 @@ nav {
 }
 .overdue-item:last-child { border-bottom: none; }
 .overdue-dept {
-  background: var(--brand-red); color: white;
+  background: var(--theme-main); color: white;
   font-size: 9px; font-weight: 800; padding: 2px 7px;
   border-radius: var(--radius-pill); text-transform: uppercase;
   letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
@@ -297,6 +319,7 @@ nav {
 }
 .alert-red { background: var(--status-red-bg); border-left: 4px solid var(--brand-red); color: #7f1d1d; }
 .alert-grey { background: var(--brand-grey-light); border-left: 4px solid var(--brand-grey-dark); color: #222; }
+.theme-cx .alert-red { background: var(--brand-green-light); border-left-color: var(--brand-green); color: #0D3311; }
 
 /* ── DEPARTMENTS PAGE ── */
 .dept-container { max-width: 1060px; margin: 0 auto; padding: 0 20px 48px; }
@@ -310,7 +333,7 @@ nav {
 .sidebar-section:not(:last-child) { border-bottom: 1px solid var(--border); }
 .sidebar-section-label {
   font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--brand-red); padding: 0 16px 8px;
+  color: var(--theme-main); padding: 0 16px 8px;
 }
 .sidebar-section-label.annexe { color: var(--brand-grey-dark); }
 .sidebar-item {
@@ -321,7 +344,7 @@ nav {
   min-height: 40px;
 }
 .sidebar-item:hover { background: var(--brand-grey-light); color: var(--text-primary); }
-.sidebar-item.active { background: var(--brand-red); color: #fff; }
+.sidebar-item.active { background: var(--theme-main); color: #fff; }
 .sidebar-item.active.annexe-btn { background: var(--brand-grey-dark); }
 .sidebar-item.active .dept-count { background: rgba(255,255,255,0.25); color: #fff; }
 .dept-count {
@@ -335,8 +358,6 @@ nav {
   min-height: 500px; 
   min-width: 0;
   width: 100%;
-  overflow-y: auto; /* CRITICAL FIX: Trackpad Scroll Lock resolved natively */
-  overflow-x: hidden;
 }
 .dept-panel { display: none; animation: fadeIn 0.25s ease; }
 .dept-panel.active { display: block; }
@@ -344,7 +365,7 @@ nav {
 
 /* History Selector */
 .dept-history-bar {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
   overflow-x: auto; padding-bottom: 4px;
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
   width: 100%;
@@ -356,8 +377,8 @@ nav {
   border: 1.5px solid var(--border); background: var(--white); color: var(--text-muted);
   font-family: inherit;
 }
-.history-pill:hover { border-color: var(--brand-red); color: var(--brand-red); }
-.history-pill.active { background: var(--brand-red); border-color: var(--brand-red); color: white; }
+.history-pill:hover { border-color: var(--theme-main); color: var(--theme-main); }
+.history-pill.active { background: var(--theme-main); border-color: var(--theme-main); color: white; }
 .history-label {
   font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;
   letter-spacing: 0.06em; white-space: nowrap; flex-shrink: 0;
@@ -389,46 +410,6 @@ nav {
 .filter-tab[data-filter="achieved"].active { background: var(--status-blue); border-color: var(--status-blue); }
 
 .next-steps-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-
-/* ── UI REFACTOR: MONTHLY GROUPING ACCORDIONS ── */
-.month-accordion {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--white);
-  margin-bottom: 6px;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-.month-header {
-  padding: 14px 16px;
-  background: var(--bg);
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 800;
-  font-size: 13px;
-  user-select: none;
-  transition: background 0.2s;
-  color: var(--text-primary);
-}
-.month-header:hover { background: #ebebeb; }
-.month-toggle-icon { font-size: 10px; transition: transform 0.2s; }
-.month-accordion.expanded .month-toggle-icon { transform: rotate(180deg); }
-.month-tasks-wrapper {
-  display: none;
-  padding: 16px;
-  flex-direction: column;
-  gap: 12px;
-  border-top: 1px solid var(--border);
-}
-.month-accordion.expanded .month-tasks-wrapper { display: flex; }
-
-.month-tasks-wrapper .step-card {
-  box-shadow: none;
-  border: 1px solid var(--border);
-  border-left-width: 4px;
-}
 
 .step-card {
   background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
@@ -555,7 +536,7 @@ nav {
   font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
   -webkit-tap-highlight-color: transparent;
 }
-.mobile-dept-pill.active-cx { background: var(--brand-red); border-color: var(--brand-red); color: white; }
+.mobile-dept-pill.active-cx { background: var(--brand-green); border-color: var(--brand-green); color: white; }
 .mobile-dept-pill.active-annex { background: var(--brand-grey-dark); border-color: var(--brand-grey-dark); color: white; }
 .mobile-dept-pill .pill-count {
   background: rgba(255,255,255,0.25); color: inherit;
@@ -570,7 +551,7 @@ nav {
   display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
   color: var(--text-muted); cursor: pointer; user-select: none; padding: 0 2px;
 }
-.show-done-toggle input { accent-color: var(--brand-red); width: 14px; height: 14px; cursor: pointer; }
+.show-done-toggle input { accent-color: var(--theme-main); width: 14px; height: 14px; cursor: pointer; }
 
 /* ── RESPONSIVE / MOBILE ── */
 @media (max-width: 768px) {
@@ -877,9 +858,10 @@ nav {
       </div>
 
       <div id="dynamic-dept-container" style="display:none;">
-        <div class="dept-history-bar" id="history-bar">
-          <span class="history-label">History:</span>
-        </div>
+        <div class="dept-history-bar" id="history-month-bar">
+          </div>
+        <div class="dept-history-bar" id="history-date-bar" style="margin-top:-8px; padding-bottom:12px; border-bottom: 1px solid var(--border);">
+          </div>
         <div class="dept-header">
           <div class="dept-header-text">
             <h2 id="dynamic-dept-title">Department</h2>
@@ -922,7 +904,8 @@ nav {
 let currentProject = null;
 let currentDept = null;
 let currentFilter = 'all';
-let viewingSessionDate = 'current'; 
+let currentMonth = null;
+let viewingSessionDate = null; 
 
 // Excel Binaries endpoints
 const SHEET_CROSSINGS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_BotFNOFLBaUKX-lzjWZkfe2DhCWL28EmOGGBkVBnkcKxoM2l02lBjsqdhnnweUKngc1DWpO82OPL/pub?output=xlsx'; 
@@ -950,20 +933,17 @@ function taskId(t) {
   return (t.project + '_' + t.dept + '_' + t.session + '_' + t.action).replace(/\W+/g,'_').substring(0, 60);
 }
 
-// ── FIX 1: Excel Serial Date Formatter (fixes 42638 bleeding out) ──
+// ── FIX 1: Excel Serial Date Formatter ──
 function formatExcelDate(val) {
   if (!val) return 'TBD';
-  
   if (val instanceof Date) {
     return val.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
   }
-  
   const num = Number(val);
   if (!isNaN(num) && num > 20000 && num < 60000) {
     const d = new Date((num - 25569) * 86400 * 1000);
     return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
   }
-  
   return String(val).trim();
 }
 
@@ -1010,10 +990,9 @@ async function syncWithGoogleSheet() {
     
     results.forEach(res => {
       const wb = XLSX.read(res.data, {type: 'array', cellDates: true});
-      
       let allSheets = wb.SheetNames;
       
-      // ── FIX 2: STRICT 2026>> DIVIDER BOUNDARY ──
+      // ── FIX 2: STRICT BOUNDARY ──
       let markerIndex = allSheets.findIndex(name => name.includes('2026>>'));
       let resultSheets = [];
       
@@ -1024,37 +1003,27 @@ async function syncWithGoogleSheet() {
           if (resultSheets.length > 1) {
               let firstMonth = monthMap[resultSheets[0].substring(0,3).toLowerCase()];
               let lastMonth = monthMap[resultSheets[resultSheets.length-1].substring(0,3).toLowerCase()];
-              // Auto-reverse if ordered oldest-to-newest
-              if (firstMonth <= lastMonth) {
-                  resultSheets.reverse();
-              }
+              if (firstMonth <= lastMonth) resultSheets.reverse();
           }
       } else {
-          // Absolute fallback if the marker was completely deleted: ensure no 2025 sheets bypass.
           let dateSheets = allSheets.filter(name => /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s*\d+/i.test(name.trim()));
           if (dateSheets.length === 0) return;
-          
           let monthVals = dateSheets.map(n => monthMap[n.substring(0,3).toLowerCase()]);
           let isNewestFirst = monthVals[0] > monthVals[monthVals.length - 1] || (monthVals[0] <= 5 && monthVals[monthVals.length - 1] >= 8); 
           
           if (isNewestFirst) {
               let cutoff = dateSheets.length;
-              for(let i=0; i<dateSheets.length - 1; i++){
-                   if(monthVals[i] === 1 && monthVals[i+1] === 12) { cutoff = i + 1; break; }
-              }
+              for(let i=0; i<dateSheets.length - 1; i++){ if(monthVals[i] === 1 && monthVals[i+1] === 12) { cutoff = i + 1; break; } }
               resultSheets = dateSheets.slice(0, cutoff);
           } else {
               let cutoff = 0;
-              for(let i=0; i<dateSheets.length - 1; i++){
-                   if(monthVals[i] === 12 && monthVals[i+1] === 1) { cutoff = i + 1; break; }
-              }
+              for(let i=0; i<dateSheets.length - 1; i++){ if(monthVals[i] === 12 && monthVals[i+1] === 1) { cutoff = i + 1; break; } }
               resultSheets = dateSheets.slice(cutoff);
               resultSheets.reverse(); 
           }
       }
       
       if (resultSheets.length === 0) return;
-      
       availableSessions[res.proj] = resultSheets;
       
       resultSheets.forEach((sheetName, index) => {
@@ -1068,7 +1037,11 @@ async function syncWithGoogleSheet() {
     const now = new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('last-updated-text').textContent = 'Live Synced: ' + now;
     
-    viewingSessionDate = 'current'; 
+    if(currentProject && availableSessions[currentProject].length > 0) {
+        currentMonth = availableSessions[currentProject][0].substring(0,3).toLowerCase();
+        viewingSessionDate = availableSessions[currentProject][0];
+    }
+    
     applyPriorityColors();
     updateSidebarCounts();
     renderOverduePanels();
@@ -1081,20 +1054,17 @@ async function syncWithGoogleSheet() {
   }
 }
 
-// ── FIX 6: Robust dashboard card data mapping ──
+// ── FIX 6: Robust Dashboard Card Mapping ──
 function extractMetricValue(rowArray, isCurrency) {
     let combined = rowArray.join(' ').toLowerCase();
-    
     if (isCurrency) {
         let currencyMatch = combined.match(/(?:₦|n)\s*([\d.,]+\s*[bmk]?)/i);
         if (currencyMatch) return '₦' + currencyMatch[1].toUpperCase();
-        
         let fallback = combined.match(/([\d.,]+\s*[bmk])/i);
         if (fallback) return '₦' + fallback[1].toUpperCase();
     } else {
         let numMatch = combined.match(/-\s*(\d+)|:\s*(\d+)|\s+(\d+)\s/);
         if (numMatch) return numMatch[1] || numMatch[2] || numMatch[3];
-        
         let simpleNum = combined.match(/(\d+)/);
         if (simpleNum) return simpleNum[1];
     }
@@ -1105,21 +1075,21 @@ function processSheet(rows, proj, sheetName, isLatest) {
   const targets = [];
   let lastDept = 'General';
   
-  // ── Dynamic Column Mapper (Fixes Crossings mismatch and vertical text blowouts) ──
+  // ── Strict Column Mapping ──
   let colMap = { dept: 1, action: 2, due: 3, result: 4, explanation: 5, status: 7 };
   
   for(let r=0; r<Math.min(10, rows.length); r++) {
       if(!rows[r]) continue;
       let rowStr = rows[r].join(' ').toLowerCase();
-      if ((rowStr.includes('department') || rowStr.includes('dept')) && (rowStr.includes('step') || rowStr.includes('action') || rowStr.includes('task'))) {
+      if (rowStr.includes('dept') && (rowStr.includes('step') || rowStr.includes('action'))) {
           for(let c=0; c<rows[r].length; c++) {
               let h = String(rows[r][c]).toLowerCase();
-              if(h.includes('department') || h.includes('dept')) colMap.dept = c;
-              if(h.includes('step') || h.includes('action') || h.includes('task')) colMap.action = c;
-              if(h.includes('timeline') || h.includes('due') || h.includes('target')) colMap.due = c;
-              if(h.includes('result')) colMap.result = c;
-              if(h.includes('explanation') || h.includes('note')) colMap.explanation = c;
-              if(h.includes('status')) colMap.status = c;
+              if (h.includes('dept')) colMap.dept = c;
+              if ((h.includes('step') || h.includes('action') || h.includes('task')) && !h.includes('timeline') && !h.includes('date') && !h.includes('due')) { colMap.action = c; }
+              if (h.includes('timeline') || h.includes('due') || h.includes('date')) colMap.due = c;
+              if (h.includes('result') && !h.includes('explanation')) colMap.result = c;
+              if (h.includes('explanation') || h.includes('note')) colMap.explanation = c;
+              if (h.includes('status')) colMap.status = c;
           }
           break;
       }
@@ -1128,10 +1098,9 @@ function processSheet(rows, proj, sheetName, isLatest) {
   for (let i = 0; i < rows.length; i++) {
     const c = rows[i]; 
     if (!c || c.length < 3) continue;
+    let rowStr = c.join(' ').toLowerCase();
     
     if (isLatest) {
-        let rowStr = c.join(' ').toLowerCase();
-        
         if (rowStr.includes('inflow') && !rowStr.includes('target')) { setMetric(proj==='Crossings'?'val-cx-inflow':'val-annex-inflow', extractMetricValue(c, true)); continue; }
         if ((rowStr.includes('sales-') || rowStr.includes('sale:') || rowStr.includes('sales:')) && !rowStr.includes('value')) { setMetric(proj==='Crossings'?'val-cx-units':'val-annex-units', extractMetricValue(c, false)); continue; }
         if (rowStr.includes('value of sales') || rowStr.includes('tvs')) { setMetric(proj==='Crossings'?'val-cx-sales':'val-annex-sales', extractMetricValue(c, true)); continue; }
@@ -1139,10 +1108,13 @@ function processSheet(rows, proj, sheetName, isLatest) {
         if (rowStr.includes('offer letter')) { setMetric(proj==='Crossings'?'val-cx-offers':'val-annex-offers', extractMetricValue(c, false)); continue; }
         if (rowStr.includes('balance') || rowStr.includes('bal:')) { setMetric(proj==='Crossings'?'val-cx-balance':'val-annex-balance', extractMetricValue(c, true)); continue; }
         
-        if (String(c[0]).toLowerCase() === 'target' || rowStr.includes('monthly target') || (rowStr.includes('end of') && rowStr.includes('target'))) {
-            const tName = c[2] || c[4] || c[1];
-            const tNote = c[3] || c[5] || '';
+        // ── FIX 2b: Intelligent Targets Mapping ──
+        if (String(c[0]).toLowerCase().includes('target') || rowStr.includes('monthly target') || (rowStr.includes('end of') && rowStr.includes('target'))) {
+            let textBlocks = c.slice(1).filter(v => typeof v === 'string' && v.trim().length > 10 && !/^\d{1,2}\s+[a-z]{3}\s+\d{4}$/i.test(v.trim()));
+            let tName = textBlocks.length > 0 ? textBlocks.reduce((a, b) => a.length > b.length ? a : b) : (c[colMap.action] || 'Target');
+            let tNote = c[colMap.explanation] || '';
             const cls = rowStr.includes('carry') ? 'carryover' : 'new-target';
+            
             if (tName && tName.length > 3) {
                 targets.push(`<div class="target-item ${cls}"><span class="t-name">${tName}</span><span class="t-note">${tNote}</span></div>`);
             }
@@ -1292,319 +1264,4 @@ function rebuildMobilePills() {
   const latest = availableSessions[currentProject] && availableSessions[currentProject][0];
   
   container.innerHTML = depts.map(d => {
-    const count = taskDatabase.filter(t => t.project === currentProject && t.dept.toLowerCase().includes(d.toLowerCase()) && t.session === latest).length;
-    const isActive = currentDept === d ? activeClass : '';
-    return `<button class="mobile-dept-pill ${isActive}" onclick="showDeptMobile('${d}')">${d} <span class="pill-count">${count}</span></button>`;
-  }).join('');
-}
-
-function showDeptMobile(dept) {
-  currentDept = dept;
-  viewingSessionDate = 'current';
-  updateSidebarCounts();
-  renderDeptContent(currentProject, dept);
-}
-
-function buildHistoryBar() {
-  const bar = document.getElementById('history-bar');
-  if (!currentProject) return;
-  
-  const sessions = availableSessions[currentProject] || [];
-  const uniqueMonths = [...new Set(sessions.map(s => s.substring(0,3).toLowerCase()))];
-  
-  let html = '<span class="history-label">History:</span>';
-  html += `<button class="history-pill ${viewingSessionDate==='current'?'active':''}" onclick="switchSession('current')">Current</button>`;
-  
-  uniqueMonths.forEach(m => {
-    const displayMonth = m.charAt(0).toUpperCase() + m.slice(1);
-    const isActive = viewingSessionDate === m ? 'active' : '';
-    html += `<button class="history-pill ${isActive}" onclick="switchSession('${m}')">${displayMonth}</button>`;
-  });
-  bar.innerHTML = html;
-}
-
-function switchSession(val) {
-  viewingSessionDate = val;
-  buildHistoryBar();
-  const dateLabel = document.getElementById('viewing-date-label');
-  dateLabel.textContent = val === 'current' ? 'Current' : (val.charAt(0).toUpperCase() + val.slice(1) + ' Rollup');
-  renderCurrentDept();
-}
-
-function showDept(btn, proj, dept) {
-  currentDept = dept;
-  viewingSessionDate = 'current';
-  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderDeptContent(proj, dept);
-}
-
-function renderDeptContent(proj, dept) {
-  document.getElementById('panel-placeholder').style.display = 'none';
-  const container = document.getElementById('dynamic-dept-container');
-  container.style.display = 'block';
-
-  document.getElementById('dynamic-dept-title').textContent = dept;
-  const badge = document.getElementById('dynamic-dept-badge');
-  badge.textContent = proj;
-  badge.className = 'nav-badge ' + (proj==='Crossings' ? 'badge-cx' : 'badge-annex');
-
-  buildHistoryBar();
-  document.getElementById('viewing-date-label').textContent = viewingSessionDate === 'current' ? 'Current' : (viewingSessionDate.charAt(0).toUpperCase() + viewingSessionDate.slice(1) + ' Rollup');
-  renderCurrentDept();
-}
-
-function renderCurrentDept() {
-  if (!currentProject || !currentDept) return;
-  const showDone = document.getElementById('show-done-toggle') && document.getElementById('show-done-toggle').checked;
-
-  let tasks;
-  if (viewingSessionDate === 'current') {
-    const latest = availableSessions[currentProject] && availableSessions[currentProject][0];
-    tasks = taskDatabase.filter(t => t.project === currentProject && t.dept.toLowerCase().includes(currentDept.toLowerCase()) && t.session === latest);
-  } else {
-    const latestInMonth = availableSessions[currentProject].find(s => s.toLowerCase().startsWith(viewingSessionDate));
-    tasks = taskDatabase.filter(t => t.project === currentProject && t.dept.toLowerCase().includes(currentDept.toLowerCase()) && t.session === latestInMonth);
-  }
-
-  const overrides = getStatusOverrides();
-  tasks = tasks.map(t => ({ ...t, status: overrides[taskId(t)] || t.status }));
-
-  if (viewingSessionDate === 'current') {
-    tasks = tasks.map(t => {
-      if (isOverdue(t) && t.status === 'ontrack') return { ...t, status: 'delayed' };
-      return t;
-    });
-  }
-
-  let filtered = tasks;
-  if (!showDone) filtered = filtered.filter(t => t.status !== 'achieved');
-  if (currentFilter !== 'all') filtered = filtered.filter(t => t.status === currentFilter);
-
-  const list = document.getElementById('dynamic-tasks-list');
-  if (filtered.length === 0) {
-    list.innerHTML = `<div style="padding:20px;color:#999;text-align:center;font-size:13px">No tasks matched your criteria. (Try changing your filter or hit "Sync" to fetch latest data)</div>`;
-    return;
-  }
-
-  const isHistory = viewingSessionDate !== 'current';
-  
-  // ── FIX 3: GROUP BY MONTH LOGIC FOR ACCORDION UI ──
-  const groupedTasks = {};
-  filtered.forEach(t => {
-      const mMatch = t.session.match(/^[a-z]{3}/i);
-      const monthName = mMatch ? mMatch[0].charAt(0).toUpperCase() + mMatch[0].slice(1).toLowerCase() : 'Other';
-      if(!groupedTasks[monthName]) groupedTasks[monthName] = [];
-      groupedTasks[monthName].push(t);
-  });
-
-  let finalHTML = '';
-  for(const month in groupedTasks) {
-      let tasksHTML = groupedTasks[month].map(t => {
-          const id = taskId(t);
-          const status = t.status || 'ontrack';
-          const statusLabel = {ontrack:'On Track',delayed:'Delayed',update:'Update',achieved:'Achieved'}[status] || 'On Track';
-          const dueCls = isOverdue(t) ? 'overdue' : '';
-          
-          const actionButtons = !isHistory ? `
-            <div class="status-actions" onclick="event.stopPropagation()">
-              <button class="status-btn btn-achieved" onclick="setTaskStatus('${id}','achieved')">✓ Achieved</button>
-              <button class="status-btn btn-delayed" onclick="setTaskStatus('${id}','delayed')">⚠ Delayed</button>
-              <button class="status-btn btn-update" onclick="setTaskStatus('${id}','update')">▶ Update</button>
-              <button class="status-btn btn-ontrack" onclick="setTaskStatus('${id}','ontrack')">▲ On Track</button>
-            </div>` : '';
-
-          return `<div class="step-card s-${status}" onclick="this.classList.toggle('expanded')" id="card-${id}">
-            ${t.resultToAchieve ? `<div class="step-context">${t.resultToAchieve}</div>` : ''}
-            <div class="step-card-top">
-              <div class="step-text">${t.action}</div>
-              <div class="step-meta">
-                <span class="step-date ${dueCls}">Due: ${t.due}</span>
-                <span class="status-badge sb-${status}">${statusLabel}</span>
-              </div>
-            </div>
-            <div class="step-details-pane" onclick="event.stopPropagation()">
-              <div class="pane-title">Details</div>
-              <div style="margin-bottom:8px"><strong>Explanation:</strong> ${t.explanation || 'No further explanation provided in sheet.'}</div>
-              ${actionButtons}
-            </div>
-          </div>`;
-      }).join('');
-
-      finalHTML += `
-      <div class="month-accordion">
-          <div class="month-header" onclick="this.parentElement.classList.toggle('expanded')">
-              <div style="display:flex; align-items:center; gap:8px;">
-                  <span>${month} Tasks</span>
-                  <span class="nav-badge" style="background:var(--border-md); color:var(--text-primary);">${groupedTasks[month].length}</span>
-              </div>
-              <span class="month-toggle-icon">▼</span>
-          </div>
-          <div class="month-tasks-wrapper">
-              ${tasksHTML}
-          </div>
-      </div>`;
-  }
-
-  list.innerHTML = finalHTML;
-}
-
-function setTaskStatus(id, status) {
-  saveStatus(id, status);
-  const overrides = getStatusOverrides();
-  taskDatabase.forEach(t => { if (taskId(t) === id) t.status = overrides[id]; });
-  renderCurrentDept();
-  renderOverduePanels();
-}
-
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderCurrentDept();
-}
-
-// ═══════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════
-function showPage(id, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  if (btn) btn.classList.add('active');
-  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-  const bnav = document.getElementById('bnav-' + id);
-  if (bnav) bnav.classList.add('active');
-}
-
-function mobileNavClick(id, btn) {
-  const fakeBtn = document.querySelector(`.nav-tab[onclick*="${id}"]`);
-  showPage(id, fakeBtn);
-  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function showLanding() {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-landing').classList.add('active');
-  document.getElementById('nav-tabs-group').style.display = 'none';
-  document.getElementById('bottom-nav').style.display = 'none';
-  document.querySelectorAll('.nav-project-btn').forEach(b => b.classList.remove('active'));
-  currentProject = null; currentDept = null;
-}
-
-function selectProject(proj) {
-  currentProject = proj;
-  currentDept = null;
-  viewingSessionDate = 'current';
-  currentFilter = 'all';
-
-  document.querySelectorAll('.nav-project-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(proj === 'Crossings' ? 'btn-nav-cx' : 'btn-nav-annex').classList.add('active');
-
-  document.getElementById('block-crossings').style.display = proj === 'Crossings' ? 'block' : 'none';
-  document.getElementById('block-annexe').style.display = proj === 'Annexe' ? 'block' : 'none';
-  
-  document.getElementById('sidebar-crossings').style.display = proj === 'Crossings' ? 'block' : 'none';
-  document.getElementById('sidebar-annexe').style.display = proj === 'Annexe' ? 'block' : 'none';
-
-  document.getElementById('nav-tabs-group').style.display = 'flex';
-  document.getElementById('bottom-nav').style.display = 'block';
-
-  const dashTab = document.querySelector('.nav-tab');
-  showPage('dashboard', dashTab);
-
-  document.getElementById('panel-placeholder').style.display = '';
-  document.getElementById('dynamic-dept-container').style.display = 'none';
-  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-
-  updateSidebarCounts();
-  applyPriorityColors();
-  renderOverduePanels();
-  rebuildMobilePills();
-}
-
-// ═══════════════════════════════════════════════
-// CHARTS
-// ═══════════════════════════════════════════════
-const lastPointPlugin = {
-  id: 'lastPointLabel',
-  afterDatasetsDraw(chart) {
-    const { ctx, data } = chart;
-    data.datasets.forEach((ds, i) => {
-      const meta = chart.getDatasetMeta(i);
-      if (meta.hidden) return;
-      const lastIdx = ds.data.length - 1;
-      if (lastIdx < 0) return;
-      const pt = meta.data[lastIdx];
-      const val = ds.data[lastIdx];
-      if (val == null) return;
-      let label;
-      if (ds.label && (ds.label.includes('Inflow') || ds.label.includes('₦B'))) {
-        label = '₦' + val.toFixed(2) + 'B';
-      } else {
-        label = '₦' + (val * 100).toFixed(0) + 'M';
-      }
-      ctx.save();
-      ctx.font = 'bold 10px DM Mono, monospace';
-      ctx.fillStyle = ds.borderColor;
-      ctx.textAlign = 'right';
-      ctx.fillText(label, pt.x - 4, pt.y - 10);
-      ctx.restore();
-    });
-  }
-};
-Chart.register(lastPointPlugin);
-
-const labels = ['Jan 5','Jan 12','Jan 19','Jan 26','Feb 2','Feb 9','Feb 16','Feb 23','Mar 2','Mar 9','Mar 16','Mar 23','Mar 30','Apr 2','Apr 7','Apr 13','Apr 16','Apr 20'];
-const annexInflow = [5.97,5.14,5.97,5.97,6.4,6.05,6.08,6.11,6.14,6.17,6.25,6.27,6.27,6.27,6.27,6.27,6.27,6.27];
-const annexBalance = [388,161,172.8,99.5,89,80.4,150.8,87.9,105.7,65.3,73.1,36.6,58.9,62.9,82.78,150,149.1,61.9];
-const cxInflow = [1.05,1.179,1.3,1.3,1.3,1.415,1.415,1.415,1.415,1.415,2.07,1.68,1.72,1.72,1.72,1.72,1.72,1.72];
-
-const gridC = 'rgba(0,0,0,0.06)', textC = '#999';
-const baseOpts = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: true, position: 'bottom',
-      labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 }
-    }
-  },
-  scales: {
-    x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } },
-    y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } }
-  }
-};
-
-new Chart(document.getElementById('c1'), {
-  type: 'line',
-  data: {
-    labels,
-    datasets: [
-      { label: 'Inflow (₦B)', data: annexInflow, borderColor: '#616161', backgroundColor: 'rgba(97,97,97,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#616161', fill: true, tension: 0.4, yAxisID: 'y' },
-      { label: 'Balance (₦100M)', data: annexBalance.map(v => +(v/100).toFixed(2)), borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' }
-    ]
-  },
-  options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { ...baseOpts.scales.y, position: 'right', grid: { display: false } } } }
-});
-
-new Chart(document.getElementById('c3'), {
-  type: 'line',
-  data: {
-    labels,
-    datasets: [
-      { label: 'Inflow (₦B)', data: cxInflow, borderColor: '#D32F2F', backgroundColor: 'rgba(211,47,47,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#D32F2F', fill: true, tension: 0.4 }
-    ]
-  },
-  options: baseOpts
-});
-
-window.onload = function () {
-  applyPriorityColors();
-  syncWithGoogleSheet();
-  setInterval(syncWithGoogleSheet, AUTO_SYNC_MINUTES * 60 * 1000);
-};
-</script>
-
-</body>
-</html>
+    const count = taskDatabase.filter(t => t.project === currentProject && t.dept.toLowerCase().includes(d.toLowerCase()) && t.
