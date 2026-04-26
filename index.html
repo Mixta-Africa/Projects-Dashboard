@@ -292,20 +292,42 @@ nav {
   background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 18px; box-shadow: var(--shadow);
 }
-.chart-card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; flex-wrap: wrap; gap: 6px; }
+.chart-card-header { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 12px; gap: 6px; }
 .chart-card h3 { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
 .chart-wrap { position: relative; height: 190px; width: 100%; }
-.target-legend { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: flex; gap: 8px; }
-.legend-red { color: #d32f2f; }
-.legend-green { color: #2e7d32; }
-.target-list { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; max-height: 190px; overflow-y: auto; padding-right: 5px; }
-.target-item { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; border-left: 3px solid transparent; padding-left: 10px; }
-.target-item.new-target { border-left-color: #4caf50; }
-.target-item.new-target .t-name { color: #2e7d32; }
-.target-item.carryover { border-left-color: #f44336; }
-.target-item.carryover .t-name { color: #c62828; }
-.t-name { font-weight: 800; min-width: 0; flex-basis: 35%; flex-shrink: 0; font-size: 11px; word-break: break-word; word-wrap: break-word; overflow-wrap: break-word; }
-.t-note { color: var(--text-secondary); line-height: 1.5; min-width: 0; word-break: break-word; word-wrap: break-word; overflow-wrap: break-word; }
+.target-legend { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: flex; gap: 12px; justify-content: flex-start; flex-wrap: wrap; }
+.legend-dot { display: inline-flex; align-items: center; gap: 4px; }
+.legend-dot::before { content: '●'; }
+.legend-done { color: #2e7d32; }
+.legend-ongoing { color: #e65100; }
+.legend-atrisk { color: #c62828; }
+.metric-color-legend {
+  display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+  padding: 7px 12px; background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 10px;
+  font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;
+}
+.metric-color-legend .mc-item { display: inline-flex; align-items: center; gap: 5px; }
+.mc-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.mc-red { background: #c62828; }
+.mc-amber { background: #ff9800; }
+.mc-green { background: #2e7d32; }
+.mc-note { color: var(--text-muted); font-weight: 500; text-transform: none; letter-spacing: 0; font-size: 10px; }
+.target-list { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; max-height: 210px; overflow-y: auto; padding-right: 4px; }
+.target-item { display: flex; align-items: stretch; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid transparent; font-size: 12px; }
+.target-item.t-done { background: #f0faf0; border-color: #a5d6a7; }
+.target-item.t-ongoing { background: #fff4e5; border-color: #ffcc80; }
+.target-item.t-atrisk { background: #fff5f5; border-color: #ef9a9a; }
+.t-status-bar { width: 4px; flex-shrink: 0; }
+.t-done .t-status-bar { background: #2e7d32; }
+.t-ongoing .t-status-bar { background: #e65100; }
+.t-atrisk .t-status-bar { background: #c62828; }
+.t-body { padding: 8px 10px; flex: 1; min-width: 0; }
+.t-name { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; word-break: break-word; overflow-wrap: break-word; }
+.t-done .t-name { color: #1b5e20; }
+.t-ongoing .t-name { color: #bf360c; }
+.t-atrisk .t-name { color: #b71c1c; }
+.t-note { color: var(--text-secondary); line-height: 1.5; font-size: 11px; word-break: break-word; overflow-wrap: break-word; }
 
 /* Alert Strip */
 .alert-strip {
@@ -741,7 +763,14 @@ nav {
     <div class="project-heading">
       <span class="nav-badge badge-cx">Lakowe Crossings</span>
       <h2>Performance Overview</h2>
-      <span class="ph-date">Jan 5 – Apr 20, 2026</span>
+      <span class="ph-date" id="ph-date-cx">Jan 5 – Apr 20, 2026</span>
+    </div>
+
+    <div class="metric-color-legend">
+      <span class="mc-item"><span class="mc-dot mc-red"></span>Danger</span>
+      <span class="mc-item"><span class="mc-dot mc-amber"></span>Caution</span>
+      <span class="mc-item"><span class="mc-dot mc-green"></span>Healthy</span>
+      <span class="mc-note">— Account Balance &amp; Active Offer Letters</span>
     </div>
 
     <div class="metrics-grid">
@@ -758,11 +787,6 @@ nav {
       <div class="metric-card">
         <div class="metric-label">Value of Sales</div>
         <div class="metric-value" id="val-cx-sales">₦2.07B</div>
-        <div class="metric-delta">Live Synced</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Budget Spent</div>
-        <div class="metric-value" id="val-cx-budget">₦488M</div>
         <div class="metric-delta">Live Synced</div>
       </div>
       <div class="metric-card priority-card color-amber" id="card-cx-offers">
@@ -792,8 +816,9 @@ nav {
         <div class="chart-card-header">
           <h3 id="targets-cx-title">End of April Targets</h3>
           <div class="target-legend">
-            <span class="legend-red">● Carried</span>
-            <span class="legend-green">● New</span>
+            <span class="legend-dot legend-done">Done</span>
+            <span class="legend-dot legend-ongoing">Ongoing</span>
+            <span class="legend-dot legend-atrisk">At Risk</span>
           </div>
         </div>
         <div class="target-list" id="targets-crossings">
@@ -816,7 +841,14 @@ nav {
     <div class="project-heading">
       <span class="nav-badge badge-annex">Lakowe Annexe</span>
       <h2>Performance Overview</h2>
-      <span class="ph-date">Jan 5 – Apr 20, 2026</span>
+      <span class="ph-date" id="ph-date-annex">Jan 5 – Apr 20, 2026</span>
+    </div>
+
+    <div class="metric-color-legend">
+      <span class="mc-item"><span class="mc-dot mc-red"></span>Danger</span>
+      <span class="mc-item"><span class="mc-dot mc-amber"></span>Caution</span>
+      <span class="mc-item"><span class="mc-dot mc-green"></span>Healthy</span>
+      <span class="mc-note">— Account Balance &amp; Active Offer Letters</span>
     </div>
 
     <div class="metrics-grid">
@@ -860,8 +892,9 @@ nav {
         <div class="chart-card-header">
           <h3 id="targets-annex-title">End of April Targets</h3>
           <div class="target-legend">
-            <span class="legend-red">● Carried</span>
-            <span class="legend-green">● New</span>
+            <span class="legend-dot legend-done">Done</span>
+            <span class="legend-dot legend-ongoing">Ongoing</span>
+            <span class="legend-dot legend-atrisk">At Risk</span>
           </div>
         </div>
         <div class="target-list" id="targets-annexe">
@@ -1121,7 +1154,8 @@ async function syncWithGoogleSheet() {
     const now = new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('last-updated-text').textContent = 'Live Synced: ' + now;
     
-    viewingSessionDate = 'current'; 
+    viewingSessionDate = 'current';
+    updateDashboardDates();
     applyPriorityColors();
     updateSidebarCounts();
     renderOverduePanels();
@@ -1201,6 +1235,17 @@ function processSheet(rows, proj, sheetName, isLatest) {
 
     const rowStr = c.join(' ').toLowerCase();
 
+    // ── DEPT TRACKING (always, before any continue) ──
+    {
+      const deptCellEarly = String(c[colMap.dept] || '').trim();
+      if (deptCellEarly &&
+          !/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline)$/i.test(deptCellEarly) &&
+          !/^\d{5,}$/.test(deptCellEarly) &&
+          !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(deptCellEarly)) {
+        lastDept = deptCellEarly;
+      }
+    }
+
     // ── METRICS: only from latest sheet ──
     if (isLatest) {
       if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) {
@@ -1225,16 +1270,9 @@ function processSheet(rows, proj, sheetName, isLatest) {
       }
 
       // ── OFFER LETTERS: source ONLY from Operations dept rows ──
-      // Track current dept context
-      const deptCellRaw = String(c[colMap.dept] || '').trim();
-      if (deptCellRaw && !/department|s\/n|^s$|next step/i.test(deptCellRaw)) {
-        // Update lastDept early here too so offer letter check uses it
-        lastDept = deptCellRaw;
-      }
       if (!operationsOfferFound && /operations/i.test(lastDept) && rowStr.includes('offer letter')) {
         setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', extractMetricValue(c, false));
         operationsOfferFound = true;
-        // Don't continue — also process as a task row below
       }
 
       // ── TARGETS: detect merged header "End of [Month] Targets" in ANY cell ──
@@ -1261,31 +1299,28 @@ function processSheet(rows, proj, sheetName, isLatest) {
           inTargetSection = false;
           // Fall through to process as regular task row
         } else {
-          // This is a target row:
-          // Annexe → target content in result column; Crossings → target content in result/description col
+          // Target row: determine content and status class
+          // Annexe: result col holds target text; Crossings: result/description col
           const tContent = String(c[colMap.result] || '').trim();
-          const tLabel = String(c[colMap.action] || '').trim(); // next steps col can hold sub-label
-          const cls = rowStr.includes('carry') || rowStr.includes('carryover') ? 'carryover' : 'new-target';
-          if (tContent && tContent.length > 2) {
-            targets.push(`<div class="target-item ${cls}"><span class="t-name">${tLabel || '▸'}</span><span class="t-note">${tContent}</span></div>`);
-          } else if (tLabel && tLabel.length > 2) {
-            // Fallback: use label as content if result col is empty
-            targets.push(`<div class="target-item ${cls}"><span class="t-name">▸</span><span class="t-note">${tLabel}</span></div>`);
+          const tLabel = String(c[colMap.action] || '').trim();
+          // Determine RAG status from status col or keywords in row
+          const tStatRaw = String(c[colMap.status] || '').toLowerCase().replace(/[^a-z]/g,'');
+          let tCls = 't-ongoing'; // default
+          if (tStatRaw.includes('done') || tStatRaw.includes('achieve') || tStatRaw.includes('complete')) tCls = 't-done';
+          else if (tStatRaw.includes('risk') || tStatRaw.includes('delay') || tStatRaw.includes('red')) tCls = 't-atrisk';
+          else if (rowStr.includes('done') || rowStr.includes('achieved') || rowStr.includes('complete')) tCls = 't-done';
+          else if (rowStr.includes('at risk') || rowStr.includes('delayed') || rowStr.includes('offtrack')) tCls = 't-atrisk';
+          const displayText = tContent.length > 2 ? tContent : tLabel;
+          const displayLabel = tContent.length > 2 && tLabel.length > 2 ? tLabel : '▸';
+          if (displayText && displayText.length > 2) {
+            targets.push(`<div class="target-item ${tCls}"><div class="t-status-bar"></div><div class="t-body"><div class="t-name">${displayLabel}</div><div class="t-note">${displayText}</div></div></div>`);
           }
           continue;
         }
       }
     }
 
-    // ── DEPT TRACKING ──
-    let rawDept = String(c[colMap.dept] || '').trim();
-    // Skip pure header/label values; allow empty (merged cell carry-forward)
-    if (rawDept && !/^(department|dept|s\/n|^s$|next step|action point)$/i.test(rawDept)) {
-      // Also skip date-like values that bleed from due column into dept
-      if (!/^\d{5,}$/.test(rawDept) && !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(rawDept)) {
-        lastDept = rawDept;
-      }
-    }
+    // dept already tracked above (before metrics block)
 
     // ── TASK ROWS: primary field is "next steps" column (colMap.action) ──
     let action = String(c[colMap.action] || '').trim();
@@ -1726,6 +1761,26 @@ function selectProject(proj) {
   applyPriorityColors();
   renderOverduePanels();
   rebuildMobilePills();
+}
+
+function updateDashboardDates() {
+  // For each project, find the latest sheet and extract the last date from its name
+  // Sheet names like "apr 23" → "Apr 23, 2026"
+  const monthNames = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
+  ['Crossings','Annexe'].forEach(proj => {
+    const sessions = availableSessions[proj];
+    if (!sessions || sessions.length === 0) return;
+    // sessions[0] is the most recent (reversed order)
+    const latest = sessions[0]; // e.g. "apr 23"
+    const m = latest.match(/^([a-z]{3})\s*(\d+)/i);
+    if (!m) return;
+    const mon = monthNames[m[1].toLowerCase()] || m[1];
+    const day = parseInt(m[2]);
+    const dateStr = `Jan 5 – ${mon} ${day}, 2026`;
+    const elId = proj === 'Crossings' ? 'ph-date-cx' : 'ph-date-annex';
+    const el = document.getElementById(elId);
+    if (el) el.textContent = dateStr;
+  });
 }
 
 function updateTargetHeaders() {
