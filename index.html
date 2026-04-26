@@ -624,6 +624,43 @@ nav {
   background: var(--brand-grey-light); color: var(--text-muted);
 }
 
+/* ── Diagnostic Panel ── */
+.diag-panel {
+  position: fixed; bottom: 0; right: 0; z-index: 1000;
+  width: 380px; max-width: 96vw;
+  background: #1a1a2e; color: #e0e0e0;
+  border-radius: 12px 0 0 0;
+  box-shadow: -4px -4px 24px rgba(0,0,0,0.35);
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  transform: translateY(calc(100% - 42px));
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+.diag-panel.open { transform: translateY(0); }
+.diag-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: #16213e; cursor: pointer;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: #90caf9; user-select: none;
+  gap: 8px;
+}
+.diag-header-left { display: flex; align-items: center; gap: 8px; }
+.diag-badge-count {
+  background: #ef5350; color: white; font-size: 9px; font-weight: 800;
+  padding: 2px 7px; border-radius: 100px; display: none;
+}
+.diag-badge-count.has-issues { display: inline-block; }
+.diag-body { max-height: 320px; overflow-y: auto; padding: 12px 14px; }
+.diag-sheet { margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; }
+.diag-sheet:last-child { border-bottom: none; margin-bottom: 0; }
+.diag-sheet-name { color: #90caf9; font-weight: 700; margin-bottom: 4px; font-size: 11px; }
+.diag-stat { color: #b0bec5; margin-bottom: 2px; }
+.diag-info { color: #78909c; margin-bottom: 4px; font-size: 10px; line-height: 1.6; word-break: break-all; }
+.diag-warn { color: #ffb74d; margin-bottom: 2px; font-size: 10px; }
+.diag-err { color: #ef9a9a; margin-bottom: 2px; font-size: 10px; }
+.diag-ok { color: #81c784; margin-bottom: 2px; }
+.diag-empty { color: #546e7a; text-align: center; padding: 20px; font-size: 11px; }
+
 /* Utility */
 .show-done-toggle {
   display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
@@ -999,6 +1036,20 @@ nav {
 </div>
 </div>
 
+<div class="diag-panel" id="diag-panel">
+  <div class="diag-header" onclick="document.getElementById('diag-panel').classList.toggle('open')">
+    <div class="diag-header-left">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Sheet Diagnostics
+      <span class="diag-badge-count" id="diag-issue-count">0</span>
+    </div>
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+  </div>
+  <div class="diag-body" id="diag-body">
+    <div class="diag-empty">Sync data to see sheet diagnostics</div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 
 <script>
@@ -1018,6 +1069,7 @@ const AUTO_SYNC_MINUTES = 5;
 
 let taskDatabase = [];
 let availableSessions = { Crossings: [], Annexe: [] };
+let sheetDiag = {}; // diagnostic records keyed by sheet name
 
 // ═══════════════════════════════════════════════
 // STORAGE & UTILS
@@ -1091,6 +1143,7 @@ async function syncWithGoogleSheet() {
     
     taskDatabase = []; 
     availableSessions = { Crossings: [], Annexe: [] };
+    sheetDiag = {};
     document.getElementById('targets-crossings').innerHTML = '';
     document.getElementById('targets-annexe').innerHTML = '';
     
@@ -1192,6 +1245,9 @@ function processSheet(rows, proj, sheetName, isLatest) {
   const targets = [];
   let lastDept = 'General';
   let inTargetSection = false; // tracks when we are inside the merged "End of [Month] Targets" header block
+  let tasksAdded = 0;
+  let targetsAdded = 0;
+  let rowsScanned = rows.length;
 
   // ── Per-project column semantics ──
   // Annexe:   dept | next steps (action) | due | result (target content) | explanation notes | … | status
@@ -1202,24 +1258,45 @@ function processSheet(rows, proj, sheetName, isLatest) {
   let colMap = { dept: 1, action: 2, due: 3, result: 4, explanation: 5, status: 7 };
 
   // ── Scan header row (first 12 rows) ──
+  // Uses priority ordering to prevent "Next Steps Timeline" stealing the action column.
   for (let r = 0; r < Math.min(12, rows.length); r++) {
     if (!rows[r]) continue;
-    let rowStr = rows[r].join(' ').toLowerCase();
-    // Look for row that has dept/department AND next step/action/task
+    const rowStr = rows[r].join(' ').toLowerCase();
     if ((rowStr.includes('department') || rowStr.includes('dept')) &&
         (rowStr.includes('step') || rowStr.includes('action') || rowStr.includes('task') || rowStr.includes('next'))) {
+      
       for (let ci = 0; ci < rows[r].length; ci++) {
-        let h = String(rows[r][ci]).toLowerCase().trim();
-        if (h.includes('department') || h === 'dept') colMap.dept = ci;
-        // "next steps", "action", "task" — the primary task column
-        if (h.includes('next step') || h.includes('action') || h === 'task') colMap.action = ci;
-        if (h.includes('timeline') || h.includes('due')) colMap.due = ci;
-        // "result to achieve" or "description" — used for target content
-        if (h.includes('result') || h.includes('description')) colMap.result = ci;
-        // "explanation notes" or similar
-        if (h.includes('explanation') || h.includes('note')) colMap.explanation = ci;
-        if (h.includes('status')) colMap.status = ci;
+        const h = String(rows[r][ci]).toLowerCase().trim();
+        if (!h) continue;
+
+        // Department
+        if (h.includes('department') || h === 'dept') { colMap.dept = ci; continue; }
+
+        // Due date — MUST be checked before action so "next steps timeline" goes here, not action
+        if (h.includes('timeline') || h === 'due date' || (h.includes('due') && !h.includes('next'))) {
+          colMap.due = ci; continue;
+        }
+
+        // Action / Next Steps — only if cell does NOT also contain "timeline" or "due"
+        if ((h.includes('next step') || h.includes('action') || h === 'task') &&
+            !h.includes('timeline') && !h.includes('due')) {
+          colMap.action = ci; continue;
+        }
+
+        // Result / Description
+        if (h.includes('result') || h.includes('description')) { colMap.result = ci; continue; }
+
+        // Explanation / Notes
+        if (h.includes('explanation') || h.includes('note')) { colMap.explanation = ci; continue; }
+
+        // Status
+        if (h === 'status' || (h.includes('status') && h.length < 15)) { colMap.status = ci; continue; }
       }
+
+      // ── Emit diagnostic ──
+      sheetDiag[sheetName] = sheetDiag[sheetName] || {};
+      sheetDiag[sheetName].colMap = {...colMap};
+      sheetDiag[sheetName].headerRow = rows[r].map(String);
       break;
     }
   }
@@ -1314,6 +1391,7 @@ function processSheet(rows, proj, sheetName, isLatest) {
           const displayLabel = tContent.length > 2 && tLabel.length > 2 ? tLabel : '▸';
           if (displayText && displayText.length > 2) {
             targets.push(`<div class="target-item ${tCls}"><div class="t-status-bar"></div><div class="t-body"><div class="t-name">${displayLabel}</div><div class="t-note">${displayText}</div></div></div>`);
+            targetsAdded++;
           }
           continue;
         }
@@ -1354,12 +1432,32 @@ function processSheet(rows, proj, sheetName, isLatest) {
       explanation: explanationText,
       status: statusRaw
     });
+    tasksAdded++;
   }
 
   if (isLatest && targets.length > 0) {
     const el = document.getElementById(proj === 'Crossings' ? 'targets-crossings' : 'targets-annexe');
     if (el) el.innerHTML += targets.join('');
   }
+
+  // ── Diagnostic record ──
+  sheetDiag[sheetName] = sheetDiag[sheetName] || {};
+  Object.assign(sheetDiag[sheetName], {
+    proj, isLatest, rowsScanned, tasksAdded, targetsAdded,
+    colMap: sheetDiag[sheetName].colMap || colMap,
+    headerRow: sheetDiag[sheetName].headerRow || [],
+    warnings: []
+  });
+  const d = sheetDiag[sheetName];
+  if (tasksAdded === 0) d.warnings.push('⚠ Zero tasks extracted — action column may be mapped incorrectly');
+  if (isLatest && targetsAdded === 0) d.warnings.push('⚠ No targets found — check for "End of [Month] Targets" merged header row');
+  if (d.colMap && d.colMap.action === d.colMap.due) d.warnings.push('❌ action and due columns map to same index — header scan failed');
+  if (d.headerRow && d.colMap) {
+    const actionHeader = d.headerRow[d.colMap.action] || '(empty)';
+    const dueHeader = d.headerRow[d.colMap.due] || '(empty)';
+    d.info = `action col ${d.colMap.action} → "${actionHeader}" | due col ${d.colMap.due} → "${dueHeader}"`;
+  }
+  renderDiagPanel();
 }
 
 function setMetric(id, val) {
@@ -1868,6 +1966,45 @@ new Chart(document.getElementById('c3'), {
   },
   options: baseOpts
 });
+
+function renderDiagPanel() {
+  const body = document.getElementById('diag-body');
+  const badge = document.getElementById('diag-issue-count');
+  if (!body) return;
+  const sheets = Object.keys(sheetDiag);
+  if (sheets.length === 0) {
+    body.innerHTML = '<div class="diag-empty">Sync data to see sheet diagnostics</div>';
+    return;
+  }
+  let totalIssues = 0;
+  let html = '';
+  sheets.forEach(name => {
+    const d = sheetDiag[name];
+    const hasWarn = d.warnings && d.warnings.length > 0;
+    if (hasWarn) totalIssues += d.warnings.length;
+    html += `<div class="diag-sheet">`;
+    html += `<div class="diag-sheet-name">📄 ${name} <span style="color:#546e7a;font-weight:400;">[${d.proj}${d.isLatest?' · latest':''}]</span></div>`;
+    html += `<div class="diag-stat">Rows scanned: ${d.rowsScanned} &nbsp;|&nbsp; Tasks: <span style="color:${d.tasksAdded>0?'#81c784':'#ef9a9a'}">${d.tasksAdded}</span> &nbsp;|&nbsp; Targets: <span style="color:${d.targetsAdded>0?'#81c784':'#ffb74d'}">${d.targetsAdded}</span></div>`;
+    if (d.info) html += `<div class="diag-info">${d.info}</div>`;
+    if (hasWarn) {
+      d.warnings.forEach(w => {
+        const cls = w.startsWith('❌') ? 'diag-err' : 'diag-warn';
+        html += `<div class="${cls}">${w}</div>`;
+      });
+    } else {
+      html += `<div class="diag-ok">✓ No issues detected</div>`;
+    }
+    html += `</div>`;
+  });
+  body.innerHTML = html;
+  badge.textContent = totalIssues;
+  if (totalIssues > 0) {
+    badge.classList.add('has-issues');
+    document.getElementById('diag-panel').classList.add('open');
+  } else {
+    badge.classList.remove('has-issues');
+  }
+}
 
 window.onload = function () {
   updateTargetHeaders();
