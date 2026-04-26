@@ -1157,84 +1157,173 @@ function extractMetricValue(rowArray, isCurrency) {
 function processSheet(rows, proj, sheetName, isLatest) {
   const targets = [];
   let lastDept = 'General';
-  
-  // ── Dynamic Column Mapper (Fixes Crossings mismatch and vertical text blowouts) ──
+  let inTargetSection = false; // tracks when we are inside the merged "End of [Month] Targets" header block
+
+  // ── Per-project column semantics ──
+  // Annexe:   dept | next steps (action) | due | result (target content) | explanation notes | … | status
+  // Crossings: dept | next steps (action) | due | description (target content) | explanation notes | … | status
+  // Both use "next steps" as the task column — "description" and "result" are interchangeable per-project for targets.
+
+  // colMap defaults (0-indexed) — will be overridden by header scan
   let colMap = { dept: 1, action: 2, due: 3, result: 4, explanation: 5, status: 7 };
-  
-  for(let r=0; r<Math.min(10, rows.length); r++) {
-      if(!rows[r]) continue;
-      let rowStr = rows[r].join(' ').toLowerCase();
-      if ((rowStr.includes('department') || rowStr.includes('dept')) && (rowStr.includes('step') || rowStr.includes('action') || rowStr.includes('task'))) {
-          for(let c=0; c<rows[r].length; c++) {
-              let h = String(rows[r][c]).toLowerCase();
-              if(h.includes('department') || h.includes('dept')) colMap.dept = c;
-              if(h.includes('step') || h.includes('action') || h.includes('task')) colMap.action = c;
-              if(h.includes('timeline') || h.includes('due') || h.includes('target')) colMap.due = c;
-              if(h.includes('result')) colMap.result = c;
-              if(h.includes('explanation') || h.includes('note')) colMap.explanation = c;
-              if(h.includes('status')) colMap.status = c;
-          }
-          break;
+
+  // ── Scan header row (first 12 rows) ──
+  for (let r = 0; r < Math.min(12, rows.length); r++) {
+    if (!rows[r]) continue;
+    let rowStr = rows[r].join(' ').toLowerCase();
+    // Look for row that has dept/department AND next step/action/task
+    if ((rowStr.includes('department') || rowStr.includes('dept')) &&
+        (rowStr.includes('step') || rowStr.includes('action') || rowStr.includes('task') || rowStr.includes('next'))) {
+      for (let ci = 0; ci < rows[r].length; ci++) {
+        let h = String(rows[r][ci]).toLowerCase().trim();
+        if (h.includes('department') || h === 'dept') colMap.dept = ci;
+        // "next steps", "action", "task" — the primary task column
+        if (h.includes('next step') || h.includes('action') || h === 'task') colMap.action = ci;
+        if (h.includes('timeline') || h.includes('due')) colMap.due = ci;
+        // "result to achieve" or "description" — used for target content
+        if (h.includes('result') || h.includes('description')) colMap.result = ci;
+        // "explanation notes" or similar
+        if (h.includes('explanation') || h.includes('note')) colMap.explanation = ci;
+        if (h.includes('status')) colMap.status = ci;
       }
+      break;
+    }
   }
 
+  // ── Offer letters: scan Operations dept rows specifically ──
+  // We collect the offer letter count from Operations rows to avoid false positives
+  // This is handled during the main loop below via dept context tracking.
+  let operationsOfferFound = false;
+
   for (let i = 0; i < rows.length; i++) {
-    const c = rows[i]; 
-    if (!c || c.length < 3) continue;
-    
+    const c = rows[i];
+    if (!c || c.length < 2) continue;
+
+    const rowStr = c.join(' ').toLowerCase();
+
+    // ── METRICS: only from latest sheet ──
     if (isLatest) {
-        let rowStr = c.join(' ').toLowerCase();
-        
-        if (rowStr.includes('inflow') && !rowStr.includes('target')) { setMetric(proj==='Crossings'?'val-cx-inflow':'val-annex-inflow', extractMetricValue(c, true)); continue; }
-        if ((rowStr.includes('sales-') || rowStr.includes('sale:') || rowStr.includes('sales:')) && !rowStr.includes('value')) { setMetric(proj==='Crossings'?'val-cx-units':'val-annex-units', extractMetricValue(c, false)); continue; }
-        if (rowStr.includes('value of sales') || rowStr.includes('tvs')) { setMetric(proj==='Crossings'?'val-cx-sales':'val-annex-sales', extractMetricValue(c, true)); continue; }
-        if (rowStr.includes('budget spent')) { setMetric(proj==='Crossings'?'val-cx-budget':'val-annex-budget', extractMetricValue(c, true)); continue; }
-        if (rowStr.includes('offer letter')) { setMetric(proj==='Crossings'?'val-cx-offers':'val-annex-offers', extractMetricValue(c, false)); continue; }
-        if (rowStr.includes('balance') || rowStr.includes('bal:')) { setMetric(proj==='Crossings'?'val-cx-balance':'val-annex-balance', extractMetricValue(c, true)); continue; }
-        
-        // Source targets ONLY from rows where dept column contains "Target" or "Targets"
+      if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) {
+        setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', extractMetricValue(c, true));
+        continue;
+      }
+      if ((rowStr.includes('sales-') || rowStr.includes('sale:') || rowStr.includes('sales:')) && !rowStr.includes('value')) {
+        setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false));
+        continue;
+      }
+      if (rowStr.includes('value of sales') || rowStr.includes('tvs')) {
+        setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', extractMetricValue(c, true));
+        continue;
+      }
+      if (rowStr.includes('budget spent')) {
+        setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', extractMetricValue(c, true));
+        continue;
+      }
+      if (rowStr.includes('balance') || rowStr.includes('bal:')) {
+        setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', extractMetricValue(c, true));
+        continue;
+      }
+
+      // ── OFFER LETTERS: source ONLY from Operations dept rows ──
+      // Track current dept context
+      const deptCellRaw = String(c[colMap.dept] || '').trim();
+      if (deptCellRaw && !/department|s\/n|^s$|next step/i.test(deptCellRaw)) {
+        // Update lastDept early here too so offer letter check uses it
+        lastDept = deptCellRaw;
+      }
+      if (!operationsOfferFound && /operations/i.test(lastDept) && rowStr.includes('offer letter')) {
+        setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', extractMetricValue(c, false));
+        operationsOfferFound = true;
+        // Don't continue — also process as a task row below
+      }
+
+      // ── TARGETS: detect merged header "End of [Month] Targets" in ANY cell ──
+      // The department cell may be empty due to merging; check entire row for the header
+      const isTargetHeader = /end of .+ target/i.test(rowStr);
+      if (isTargetHeader) {
+        inTargetSection = true;
+        continue; // skip the header row itself
+      }
+
+      // ── If inside target section: read target rows until blank dept or new section ──
+      if (inTargetSection) {
         const deptCell = String(c[colMap.dept] || '').trim().toLowerCase();
-        if (deptCell.includes('target')) {
-            const tName = String(c[colMap.action] || c[2] || c[4] || c[1] || '').trim();
-            const tNote = String(c[colMap.result] || c[colMap.explanation] || c[3] || c[5] || '').trim();
-            const cls = rowStr.includes('carry') || rowStr.includes('carryover') ? 'carryover' : 'new-target';
-            if (tName && tName.length > 2) {
-                targets.push(`<div class="target-item ${cls}"><span class="t-name">${tName}</span><span class="t-note">${tNote}</span></div>`);
-            }
-            continue;
+        const allCells = c.map(v => String(v || '').trim()).filter(Boolean);
+
+        // Exit target section if we hit a new non-empty dept that isn't part of targets
+        // or if the row is completely empty
+        if (allCells.length === 0) {
+          inTargetSection = false;
+          continue;
         }
+        // If dept cell has a real department name (not empty, not target-related), exit section
+        if (deptCell && !/target/i.test(deptCell) && allCells.length > 1) {
+          inTargetSection = false;
+          // Fall through to process as regular task row
+        } else {
+          // This is a target row:
+          // Annexe → target content in result column; Crossings → target content in result/description col
+          const tContent = String(c[colMap.result] || '').trim();
+          const tLabel = String(c[colMap.action] || '').trim(); // next steps col can hold sub-label
+          const cls = rowStr.includes('carry') || rowStr.includes('carryover') ? 'carryover' : 'new-target';
+          if (tContent && tContent.length > 2) {
+            targets.push(`<div class="target-item ${cls}"><span class="t-name">${tLabel || '▸'}</span><span class="t-note">${tContent}</span></div>`);
+          } else if (tLabel && tLabel.length > 2) {
+            // Fallback: use label as content if result col is empty
+            targets.push(`<div class="target-item ${cls}"><span class="t-name">▸</span><span class="t-note">${tLabel}</span></div>`);
+          }
+          continue;
+        }
+      }
     }
-    
+
+    // ── DEPT TRACKING ──
     let rawDept = String(c[colMap.dept] || '').trim();
-    if (rawDept && !/department|s\/n|next step/i.test(rawDept)) {
-        lastDept = rawDept; 
+    // Skip pure header/label values; allow empty (merged cell carry-forward)
+    if (rawDept && !/^(department|dept|s\/n|^s$|next step|action point)$/i.test(rawDept)) {
+      // Also skip date-like values that bleed from due column into dept
+      if (!/^\d{5,}$/.test(rawDept) && !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(rawDept)) {
+        lastDept = rawDept;
+      }
     }
-    
+
+    // ── TASK ROWS: primary field is "next steps" column (colMap.action) ──
     let action = String(c[colMap.action] || '').trim();
-    if (!action || action.length < 4 || /department|next step|action point|sn|s\/n/i.test(action)) continue;
-    
+
+    // Skip blank, too-short, or header-like actions
+    if (!action || action.length < 4) continue;
+    if (/^(department|next step|action point|s\/n|status|result|explanation|due|timeline)$/i.test(action)) continue;
+    // Skip rows where action looks like a date serial or timestamp
+    if (/^\d{5,}$/.test(action) || /gmt\+/i.test(action) || /west africa standard time/i.test(action)) continue;
+    // Skip if the action IS the "End of targets" header text itself
+    if (/end of .+ target/i.test(action)) continue;
+
+    // ── STATUS ──
     let rawStat = String(c[colMap.status] || 'ontrack').toLowerCase();
     let statusRaw = rawStat.replace(/[^a-z]/g, '');
-    if(statusRaw.includes('delay') || statusRaw.includes('offtrack')) statusRaw = 'delayed';
-    else if(statusRaw.includes('achieve') || statusRaw.includes('done') || statusRaw.includes('complete')) statusRaw = 'achieved';
-    else if(statusRaw.includes('update')) statusRaw = 'update';
+    if (statusRaw.includes('delay') || statusRaw.includes('offtrack')) statusRaw = 'delayed';
+    else if (statusRaw.includes('achieve') || statusRaw.includes('done') || statusRaw.includes('complete')) statusRaw = 'achieved';
+    else if (statusRaw.includes('update')) statusRaw = 'update';
     else statusRaw = 'ontrack';
+
+    // ── Explanation notes: use colMap.explanation; that's always the detailed notes col ──
+    const explanationText = String(c[colMap.explanation] || '').trim();
 
     taskDatabase.push({
       project: proj,
       session: sheetName,
       dept: lastDept,
-      action: action, 
-      due: formatExcelDate(c[colMap.due]), 
+      action: action,
+      due: formatExcelDate(c[colMap.due]),
       resultToAchieve: String(c[colMap.result] || '').trim(),
-      explanation: String(c[colMap.explanation] || '').trim(),
+      explanation: explanationText,
       status: statusRaw
     });
   }
-  
+
   if (isLatest && targets.length > 0) {
     const el = document.getElementById(proj === 'Crossings' ? 'targets-crossings' : 'targets-annexe');
-    if(el) el.innerHTML += targets.join('');
+    if (el) el.innerHTML += targets.join('');
   }
 }
 
