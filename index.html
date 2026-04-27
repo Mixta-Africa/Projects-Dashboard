@@ -503,7 +503,6 @@ nav {
 .step-card.s-delayed { border-left-color: var(--status-red-border); background: var(--status-red-bg); }
 .step-card.s-update { border-left-color: var(--status-orange-border); background: var(--status-orange-bg); }
 .step-card.s-achieved { border-left-color: var(--status-blue-border); background: var(--status-blue-bg); opacity: 0.75; }
-.step-card.s-onhold { border-left-color: #b0bec5; background: #f5f7f8; }
 
 /* Context Line */
 .step-context {
@@ -515,7 +514,6 @@ nav {
 .s-delayed .step-context { color: var(--status-red); }
 .s-update .step-context { color: var(--status-orange); }
 .s-achieved .step-context { color: var(--status-blue); }
-.s-onhold .step-context { color: #607d8b; }
 
 .step-card-top { 
   display: flex; 
@@ -555,7 +553,6 @@ nav {
 .sb-delayed { background: rgba(198,40,40,0.12); color: var(--status-red); }
 .sb-update { background: rgba(237,108,2,0.12); color: var(--status-orange); }
 .sb-achieved { background: rgba(21,101,192,0.12); color: var(--status-blue); }
-.sb-onhold { background: rgba(96,125,139,0.15); color: #607d8b; }
 
 .step-details-pane {
   display: none; margin-top: 14px; padding-top: 12px;
@@ -1039,19 +1036,8 @@ nav {
 </div>
 </div>
 
-<div class="admin-overlay" id="admin-overlay" style="display:none;">
-  <div class="admin-modal">
-    <h2>🔐 Sheet Diagnostics</h2>
-    <p>This area is restricted to project administrators.<br>Enter the admin password to continue.</p>
-    <div class="admin-error" id="admin-error">Incorrect password. Please try again.</div>
-    <input type="password" id="admin-password-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')verifyAdmin()"/>
-    <button onclick="verifyAdmin()">Unlock</button>
-    <div class="admin-close-row"><span class="admin-close-link" onclick="document.getElementById('admin-overlay').style.display='none'">Cancel</span></div>
-  </div>
-</div>
-
 <div class="diag-panel" id="diag-panel">
-  <div class="diag-header" onclick="openDiagIfAdmin()">
+  <div class="diag-header" onclick="document.getElementById('diag-panel').classList.toggle('open')">
     <div class="diag-header-left">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       Sheet Diagnostics
@@ -1366,29 +1352,12 @@ function processSheet(rows, proj, sheetName, isLatest) {
         operationsOfferFound = true;
       }
 
-      // ── TARGETS: "End of [Month] Targets" OR dept cell = "Target(s)" ──
+      // ── TARGETS: detect merged header "End of [Month] Targets" in ANY cell ──
+      // The department cell may be empty due to merging; check entire row for the header
       const isTargetHeader = /end of .+ target/i.test(rowStr);
-      const deptIsTarget = /^targets?$/i.test(String(c[colMap.dept] || '').trim());
-      if (isTargetHeader || deptIsTarget) {
-        if (deptIsTarget && !isTargetHeader) {
-          // Inline target row — process content immediately
-          const iTContent = String(c[proj === 'Crossings' ? colMap.explanation : colMap.result] || '').trim();
-          const iTLabel = String(c[colMap.action] || '').trim();
-          const iTStatRaw = String(c[colMap.status] || '').toLowerCase().replace(/[^a-z]/g,'');
-          let iTCls = 't-ongoing';
-          if (iTStatRaw.includes('done')||iTStatRaw.includes('achieve')||iTStatRaw.includes('complete')) iTCls = 't-done';
-          else if (iTStatRaw.includes('risk')||iTStatRaw.includes('delay')||iTStatRaw.includes('red')) iTCls = 't-atrisk';
-          else if (rowStr.includes('done')||rowStr.includes('achieved')) iTCls = 't-done';
-          else if (rowStr.includes('at risk')||rowStr.includes('delayed')) iTCls = 't-atrisk';
-          const iTDisplay = iTContent.length > 0 ? iTContent : iTLabel;
-          const iTLabel2 = iTContent.length > 0 && iTLabel.length > 0 ? iTLabel : '▸';
-          if (iTDisplay.length > 0) {
-            targets.push(`<div class="target-item ${iTCls}"><div class="t-status-bar"></div><div class="t-body"><div class="t-name">${iTLabel2}</div><div class="t-note">${iTDisplay}</div></div></div>`);
-            targetsAdded++;
-          }
-        }
+      if (isTargetHeader) {
         inTargetSection = true;
-        continue;
+        continue; // skip the header row itself
       }
 
       // ── If inside target section: read target rows until blank dept or new section ──
@@ -1407,8 +1376,9 @@ function processSheet(rows, proj, sheetName, isLatest) {
           inTargetSection = false;
           // Fall through to process as regular task row
         } else {
-          // Target row: Crossings→explanation col | Annexe→result col
-          const tContent = String(c[proj === 'Crossings' ? colMap.explanation : colMap.result] || '').trim();
+          // Target row: determine content and status class
+          // Annexe: result col holds target text; Crossings: result/description col
+          const tContent = String(c[colMap.result] || '').trim();
           const tLabel = String(c[colMap.action] || '').trim();
           // Determine RAG status from status col or keywords in row
           const tStatRaw = String(c[colMap.status] || '').toLowerCase().replace(/[^a-z]/g,'');
@@ -1419,7 +1389,7 @@ function processSheet(rows, proj, sheetName, isLatest) {
           else if (rowStr.includes('at risk') || rowStr.includes('delayed') || rowStr.includes('offtrack')) tCls = 't-atrisk';
           const displayText = tContent.length > 2 ? tContent : tLabel;
           const displayLabel = tContent.length > 2 && tLabel.length > 2 ? tLabel : '▸';
-          if (displayText && displayText.length > 0) {
+          if (displayText && displayText.length > 2) {
             targets.push(`<div class="target-item ${tCls}"><div class="t-status-bar"></div><div class="t-body"><div class="t-name">${displayLabel}</div><div class="t-note">${displayText}</div></div></div>`);
             targetsAdded++;
           }
@@ -1444,9 +1414,7 @@ function processSheet(rows, proj, sheetName, isLatest) {
     // ── STATUS ──
     let rawStat = String(c[colMap.status] || 'ontrack').toLowerCase();
     let statusRaw = rawStat.replace(/[^a-z]/g, '');
-    const fullRowStr2 = c.map(v => String(v||'').toLowerCase()).join(' ');
-    if (/on.?hold/i.test(fullRowStr2) || statusRaw.includes('hold')) statusRaw = 'onhold';
-    else if (statusRaw.includes('delay') || statusRaw.includes('offtrack')) statusRaw = 'delayed';
+    if (statusRaw.includes('delay') || statusRaw.includes('offtrack')) statusRaw = 'delayed';
     else if (statusRaw.includes('achieve') || statusRaw.includes('done') || statusRaw.includes('complete')) statusRaw = 'achieved';
     else if (statusRaw.includes('update')) statusRaw = 'update';
     else statusRaw = 'ontrack';
@@ -1745,62 +1713,70 @@ function renderCurrentDept() {
 
   const list = document.getElementById('dynamic-tasks-list');
   if (filtered.length === 0) {
-    list.innerHTML = `<div style="padding:20px;color:#999;text-align:center;font-size:13px">No tasks matched your criteria.</div>`;
-    list.innerHTML += buildUpdateBox(currentProject, currentDept);
-    renderUpdateLog(currentProject, currentDept);
+    list.innerHTML = `<div style="padding:20px;color:#999;text-align:center;font-size:13px">No tasks matched your criteria. (Try changing your filter or hit "Sync" to fetch latest data)</div>`;
     return;
   }
 
   const isHistory = viewingSessionDate !== 'current';
-
-  function buildTaskCard(t) {
-    const id = taskId(t);
-    const status = t.status || 'ontrack';
-    const statusLabel = {ontrack:'On Track',delayed:'Delayed',update:'Update',achieved:'Achieved',onhold:'On Hold'}[status] || 'On Track';
-    const dueCls = isOverdue(t) ? 'overdue' : '';
-    const actionButtons = !isHistory ? `
-      <div class="status-actions" onclick="event.stopPropagation()">
-        <button class="status-btn btn-achieved" onclick="setTaskStatus('${id}','achieved')">✓ Achieved</button>
-        <button class="status-btn btn-delayed" onclick="setTaskStatus('${id}','delayed')">⚠ Delayed</button>
-        <button class="status-btn btn-update" onclick="setTaskStatus('${id}','update')">▶ Update</button>
-        <button class="status-btn btn-ontrack" onclick="setTaskStatus('${id}','ontrack')">▲ On Track</button>
-      </div>` : '';
-    return `<div class="step-card s-${status}" onclick="this.classList.toggle('expanded')" id="card-${id}">
-      ${t.resultToAchieve ? `<div class="step-context">${t.resultToAchieve}</div>` : ''}
-      <div class="step-card-top">
-        <div class="step-text">${t.action}</div>
-        <div class="step-meta">
-          <span class="step-date ${dueCls}">Due: ${t.due}</span>
-          <span class="status-badge sb-${status}">${statusLabel}</span>
-        </div>
-      </div>
-      <div class="step-details-pane" onclick="event.stopPropagation()">
-        <div class="pane-title">Details</div>
-        <div style="margin-bottom:8px"><strong>Explanation:</strong> ${t.explanation || 'No further explanation provided in sheet.'}</div>
-        ${actionButtons}
-      </div>
-    </div>`;
-  }
-
-  const buckets = { ontrack: [], delayed: [], onhold: [] };
+  
+  // ── FIX 3: GROUP BY MONTH LOGIC FOR ACCORDION UI ──
+  const groupedTasks = {};
   filtered.forEach(t => {
-    if (t.status === 'onhold') buckets.onhold.push(t);
-    else if (t.status === 'delayed') buckets.delayed.push(t);
-    else buckets.ontrack.push(t);
+      const mMatch = t.session.match(/^[a-z]{3}/i);
+      const monthName = mMatch ? mMatch[0].charAt(0).toUpperCase() + mMatch[0].slice(1).toLowerCase() : 'Other';
+      if(!groupedTasks[monthName]) groupedTasks[monthName] = [];
+      groupedTasks[monthName].push(t);
   });
 
-  function buildBucket(label, tasks, open) {
-    if (!tasks.length) return '';
-    return `<div class="month-accordion ${open?'expanded':''}"><div class="month-header" onclick="this.parentElement.classList.toggle('expanded')"><div style="display:flex;align-items:center;gap:8px;"><span>${label}</span><span class="nav-badge" style="background:var(--border-md);color:var(--text-primary);">${tasks.length}</span></div><span class="month-toggle-icon">▼</span></div><div class="month-tasks-wrapper">${tasks.map(buildTaskCard).join('')}</div></div>`;
+  let finalHTML = '';
+  for(const month in groupedTasks) {
+      let tasksHTML = groupedTasks[month].map(t => {
+          const id = taskId(t);
+          const status = t.status || 'ontrack';
+          const statusLabel = {ontrack:'On Track',delayed:'Delayed',update:'Update',achieved:'Achieved'}[status] || 'On Track';
+          const dueCls = isOverdue(t) ? 'overdue' : '';
+          
+          const actionButtons = !isHistory ? `
+            <div class="status-actions" onclick="event.stopPropagation()">
+              <button class="status-btn btn-achieved" onclick="setTaskStatus('${id}','achieved')">✓ Achieved</button>
+              <button class="status-btn btn-delayed" onclick="setTaskStatus('${id}','delayed')">⚠ Delayed</button>
+              <button class="status-btn btn-update" onclick="setTaskStatus('${id}','update')">▶ Update</button>
+              <button class="status-btn btn-ontrack" onclick="setTaskStatus('${id}','ontrack')">▲ On Track</button>
+            </div>` : '';
+
+          return `<div class="step-card s-${status}" onclick="this.classList.toggle('expanded')" id="card-${id}">
+            ${t.resultToAchieve ? `<div class="step-context">${t.resultToAchieve}</div>` : ''}
+            <div class="step-card-top">
+              <div class="step-text">${t.action}</div>
+              <div class="step-meta">
+                <span class="step-date ${dueCls}">Due: ${t.due}</span>
+                <span class="status-badge sb-${status}">${statusLabel}</span>
+              </div>
+            </div>
+            <div class="step-details-pane" onclick="event.stopPropagation()">
+              <div class="pane-title">Details</div>
+              <div style="margin-bottom:8px"><strong>Explanation:</strong> ${t.explanation || 'No further explanation provided in sheet.'}</div>
+              ${actionButtons}
+            </div>
+          </div>`;
+      }).join('');
+
+      finalHTML += `
+      <div class="month-accordion">
+          <div class="month-header" onclick="this.parentElement.classList.toggle('expanded')">
+              <div style="display:flex; align-items:center; gap:8px;">
+                  <span>${month} Tasks</span>
+                  <span class="nav-badge" style="background:var(--border-md); color:var(--text-primary);">${groupedTasks[month].length}</span>
+              </div>
+              <span class="month-toggle-icon">▼</span>
+          </div>
+          <div class="month-tasks-wrapper">
+              ${tasksHTML}
+          </div>
+      </div>`;
   }
 
-  let finalHTML = buildBucket('On Track', buckets.ontrack, true)
-    + buildBucket('Delayed', buckets.delayed, true)
-    + buildBucket('On Hold', buckets.onhold, false)
-    + buildUpdateBox(currentProject, currentDept);
-
   list.innerHTML = finalHTML;
-  renderUpdateLog(currentProject, currentDept);
 }
 
 function setTaskStatus(id, status) {
@@ -1990,73 +1966,6 @@ new Chart(document.getElementById('c3'), {
   },
   options: baseOpts
 });
-
-// ── ADMIN AUTH ──
-const ADMIN_PW = 'PDadmin1234';
-let adminUnlocked = false;
-
-function openDiagIfAdmin() {
-  if (adminUnlocked) {
-    document.getElementById('diag-panel').classList.toggle('open');
-  } else {
-    document.getElementById('admin-password-input').value = '';
-    document.getElementById('admin-error').style.display = 'none';
-    document.getElementById('admin-overlay').style.display = 'flex';
-    setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
-  }
-}
-
-function verifyAdmin() {
-  const val = document.getElementById('admin-password-input').value;
-  if (val === ADMIN_PW) {
-    adminUnlocked = true;
-    document.getElementById('admin-overlay').style.display = 'none';
-    document.getElementById('diag-panel').classList.add('open');
-  } else {
-    document.getElementById('admin-error').style.display = 'block';
-    document.getElementById('admin-password-input').value = '';
-    document.getElementById('admin-password-input').focus();
-  }
-}
-
-// ── DEPARTMENT UPDATES ──
-function getDeptUpdateKey(proj, dept) { return 'deptupdate:' + proj + ':' + dept; }
-function loadDeptUpdates(proj, dept) {
-  try { const r = localStorage.getItem(getDeptUpdateKey(proj, dept)); return r ? JSON.parse(r) : []; }
-  catch { return []; }
-}
-function saveDeptUpdate(proj, dept, author, text) {
-  const u = loadDeptUpdates(proj, dept);
-  u.unshift({ author: author || 'Anonymous', text, ts: new Date().toISOString() });
-  if (u.length > 30) u.length = 30;
-  try { localStorage.setItem(getDeptUpdateKey(proj, dept), JSON.stringify(u)); } catch {}
-}
-function submitDeptUpdate(proj, dept) {
-  const sid = dept.replace(/[^a-z0-9]/gi,'_');
-  const ta = document.getElementById('update-textarea-' + proj + '-' + sid);
-  const nm = document.getElementById('update-name-' + proj + '-' + sid);
-  if (!ta || !ta.value.trim()) return;
-  saveDeptUpdate(proj, dept, nm ? nm.value.trim() : '', ta.value.trim());
-  ta.value = '';
-  renderUpdateLog(proj, dept);
-}
-function renderUpdateLog(proj, dept) {
-  const sid = dept.replace(/[^a-z0-9]/gi,'_');
-  const logEl = document.getElementById('update-log-' + proj + '-' + sid);
-  if (!logEl) return;
-  const updates = loadDeptUpdates(proj, dept);
-  if (!updates.length) { logEl.innerHTML = '<div class="dept-update-empty">No updates yet — be the first to log one.</div>'; return; }
-  logEl.innerHTML = updates.map(u => {
-    const dt = new Date(u.ts);
-    const ds = dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' · ' + dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-    return `<div class="dept-update-entry"><div class="dept-update-entry-meta"><span class="dept-update-entry-author">${u.author||'Anonymous'}</span><span>${ds}</span></div><div class="dept-update-entry-text">${u.text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/
-/g,'<br>')}</div></div>`;
-  }).join('');
-}
-function buildUpdateBox(proj, dept) {
-  const sid = dept.replace(/[^a-z0-9]/gi,'_');
-  return `<div class="dept-update-box"><div class="dept-update-box-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Team Updates &amp; Pre-Meeting Notes</div><textarea class="dept-update-textarea" id="update-textarea-${proj}-${sid}" placeholder="Log an update or note for the next meeting…"></textarea><div class="dept-update-footer"><input class="dept-update-name" id="update-name-${proj}-${sid}" placeholder="Your name (optional)" maxlength="60"/><button class="dept-update-submit" onclick="submitDeptUpdate('${proj}','${dept}')">Submit</button></div><div class="dept-update-log" id="update-log-${proj}-${sid}"></div></div>`;
-}
 
 function renderDiagPanel() {
   const body = document.getElementById('diag-body');
