@@ -132,18 +132,32 @@ nav {
 .nav-project-btn { cursor: pointer; opacity: 0.35; transition: opacity 0.2s; }
 .nav-project-btn:hover { opacity: 0.7; }
 .nav-project-btn.active { opacity: 1; }
-.sync-btn {
-  background: var(--active-theme-color, var(--cx-color)); color: white;
+
+.sync-btn, .admin-btn {
   font-size: 11px; font-weight: 700; padding: 7px 12px;
   border-radius: var(--radius-sm); cursor: pointer;
-  transition: background 0.2s; border: none;
+  transition: all 0.2s; border: none;
   display: inline-flex; align-items: center; gap: 5px;
   font-family: inherit;
 }
+.sync-btn { background: var(--active-theme-color, var(--cx-color)); color: white; }
 .sync-btn:hover { background: var(--text-primary); }
 .sync-btn-text { display: inline; }
 .syncing .sync-icon { animation: spin 1s linear infinite; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Admin Button */
+.admin-btn {
+  background: var(--brand-grey-light); color: var(--text-secondary);
+  border: 1px solid var(--border); position: relative; padding: 7px 10px;
+}
+.admin-btn:hover { background: var(--border-md); color: var(--text-primary); }
+.admin-btn .diag-badge-count {
+  position: absolute; top: -5px; right: -5px;
+  background: var(--status-red); color: white; font-size: 9px; font-weight: 800;
+  padding: 2px 5px; border-radius: 100px; display: none; line-height: 1;
+}
+.admin-btn .diag-badge-count.has-issues { display: block; }
 
 /* ── MOBILE BOTTOM NAV ── */
 .bottom-nav {
@@ -154,9 +168,7 @@ nav {
   border-top: 1px solid var(--border);
   box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
 }
-.bottom-nav-inner {
-  display: flex; height: 100%; align-items: stretch;
-}
+.bottom-nav-inner { display: flex; height: 100%; align-items: stretch; }
 .bottom-nav-btn {
   flex: 1; display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 4px; cursor: pointer;
@@ -179,18 +191,11 @@ nav {
 .landing-container {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   min-height: calc(100vh - var(--nav-h));
-  padding: 24px;
-  text-align: center;
+  padding: 24px; text-align: center;
 }
-.landing-logo-mark {
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 24px;
-}
+.landing-logo-mark { display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
 .landing-logo-mark img { width: 180px; height: auto; object-fit: contain; }
-.landing-container h2 {
-  font-size: 22px; font-weight: 800; margin-bottom: 8px;
-  letter-spacing: -0.03em;
-}
+.landing-container h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.03em; }
 .landing-container p { font-size: 14px; color: var(--text-muted); margin-bottom: 36px; }
 .landing-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
 .landing-btn {
@@ -198,8 +203,7 @@ nav {
   border: none; border-radius: var(--radius); cursor: pointer;
   transition: all 0.25s; color: white; letter-spacing: 0.01em;
   font-family: inherit; box-shadow: var(--shadow-md);
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  min-width: 180px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 180px;
 }
 .landing-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
 .landing-btn:active { transform: translateY(0); }
@@ -220,12 +224,7 @@ nav {
 .project-heading h2 { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
 .project-heading .ph-date { font-size: 11px; color: var(--text-muted); margin-left: auto; font-weight: 600; }
 
-/* Metric Cards */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 12px; margin-bottom: 20px;
-}
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .metric-card {
   background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 18px; box-shadow: var(--shadow); position: relative; overflow: hidden;
@@ -245,11 +244,7 @@ nav {
 .color-amber .priority-tag { background: var(--status-orange-border); color: white; }
 .color-green .priority-tag { background: var(--status-green-border); color: white; }
 .metric-label { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-.metric-value {
-  font-size: 22px; font-weight: 800; letter-spacing: -0.03em;
-  color: var(--text-primary);
-  font-family: 'DM Mono', monospace;
-}
+.metric-value { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); font-family: 'DM Mono', monospace; }
 .metric-value.color-red { color: var(--metric-red); }
 .metric-value.color-amber { color: var(--metric-amber); }
 .metric-value.color-green { color: var(--metric-green); }
@@ -263,8 +258,7 @@ nav {
 .overdue-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 16px; cursor: pointer; user-select: none;
-  font-size: 13px; font-weight: 700; color: var(--status-red);
-  gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--status-red); gap: 8px;
 }
 .overdue-header:hover { background: rgba(211,47,47,0.05); }
 .overdue-toggle-icon { font-size: 10px; transition: transform 0.2s; }
@@ -273,8 +267,7 @@ nav {
 .overdue-panel.expanded .overdue-list { display: block; }
 .overdue-item {
   display: flex; align-items: center; gap: 10px; padding: 10px 16px;
-  border-bottom: 1px solid rgba(211,47,47,0.08); font-size: 12px;
-  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(211,47,47,0.08); font-size: 12px; flex-wrap: wrap;
 }
 .overdue-item:last-child { border-bottom: none; }
 .overdue-dept {
@@ -283,19 +276,12 @@ nav {
   border-radius: var(--radius-pill); text-transform: uppercase;
   letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
 }
-.overdue-action { 
-  color: var(--text-primary); font-weight: 600; flex: 1; 
-  min-width: 0;
-  word-wrap: break-word;
-}
+.overdue-action { color: var(--text-primary); font-weight: 600; flex: 1; min-width: 0; word-wrap: break-word; }
 .overdue-due { color: var(--status-red); font-size: 10px; font-weight: 700; white-space: nowrap; }
 
-/* Charts */
+/* Charts & Targets */
 .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.chart-card {
-  background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 18px; box-shadow: var(--shadow);
-}
+.chart-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
 .chart-card-header { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 12px; gap: 6px; }
 .chart-card h3 { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
 .chart-wrap { position: relative; height: 190px; width: 100%; }
@@ -327,13 +313,8 @@ nav {
 .t-ongoing .t-status-bar { background: #e65100; }
 .t-atrisk .t-status-bar { background: #c62828; }
 .t-body { padding: 8px 10px; flex: 1; min-width: 0; }
-.t-name { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; word-break: break-word; overflow-wrap: break-word; }
-.t-done .t-name { color: #1b5e20; }
-.t-ongoing .t-name { color: #bf360c; }
-.t-atrisk .t-name { color: #b71c1c; }
-.t-note { color: var(--text-secondary); line-height: 1.5; font-size: 11px; word-break: break-word; overflow-wrap: break-word; }
+.t-note { color: var(--text-secondary); line-height: 1.5; font-size: 11px; word-break: break-word; overflow-wrap: break-word; font-weight: 600; }
 
-/* Alert Strip */
 .alert-strip {
   border-radius: var(--radius-sm); padding: 12px 16px; font-size: 13px; line-height: 1.5;
   margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; font-weight: 500;
@@ -344,7 +325,6 @@ nav {
 /* ── DEPARTMENTS PAGE ── */
 .dept-container { max-width: 1060px; margin: 0 auto; padding: 0 20px 48px; }
 .dept-layout { display: grid; grid-template-columns: var(--sidebar-w) 1fr; gap: 24px; align-items: start; }
-
 .dept-sidebar {
   background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
   box-shadow: var(--shadow); position: sticky; top: calc(var(--nav-h) + 20px); overflow: hidden;
@@ -373,47 +353,30 @@ nav {
   padding: 2px 8px; border-radius: var(--radius-pill);
 }
 
-/* Dept Main */
-.dept-main { 
-  min-height: 500px; 
-  min-width: 0;
-  width: 100%;
-  overflow-y: auto; 
-  overflow-x: hidden;
-}
+.dept-main { min-height: 500px; min-width: 0; width: 100%; overflow-y: auto; overflow-x: hidden; }
 .dept-panel { display: none; animation: fadeIn 0.25s ease; }
 .dept-panel.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
 /* History Selector */
-.dept-history-bar {
-  display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;
-  width: 100%;
-}
+.dept-history-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; width: 100%; }
 .history-row {
-  display: flex; align-items: center; gap: 8px;
-  overflow-x: auto; padding-bottom: 2px;
+  display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 2px;
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .history-row::-webkit-scrollbar { display: none; }
 .history-pill {
   flex-shrink: 0; padding: 6px 14px; border-radius: var(--radius-pill);
   font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-  border: 1.5px solid var(--border); background: var(--white); color: var(--text-muted);
-  font-family: inherit;
+  border: 1.5px solid var(--border); background: var(--white); color: var(--text-muted); font-family: inherit;
 }
 .history-pill:hover { border-color: var(--active-theme-color, var(--cx-color)); color: var(--active-theme-color, var(--cx-color)); }
 .history-pill.active { background: var(--active-theme-color, var(--cx-color)); border-color: var(--active-theme-color, var(--cx-color)); color: white; }
-.history-label {
-  font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;
-  letter-spacing: 0.06em; white-space: nowrap; flex-shrink: 0;
-}
-/* Date sub-pills row */
+.history-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; flex-shrink: 0; }
+
 .date-sub-row {
-  display: flex; align-items: center; gap: 6px;
-  overflow-x: auto; padding-bottom: 2px;
-  scrollbar-width: none; -webkit-overflow-scrolling: touch;
-  padding-left: 4px;
+  display: flex; align-items: center; gap: 6px; overflow-x: auto; padding-bottom: 2px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-left: 4px;
 }
 .date-sub-row::-webkit-scrollbar { display: none; }
 .date-pill {
@@ -437,7 +400,6 @@ nav {
 .dept-header-text p { font-size: 13px; color: var(--text-secondary); word-wrap: break-word; }
 .dept-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-/* Filter Tabs & Task Cards Strict Theming */
 .filter-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; width: 100%; }
 .filter-tab {
   padding: 6px 14px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700;
@@ -456,65 +418,40 @@ nav {
 
 /* Status Group Accordions */
 .status-accordion {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--white);
-  margin-bottom: 6px;
-  overflow: hidden;
-  box-shadow: var(--shadow);
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--white);
+  margin-bottom: 6px; overflow: hidden; box-shadow: var(--shadow);
 }
 .status-header {
-  padding: 14px 16px;
-  background: var(--bg);
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 800;
-  font-size: 13px;
-  user-select: none;
-  transition: background 0.2s;
-  color: var(--text-primary);
+  padding: 14px 16px; background: var(--bg); cursor: pointer; display: flex;
+  justify-content: space-between; align-items: center; font-weight: 800;
+  font-size: 13px; user-select: none; transition: background 0.2s; color: var(--text-primary);
 }
 .status-header:hover { background: #ebebeb; }
 .status-toggle-icon { font-size: 10px; transition: transform 0.2s; }
 .status-accordion.expanded .status-toggle-icon { transform: rotate(180deg); }
 .status-tasks-wrapper {
-  display: none;
-  padding: 16px;
-  flex-direction: column;
-  gap: 12px;
-  border-top: 1px solid var(--border);
+  display: none; padding: 16px; flex-direction: column; gap: 12px; border-top: 1px solid var(--border);
 }
 .status-accordion.expanded .status-tasks-wrapper { display: flex; }
-
-.status-tasks-wrapper .step-card {
-  box-shadow: none;
-  border: 1px solid var(--border);
-  border-left-width: 4px;
-}
+.status-tasks-wrapper .step-card { box-shadow: none; border: 1px solid var(--border); border-left-width: 4px; }
 
 .step-card {
   background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 16px; box-shadow: var(--shadow); cursor: pointer;
-  position: relative; transition: all 0.2s; border-left-width: 4px;
-  min-width: 0;
+  position: relative; transition: all 0.2s; border-left-width: 4px; min-width: 0;
 }
 .step-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 .step-card:active { transform: translateY(0); }
 
-/* Card Colors applied */
 .step-card.s-ontrack { border-left-color: var(--status-green-border); background: var(--status-green-bg); }
 .step-card.s-delayed { border-left-color: var(--status-red-border); background: var(--status-red-bg); }
 .step-card.s-update { border-left-color: var(--status-orange-border); background: var(--status-orange-bg); }
 .step-card.s-onhold { border-left-color: var(--status-grey-border); background: var(--status-grey-bg); }
 .step-card.s-achieved { border-left-color: var(--status-blue-border); background: var(--status-blue-bg); opacity: 0.75; }
 
-/* Context Line */
 .step-context {
   font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em;
-  color: var(--text-muted); margin-bottom: 5px;
-  word-break: break-word; word-wrap: break-word; overflow-wrap: break-word;
+  color: var(--text-muted); margin-bottom: 5px; word-break: break-word; word-wrap: break-word; overflow-wrap: break-word;
 }
 .s-ontrack .step-context { color: var(--status-green); }
 .s-delayed .step-context { color: var(--status-red); }
@@ -522,27 +459,8 @@ nav {
 .s-onhold .step-context { color: var(--status-grey); }
 .s-achieved .step-context { color: var(--status-blue); }
 
-.step-card-top { 
-  display: flex; 
-  flex-direction: row; 
-  align-items: flex-start; justify-content: space-between; gap: 12px; 
-  min-width: 0; 
-  width: 100%;
-}
-
-.step-text { 
-  font-size: 13.5px; 
-  color: var(--text-primary); 
-  line-height: 1.55; 
-  font-weight: 700; 
-  flex: 1; 
-  min-width: 0; 
-  white-space: pre-wrap; 
-  word-break: break-word; 
-  word-wrap: break-word; 
-  overflow-wrap: break-word; 
-}
-
+.step-card-top { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 12px; min-width: 0; width: 100%; }
+.step-text { font-size: 13.5px; color: var(--text-primary); line-height: 1.55; font-weight: 700; flex: 1; min-width: 0; white-space: pre-wrap; word-break: break-word; word-wrap: break-word; overflow-wrap: break-word; }
 .step-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
 .step-date {
   font-size: 10px; color: var(--text-muted); font-weight: 700;
@@ -551,7 +469,6 @@ nav {
 }
 .step-date.overdue { background: var(--status-red-bg); color: var(--status-red); }
 
-/* Status Badges */
 .status-badge {
   font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: var(--radius-pill);
   letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap;
@@ -565,19 +482,12 @@ nav {
 .step-details-pane {
   display: none; margin-top: 14px; padding-top: 12px;
   border-top: 1px dashed var(--border-md); font-size: 13px;
-  color: var(--text-secondary); line-height: 1.65;
-  white-space: pre-wrap; 
-  word-break: break-word;
-  word-wrap: break-word;
+  color: var(--text-secondary); line-height: 1.65; white-space: pre-wrap; word-break: break-word; word-wrap: break-word;
 }
 .step-card.expanded .step-details-pane { display: block; animation: fadeIn 0.2s ease; }
 .pane-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--brand-grey); margin-bottom: 6px; }
 
-/* Status Button Actions */
-.status-actions {
-  display: flex; gap: 8px; margin-top: 14px; padding-top: 12px;
-  border-top: 1px solid var(--border); flex-wrap: wrap;
-}
+.status-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
 .status-btn {
   padding: 6px 14px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700;
   cursor: pointer; border: 1.5px solid; transition: all 0.2s; font-family: inherit;
@@ -602,13 +512,8 @@ nav {
   margin-top: 30px; background: var(--white); border: 1px solid var(--border); 
   border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow);
 }
-.team-updates-section h3 {
-  font-size: 14px; font-weight: 800; margin-bottom: 14px; color: var(--text-primary);
-}
-.updates-list {
-  max-height: 250px; overflow-y: auto; margin-bottom: 16px; 
-  display: flex; flex-direction: column; gap: 10px;
-}
+.team-updates-section h3 { font-size: 14px; font-weight: 800; margin-bottom: 14px; color: var(--text-primary); }
+.updates-list { max-height: 250px; overflow-y: auto; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
 .update-item {
   background: var(--bg); padding: 12px; border-radius: var(--radius-sm); font-size: 13px;
   border-left: 3px solid var(--active-theme-color, var(--cx-color));
@@ -619,10 +524,7 @@ nav {
   width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-family: inherit; font-size: 13px; resize: vertical; min-height: 70px;
 }
-.update-input-group input {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-family: inherit; font-size: 13px;
-}
+.update-input-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; }
 .update-input-group button {
   align-self: flex-start; padding: 10px 20px; background: var(--active-theme-color, var(--cx-color));
   color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer;
@@ -641,58 +543,39 @@ nav {
 
 /* Mobile Dept Pills */
 .mobile-dept-scroller {
-  display: none;
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: auto; -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; padding: 0 4px 8px;
-  gap: 8px;
+  display: none; width: 100%; max-width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding: 0 4px 8px; gap: 8px;
 }
 .mobile-dept-scroller::-webkit-scrollbar { display: none; }
 .mobile-dept-pill {
-  flex-shrink: 0; padding: 8px 16px; border-radius: var(--radius-pill);
-  font-size: 12px; font-weight: 700; cursor: pointer;
-  border: 1.5px solid var(--border); background: var(--white);
-  color: var(--text-muted); transition: all 0.2s; white-space: nowrap;
-  font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
-  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0; padding: 8px 16px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--white); color: var(--text-muted); transition: all 0.2s; white-space: nowrap;
+  font-family: inherit; display: inline-flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent;
 }
 .mobile-dept-pill.active-cx { background: var(--cx-color); border-color: var(--cx-color); color: white; }
 .mobile-dept-pill.active-annex { background: var(--annex-color); border-color: var(--annex-color); color: white; }
-.mobile-dept-pill .pill-count {
-  background: rgba(255,255,255,0.25); color: inherit;
-  font-size: 9px; padding: 1px 6px; border-radius: var(--radius-pill);
-}
-.mobile-dept-pill:not(.active-cx):not(.active-annex) .pill-count {
-  background: var(--brand-grey-light); color: var(--text-muted);
-}
+.mobile-dept-pill .pill-count { background: rgba(255,255,255,0.25); color: inherit; font-size: 9px; padding: 1px 6px; border-radius: var(--radius-pill); }
+.mobile-dept-pill:not(.active-cx):not(.active-annex) .pill-count { background: var(--brand-grey-light); color: var(--text-muted); }
 
-/* ── Diagnostic Panel ── */
+/* ── Diagnostic Panel & Auth Modal ── */
 .diag-panel {
-  position: fixed; bottom: 0; right: 0; z-index: 1000;
-  width: 380px; max-width: 96vw;
-  background: #1a1a2e; color: #e0e0e0;
-  border-radius: 12px 0 0 0;
-  box-shadow: -4px -4px 24px rgba(0,0,0,0.35);
-  font-family: 'DM Mono', monospace; font-size: 11px;
-  transform: translateY(calc(100% - 42px));
-  transition: transform 0.3s ease;
-  overflow: hidden;
+  display: none;
+  position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+  width: 380px; max-width: 96vw; background: #1a1a2e; color: #e0e0e0;
+  border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  font-family: 'DM Mono', monospace; font-size: 11px; overflow: hidden;
 }
-.diag-panel.open { transform: translateY(0); }
+.diag-panel.open { display: block; animation: fadeInScale 0.2s ease; }
+@keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
 .diag-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; background: #16213e; cursor: pointer;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
-  text-transform: uppercase; color: #90caf9; user-select: none;
-  gap: 8px;
+  padding: 12px 14px; background: #16213e; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; color: #90caf9;
 }
-.diag-header-left { display: flex; align-items: center; gap: 8px; }
-.diag-badge-count {
-  background: #ef5350; color: white; font-size: 9px; font-weight: 800;
-  padding: 2px 7px; border-radius: 100px; display: none;
-}
-.diag-badge-count.has-issues { display: inline-block; }
+.diag-header-close { cursor: pointer; padding: 4px; opacity: 0.7; transition: opacity 0.2s; }
+.diag-header-close:hover { opacity: 1; }
+
 .diag-body { max-height: 320px; overflow-y: auto; padding: 12px 14px; }
 .diag-sheet { margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; }
 .diag-sheet:last-child { border-bottom: none; margin-bottom: 0; }
@@ -704,7 +587,6 @@ nav {
 .diag-ok { color: #81c784; margin-bottom: 2px; }
 .diag-empty { color: #546e7a; text-align: center; padding: 20px; font-size: 11px; }
 
-/* Admin Auth Modal */
 .admin-modal-overlay {
   display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center;
@@ -764,30 +646,19 @@ nav {
   .overdue-action { font-size: 11px; }
   .t-name { min-width: 80px; }
 }
-
-@media (max-width: 400px) {
-  .metrics-grid { grid-template-columns: 1fr; }
-}
+@media (max-width: 400px) { .metrics-grid { grid-template-columns: 1fr; } }
 </style>
-
 <script>
 (function() {
   const manifest = {
-    name: "Projects Dashboard",
-    short_name: "Projects Dashboard",
-    description: "Mixta Africa — Live Performance Dashboard",
-    start_url: "./",
-    display: "standalone",
-    background_color: "#f8f8f8",
-    theme_color: "#1b5e20",
-    icons: [
-      { src: "Mixta Africa.jpg", sizes: "192x192", type: "image/jpeg", purpose: "any maskable" },
-      { src: "Mixta Africa.jpg", sizes: "512x512", type: "image/jpeg", purpose: "any maskable" }
-    ]
+    name: "Projects Dashboard", short_name: "Projects Dashboard",
+    description: "Mixta Africa — Live Performance Dashboard", start_url: "./",
+    display: "standalone", background_color: "#f8f8f8", theme_color: "#1b5e20",
+    icons: [ { src: "Mixta Africa.jpg", sizes: "192x192", type: "image/jpeg", purpose: "any maskable" },
+             { src: "Mixta Africa.jpg", sizes: "512x512", type: "image/jpeg", purpose: "any maskable" } ]
   };
   const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  document.getElementById('pwa-manifest').setAttribute('href', url);
+  document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(blob));
 })();
 </script>
 </head>
@@ -795,12 +666,7 @@ nav {
 
 <nav>
   <div class="nav-brand" onclick="showLanding()" title="Return to selection">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7"></rect>
-      <rect x="14" y="3" width="7" height="7"></rect>
-      <rect x="14" y="14" width="7" height="7"></rect>
-      <rect x="3" y="14" width="7" height="7"></rect>
-    </svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
     Projects <span>Tracker</span>
   </div>
   <div class="nav-tabs" id="nav-tabs-group" style="display:none;">
@@ -813,220 +679,101 @@ nav {
     <span class="nav-badge badge-annex nav-project-btn" id="btn-nav-annex" onclick="selectProject('Annexe')">Annexe</span>
     
     <button class="sync-btn" onclick="syncWithGoogleSheet()" id="sync-btn-nav" title="Sync with Google Sheets">
-      <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/>
-      </svg>
+      <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg>
       <span class="sync-btn-text">Sync</span>
+    </button>
+    
+    <button class="admin-btn" onclick="openDiagAuth()" title="Admin Panel">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      <span class="diag-badge-count" id="admin-badge">0</span>
     </button>
   </div>
 </nav>
 
 <div class="bottom-nav" id="bottom-nav" style="display:none;">
   <div class="bottom-nav-inner">
-    <button class="bottom-nav-btn active" id="bnav-dashboard" onclick="mobileNavClick('dashboard',this)">
-      <span class="bnav-dot"></span>
-      <span class="bnav-icon"><svg width="1em" height="1em" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='2' ry='2'/><line x1='7' y1='7' x2='17' y2='7'/><line x1='7' y1='11' x2='13' y2='11'/><rect x='17' y='10' width='1' height='1'/><line x1='7' y1='15' x2='10' y2='15'/><rect x='17' y='14' width='1' height='1'/><line x1='7' y1='19' x2='14' y2='19'/><rect x='17' y='18' width='1' height='1'/></svg></span>
-      <span class="bnav-label">Overview</span>
-    </button>
-    <button class="bottom-nav-btn" id="bnav-departments" onclick="mobileNavClick('departments',this)">
-      <span class="bnav-dot"></span>
-      <span class="bnav-icon"><svg width="1em" height="1em" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'><path d='M4 3h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm4 2v2h10V5H8zM4 10h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2zm12 2v2h2v-2h-2zM4 17h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2zm7 2v2h7v-2h-7z'/></svg></span>
-      <span class="bnav-label">Tasks</span>
-    </button>
-    <button class="bottom-nav-btn" id="bnav-sync" onclick="syncWithGoogleSheet()">
-      <span class="bnav-icon"><svg class="sync-icon" width="1em" height="1em" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg></span>
-      <span class="bnav-label">Sync</span>
-    </button>
+    <button class="bottom-nav-btn active" id="bnav-dashboard" onclick="mobileNavClick('dashboard',this)"><span class="bnav-dot"></span><span class="bnav-icon"><svg width="1em" height="1em" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='2' ry='2'/><line x1='7' y1='7' x2='17' y2='7'/><line x1='7' y1='11' x2='13' y2='11'/><rect x='17' y='10' width='1' height='1'/><line x1='7' y1='15' x2='10' y2='15'/><rect x='17' y='14' width='1' height='1'/><line x1='7' y1='19' x2='14' y2='19'/><rect x='17' y='18' width='1' height='1'/></svg></span><span class="bnav-label">Overview</span></button>
+    <button class="bottom-nav-btn" id="bnav-departments" onclick="mobileNavClick('departments',this)"><span class="bnav-dot"></span><span class="bnav-icon"><svg width="1em" height="1em" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'><path d='M4 3h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm4 2v2h10V5H8zM4 10h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2zm12 2v2h2v-2h-2zM4 17h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2zm7 2v2h7v-2h-7z'/></svg></span><span class="bnav-label">Tasks</span></button>
+    <button class="bottom-nav-btn" id="bnav-sync" onclick="syncWithGoogleSheet()"><span class="bnav-icon"><svg class="sync-icon" width="1em" height="1em" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg></span><span class="bnav-label">Sync</span></button>
   </div>
 </div>
 
 <div id="page-landing" class="page active">
   <div class="landing-container">
-    <div class="landing-logo-mark">
-      <img src="Mixta Africa.jpg" alt="Mixta Africa" />
-    </div>
+    <div class="landing-logo-mark"><img src="Mixta Africa.jpg" alt="Mixta Africa" /></div>
     <h2>Projects Tracker</h2>
     <p>Select a project to view its live performance dashboard</p>
     <div class="landing-buttons">
-      <button class="landing-btn btn-cx" onclick="selectProject('Crossings')">
-        Lakowe Crossings
-        <small>6 units · ₦1.72B inflow</small>
-      </button>
-      <button class="landing-btn btn-annex" onclick="selectProject('Annexe')">
-        Lakowe Annex
-        <small>78 units · ₦6.27B inflow</small>
-      </button>
+      <button class="landing-btn btn-cx" onclick="selectProject('Crossings')">Lakowe Crossings <small>6 units · ₦1.72B inflow</small></button>
+      <button class="landing-btn btn-annex" onclick="selectProject('Annexe')">Lakowe Annex <small>78 units · ₦6.27B inflow</small></button>
     </div>
   </div>
 </div>
 
 <div id="page-dashboard" class="page">
 <div class="dash-container">
-
   <div class="project-block" id="block-crossings" style="display:none;">
-    <div class="project-heading">
-      <span class="nav-badge badge-cx">Lakowe Crossings</span>
-      <h2>Performance Overview</h2>
-      <span class="ph-date" id="ph-date-cx">Jan 5 – Apr 20, 2026</span>
-    </div>
-
+    <div class="project-heading"><span class="nav-badge badge-cx">Lakowe Crossings</span><h2>Performance Overview</h2><span class="ph-date" id="ph-date-cx">Jan 5 – Apr 20, 2026</span></div>
     <div class="metric-color-legend">
       <span class="mc-item"><span class="mc-dot mc-red"></span>Danger</span>
       <span class="mc-item"><span class="mc-dot mc-amber"></span>Caution</span>
       <span class="mc-item"><span class="mc-dot mc-green"></span>Healthy</span>
       <span class="mc-note">— Account Balance &amp; Active Offer Letters</span>
     </div>
-
     <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Total Inflow</div>
-        <div class="metric-value" id="val-cx-inflow">₦1.72B</div>
-        <div class="metric-delta">Live Synced</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Units Sold</div>
-        <div class="metric-value" id="val-cx-units">6</div>
-        <div class="metric-delta">Live Synced</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Value of Sales</div>
-        <div class="metric-value" id="val-cx-sales">₦2.07B</div>
-        <div class="metric-delta">Live Synced</div>
-      </div>
-      <div class="metric-card priority-card color-amber" id="card-cx-offers">
-        <div class="priority-tag">★ Priority</div>
-        <div class="metric-label">Active Offer Letters</div>
-        <div class="metric-value" id="val-cx-offers">0</div>
-        <div class="metric-delta" id="delta-cx-offers">Live Synced</div>
-      </div>
-      <div class="metric-card priority-card color-red" id="card-cx-balance">
-        <div class="priority-tag">★ Priority</div>
-        <div class="metric-label">Account Balance</div>
-        <div class="metric-value" id="val-cx-balance">₦40M</div>
-        <div class="metric-delta" id="delta-cx-balance">Live Synced</div>
-      </div>
+      <div class="metric-card"><div class="metric-label">Total Inflow</div><div class="metric-value" id="val-cx-inflow">₦1.72B</div><div class="metric-delta">Live Synced</div></div>
+      <div class="metric-card"><div class="metric-label">Units Sold</div><div class="metric-value" id="val-cx-units">6</div><div class="metric-delta">Live Synced</div></div>
+      <div class="metric-card"><div class="metric-label">Value of Sales</div><div class="metric-value" id="val-cx-sales">₦2.07B</div><div class="metric-delta">Live Synced</div></div>
+      <div class="metric-card priority-card color-amber" id="card-cx-offers"><div class="priority-tag">★ Priority</div><div class="metric-label">Active Offer Letters</div><div class="metric-value" id="val-cx-offers">0</div><div class="metric-delta" id="delta-cx-offers">Live Synced</div></div>
+      <div class="metric-card priority-card color-red" id="card-cx-balance"><div class="priority-tag">★ Priority</div><div class="metric-label">Account Balance</div><div class="metric-value" id="val-cx-balance">₦40M</div><div class="metric-delta" id="delta-cx-balance">Live Synced</div></div>
     </div>
-
     <div id="overdue-cx"></div>
-
     <div class="charts-row">
+      <div class="chart-card"><div class="chart-card-header"><h3>Cumulative Sales Inflow</h3></div><div class="chart-wrap"><canvas id="c3"></canvas></div></div>
       <div class="chart-card">
-        <div class="chart-card-header">
-          <h3>Cumulative Sales Inflow</h3>
-        </div>
-        <div class="chart-wrap"><canvas id="c3"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-card-header">
-          <h3 id="targets-cx-title">End of April Targets</h3>
-          <div class="target-legend">
-            <span class="legend-dot legend-done">Done</span>
-            <span class="legend-dot legend-ongoing">Ongoing</span>
-            <span class="legend-dot legend-atrisk">At Risk</span>
-          </div>
-        </div>
-        <div class="target-list" id="targets-crossings">
-          </div>
+        <div class="chart-card-header"><h3 id="targets-cx-title">End of April Targets</h3><div class="target-legend"><span class="legend-dot legend-done">Done</span><span class="legend-dot legend-ongoing">Ongoing</span><span class="legend-dot legend-atrisk">At Risk</span></div></div>
+        <div class="target-list" id="targets-crossings"></div>
       </div>
     </div>
-
-    <div class="alert-strip alert-red">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-        <line x1="12" y1="9" x2="12" y2="13"></line>
-        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-      </svg>
-      <span><strong>Major redesign:</strong> Hospitality site moved CX9 → CX10. New: 6 commercial + 68 residential units. Render + "coming soon" billboard pending design freeze. Civil mobilisation gated on ₦800M sales milestone.</span>
-    </div>
-
+    <div class="alert-strip alert-red"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span><strong>Major redesign:</strong> Hospitality site moved CX9 → CX10. New: 6 commercial + 68 residential units. Render + "coming soon" billboard pending design freeze. Civil mobilisation gated on ₦800M sales milestone.</span></div>
   </div>
 
   <div class="project-block" id="block-annexe" style="display:none;">
-    <div class="project-heading">
-      <span class="nav-badge badge-annex">Lakowe Annexe</span>
-      <h2>Performance Overview</h2>
-      <span class="ph-date" id="ph-date-annex">Jan 5 – Apr 20, 2026</span>
-    </div>
-
+    <div class="project-heading"><span class="nav-badge badge-annex">Lakowe Annexe</span><h2>Performance Overview</h2><span class="ph-date" id="ph-date-annex">Jan 5 – Apr 20, 2026</span></div>
     <div class="metric-color-legend">
       <span class="mc-item"><span class="mc-dot mc-red"></span>Danger</span>
       <span class="mc-item"><span class="mc-dot mc-amber"></span>Caution</span>
       <span class="mc-item"><span class="mc-dot mc-green"></span>Healthy</span>
       <span class="mc-note">— Account Balance &amp; Active Offer Letters</span>
     </div>
-
     <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Total Inflow</div>
-        <div class="metric-value" id="val-annex-inflow">₦6.27B</div>
-        <div class="metric-delta">Live Synced</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Units Sold</div>
-        <div class="metric-value" id="val-annex-units">78</div>
-        <div class="metric-delta">Live Synced</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Value of Sales</div>
-        <div class="metric-value" id="val-annex-sales">₦6.89B</div>
-        <div class="metric-delta">Live Synced</div>
-      </div>
-      <div class="metric-card priority-card color-amber" id="card-annex-offers">
-        <div class="priority-tag">★ Priority</div>
-        <div class="metric-label">Active Offer Letters</div>
-        <div class="metric-value" id="val-annex-offers">0</div>
-        <div class="metric-delta" id="delta-annex-offers">Live Synced</div>
-      </div>
-      <div class="metric-card priority-card color-green" id="card-annex-balance">
-        <div class="priority-tag">★ Priority</div>
-        <div class="metric-label">Account Balance</div>
-        <div class="metric-value" id="val-annex-balance">₦61.9M</div>
-        <div class="metric-delta" id="delta-annex-balance">Live Synced</div>
-      </div>
+      <div class="metric-card"><div class="metric-label">Total Inflow</div><div class="metric-value" id="val-annex-inflow">₦6.27B</div><div class="metric-delta">Live Synced</div></div>
+      <div class="metric-card"><div class="metric-label">Units Sold</div><div class="metric-value" id="val-annex-units">78</div><div class="metric-delta">Live Synced</div></div>
+      <div class="metric-card"><div class="metric-label">Value of Sales</div><div class="metric-value" id="val-annex-sales">₦6.89B</div><div class="metric-delta">Live Synced</div></div>
+      <div class="metric-card priority-card color-amber" id="card-annex-offers"><div class="priority-tag">★ Priority</div><div class="metric-label">Active Offer Letters</div><div class="metric-value" id="val-annex-offers">0</div><div class="metric-delta" id="delta-annex-offers">Live Synced</div></div>
+      <div class="metric-card priority-card color-green" id="card-annex-balance"><div class="priority-tag">★ Priority</div><div class="metric-label">Account Balance</div><div class="metric-value" id="val-annex-balance">₦61.9M</div><div class="metric-delta" id="delta-annex-balance">Live Synced</div></div>
     </div>
-
     <div id="overdue-annex"></div>
-
     <div class="charts-row">
+      <div class="chart-card"><div class="chart-card-header"><h3>Inflow &amp; Balance Trend</h3></div><div class="chart-wrap"><canvas id="c1"></canvas></div></div>
       <div class="chart-card">
-        <div class="chart-card-header"><h3>Inflow &amp; Balance Trend</h3></div>
-        <div class="chart-wrap"><canvas id="c1"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-card-header">
-          <h3 id="targets-annex-title">End of April Targets</h3>
-          <div class="target-legend">
-            <span class="legend-dot legend-done">Done</span>
-            <span class="legend-dot legend-ongoing">Ongoing</span>
-            <span class="legend-dot legend-atrisk">At Risk</span>
-          </div>
-        </div>
-        <div class="target-list" id="targets-annexe">
-          </div>
+        <div class="chart-card-header"><h3 id="targets-annex-title">End of April Targets</h3><div class="target-legend"><span class="legend-dot legend-done">Done</span><span class="legend-dot legend-ongoing">Ongoing</span><span class="legend-dot legend-atrisk">At Risk</span></div></div>
+        <div class="target-list" id="targets-annexe"></div>
       </div>
     </div>
-
-    <div class="alert-strip alert-grey">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="16" x2="12" y2="12"></line>
-        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-      </svg>
-      <span><strong>Cash-construction risk:</strong> Balance ₦61.9M after two large disbursements. No active ad campaign or offer letters. Target ₦1B+ to sustain BAFF momentum. QS onboarding must close by Apr 23.</span>
-    </div>
-
+    <div class="alert-strip alert-grey"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><span><strong>Cash-construction risk:</strong> Balance ₦61.9M after two large disbursements. No active ad campaign or offer letters. Target ₦1B+ to sustain BAFF momentum. QS onboarding must close by Apr 23.</span></div>
   </div>
-
 </div>
 </div>
 
 <div id="page-departments" class="page">
 <div class="dept-container">
   <div class="mobile-dept-scroller" id="mobile-dept-pills"></div>
-
   <div class="dept-layout">
     <div class="dept-sidebar" id="sidebar-container">
-      
       <div class="sidebar-section" id="sidebar-crossings" style="display:none;">
         <div class="sidebar-section-label">Lakowe Crossings</div>
         <button class="sidebar-item" onclick="showDept(this,'Crossings','Design')">Design <span class="dept-count">0</span></button>
@@ -1041,7 +788,6 @@ nav {
         <button class="sidebar-item" onclick="showDept(this,'Crossings','Legal')">Legal <span class="dept-count">0</span></button>
         <button class="sidebar-item" onclick="showDept(this,'Crossings','General')">General <span class="dept-count">0</span></button>
       </div>
-      
       <div class="sidebar-section" id="sidebar-annexe" style="display:none;">
         <div class="sidebar-section-label annexe">Lakowe Annexe</div>
         <button class="sidebar-item annexe-btn" onclick="showDept(this,'Annexe','Design')">Design <span class="dept-count">0</span></button>
@@ -1054,7 +800,6 @@ nav {
         <button class="sidebar-item annexe-btn" onclick="showDept(this,'Annexe','Sales')">Sales <span class="dept-count">0</span></button>
         <button class="sidebar-item annexe-btn" onclick="showDept(this,'Annexe','Legal')">Legal <span class="dept-count">0</span></button>
       </div>
-
     </div>
 
     <div class="dept-main">
@@ -1067,9 +812,7 @@ nav {
       </div>
 
       <div id="dynamic-dept-container" style="display:none;">
-        <div class="dept-history-bar" id="history-bar">
-          <span class="history-label">History:</span>
-        </div>
+        <div class="dept-history-bar" id="history-bar"></div>
         <div class="dept-header">
           <div class="dept-header-text">
             <h2 id="dynamic-dept-title">Department</h2>
@@ -1078,14 +821,10 @@ nav {
           </div>
           <div class="dept-controls">
             <button class="sync-btn" onclick="syncWithGoogleSheet()" title="Fetch Latest Tasks">
-              <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/>
-              </svg>
+              <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg>
               <span class="sync-btn-text">Sync</span>
             </button>
-            <label class="show-done-toggle">
-              <input type="checkbox" id="show-done-toggle" onchange="renderCurrentDept()"> Show completed
-            </label>
+            <label class="show-done-toggle"><input type="checkbox" id="show-done-toggle" onchange="renderCurrentDept()"> Show completed</label>
           </div>
         </div>
         <div class="filter-tabs" id="filter-tabs">
@@ -1108,22 +847,21 @@ nav {
             <button onclick="submitTeamUpdate()">Submit Update</button>
           </div>
         </div>
-
       </div>
     </div>
-
   </div>
 </div>
 </div>
 
 <div class="diag-panel" id="diag-panel">
-  <div class="diag-header" onclick="openDiagPanel()">
-    <div class="diag-header-left">
+  <div class="diag-header">
+    <div style="display:flex; align-items:center; gap:8px;">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       Sheet Diagnostics
-      <span class="diag-badge-count" id="diag-issue-count">0</span>
     </div>
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+    <div class="diag-header-close" onclick="closeDiagPanel()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </div>
   </div>
   <div class="diag-body" id="diag-body">
     <div class="diag-empty">Sync data to see sheet diagnostics</div>
@@ -1154,7 +892,6 @@ let currentFilter = 'all';
 let viewingSessionDate = 'current'; 
 let diagUnlocked = false;
 
-// Excel Binaries endpoints
 const SHEET_CROSSINGS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_BotFNOFLBaUKX-lzjWZkfe2DhCWL28EmOGGBkVBnkcKxoM2l02lBjsqdhnnweUKngc1DWpO82OPL/pub?output=xlsx'; 
 const SHEET_ANNEXE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSCwJvm2NJYEAAcGRCvIEz_OnT4IqrIC8MtxXnbOAwaPuOie0nJMnPts7NQ7B4_gMzkp0cAeg8BO7Jk/pub?output=xlsx'; 
 
@@ -1173,28 +910,18 @@ function getStatusOverrides() {
   try { return JSON.parse(localStorage.getItem(STATUS_KEY)) || {}; } catch { return {}; }
 }
 function saveStatus(taskId, status) {
-  const o = getStatusOverrides();
-  o[taskId] = status;
-  localStorage.setItem(STATUS_KEY, JSON.stringify(o));
+  const o = getStatusOverrides(); o[taskId] = status; localStorage.setItem(STATUS_KEY, JSON.stringify(o));
 }
-function taskId(t) {
-  return (t.project + '_' + t.dept + '_' + t.session + '_' + t.action).replace(/\W+/g,'_').substring(0, 60);
-}
+function taskId(t) { return (t.project + '_' + t.dept + '_' + t.session + '_' + t.action).replace(/\W+/g,'_').substring(0, 60); }
 
-// ── EXCEL SERIAL DATE FORMATTER ──
 function formatExcelDate(val) {
   if (!val) return 'TBD';
-  
-  if (val instanceof Date) {
-    return val.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
-  }
-  
+  if (val instanceof Date) return val.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
   const num = Number(val);
   if (!isNaN(num) && num > 20000 && num < 60000) {
     const d = new Date((num - 25569) * 86400 * 1000);
     return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
   }
-  
   return String(val).trim();
 }
 
@@ -1213,8 +940,7 @@ function parseDueDate(due) {
 
 function isOverdue(task) {
   if (task.status === 'achieved') return false;
-  const due = parseDueDate(task.due);
-  if (!due) return false;
+  const due = parseDueDate(task.due); if (!due) return false;
   const today = new Date(); today.setHours(0,0,0,0);
   return due < today;
 }
@@ -1222,26 +948,17 @@ function isOverdue(task) {
 // ═══════════════════════════════════════════════
 // ADMIN MODAL & TEAM UPDATES
 // ═══════════════════════════════════════════════
-function openDiagPanel() {
-  if (diagUnlocked) {
-    document.getElementById('diag-panel').classList.toggle('open');
-  } else {
-    document.getElementById('admin-pwd').value = '';
-    document.getElementById('admin-modal').style.display = 'flex';
-  }
+function openDiagAuth() {
+  if (diagUnlocked) { document.getElementById('diag-panel').classList.add('open'); } 
+  else { document.getElementById('admin-pwd').value = ''; document.getElementById('admin-modal').style.display = 'flex'; }
 }
-function closeAdminModal() {
-  document.getElementById('admin-modal').style.display = 'none';
-}
+function closeDiagPanel() { document.getElementById('diag-panel').classList.remove('open'); }
+function closeAdminModal() { document.getElementById('admin-modal').style.display = 'none'; }
 function submitAdmin() {
   const pwd = document.getElementById('admin-pwd').value;
   if (pwd === 'PDadmin1234') {
-    diagUnlocked = true;
-    closeAdminModal();
-    document.getElementById('diag-panel').classList.add('open');
-  } else {
-    alert('Incorrect admin password.');
-  }
+    diagUnlocked = true; closeAdminModal(); document.getElementById('diag-panel').classList.add('open');
+  } else { alert('Incorrect admin password.'); }
 }
 
 function submitTeamUpdate() {
@@ -1263,10 +980,7 @@ function renderUpdatesList() {
   const list = document.getElementById('updates-list');
   if(!list) return;
   
-  if(updates.length === 0) {
-    list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No pre-meeting updates recorded yet.</div>';
-    return;
-  }
+  if(updates.length === 0) { list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No pre-meeting updates recorded yet.</div>'; return; }
   
   list.innerHTML = updates.map(u => `
     <div class="update-item">
@@ -1276,72 +990,52 @@ function renderUpdatesList() {
   `).reverse().join('');
 }
 
-
 // ═══════════════════════════════════════════════
 // GOOGLE SHEETS DYNAMIC EXCEL FETCH
 // ═══════════════════════════════════════════════
 async function syncWithGoogleSheet() {
   try {
     document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.add('syncing'));
-
     const fetches = [];
     if (SHEET_CROSSINGS) fetches.push(fetch(SHEET_CROSSINGS).then(r => r.arrayBuffer()).then(b => ({data: b, proj: 'Crossings'})));
     if (SHEET_ANNEXE) fetches.push(fetch(SHEET_ANNEXE).then(r => r.arrayBuffer()).then(b => ({data: b, proj: 'Annexe'})));
-    
     if (fetches.length === 0) return;
     
     const results = await Promise.all(fetches);
-    
-    taskDatabase = []; 
-    availableSessions = { Crossings: [], Annexe: [] };
-    sheetDiag = {};
-    document.getElementById('targets-crossings').innerHTML = '';
-    document.getElementById('targets-annexe').innerHTML = '';
+    taskDatabase = []; availableSessions = { Crossings: [], Annexe: [] }; sheetDiag = {};
+    document.getElementById('targets-crossings').innerHTML = ''; document.getElementById('targets-annexe').innerHTML = '';
     
     results.forEach(res => {
       const wb = XLSX.read(res.data, {type: 'array', cellDates: true});
-      
       let allSheets = wb.SheetNames;
-      
       let markerIndex = allSheets.findIndex(name => name.includes('2026>>'));
       let resultSheets = [];
       
       if (markerIndex !== -1) {
           let sheetsAfterMarker = allSheets.slice(markerIndex + 1);
           resultSheets = sheetsAfterMarker.filter(name => /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s*\d+/i.test(name.trim()));
-          
           if (resultSheets.length > 1) {
               let firstMonth = monthMap[resultSheets[0].substring(0,3).toLowerCase()];
               let lastMonth = monthMap[resultSheets[resultSheets.length-1].substring(0,3).toLowerCase()];
-              if (firstMonth <= lastMonth) {
-                  resultSheets.reverse();
-              }
+              if (firstMonth <= lastMonth) resultSheets.reverse();
           }
       } else {
           let dateSheets = allSheets.filter(name => /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s*\d+/i.test(name.trim()));
           if (dateSheets.length === 0) return;
-          
           let monthVals = dateSheets.map(n => monthMap[n.substring(0,3).toLowerCase()]);
           let isNewestFirst = monthVals[0] > monthVals[monthVals.length - 1] || (monthVals[0] <= 5 && monthVals[monthVals.length - 1] >= 8); 
-          
           if (isNewestFirst) {
               let cutoff = dateSheets.length;
-              for(let i=0; i<dateSheets.length - 1; i++){
-                   if(monthVals[i] === 1 && monthVals[i+1] === 12) { cutoff = i + 1; break; }
-              }
+              for(let i=0; i<dateSheets.length - 1; i++){ if(monthVals[i] === 1 && monthVals[i+1] === 12) { cutoff = i + 1; break; } }
               resultSheets = dateSheets.slice(0, cutoff);
           } else {
               let cutoff = 0;
-              for(let i=0; i<dateSheets.length - 1; i++){
-                   if(monthVals[i] === 12 && monthVals[i+1] === 1) { cutoff = i + 1; break; }
-              }
-              resultSheets = dateSheets.slice(cutoff);
-              resultSheets.reverse(); 
+              for(let i=0; i<dateSheets.length - 1; i++){ if(monthVals[i] === 12 && monthVals[i+1] === 1) { cutoff = i + 1; break; } }
+              resultSheets = dateSheets.slice(cutoff); resultSheets.reverse(); 
           }
       }
       
       if (resultSheets.length === 0) return;
-      
       availableSessions[res.proj] = resultSheets;
       
       resultSheets.forEach((sheetName, index) => {
@@ -1355,33 +1049,22 @@ async function syncWithGoogleSheet() {
     const now = new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('last-updated-text').textContent = 'Live Synced: ' + now;
     
-    viewingSessionDate = 'current';
-    updateDashboardDates();
-    applyPriorityColors();
-    updateSidebarCounts();
-    renderOverduePanels();
-    if (currentDept) renderCurrentDept();
+    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); updateSidebarCounts();
+    renderOverduePanels(); if (currentDept) renderCurrentDept();
     
-  } catch (error) {
-    console.error('Error syncing:', error);
-  } finally {
-    document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing'));
-  }
+  } catch (error) { console.error('Error syncing:', error); } finally { document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing')); }
 }
 
 function extractMetricValue(rowArray, isCurrency) {
     let combined = rowArray.join(' ').toLowerCase();
-    
     if (isCurrency) {
         let currencyMatch = combined.match(/(?:₦|n)\s*([\d.,]+\s*[bmk]?)/i);
         if (currencyMatch) return '₦' + currencyMatch[1].toUpperCase();
-        
         let fallback = combined.match(/([\d.,]+\s*[bmk])/i);
         if (fallback) return '₦' + fallback[1].toUpperCase();
     } else {
         let numMatch = combined.match(/-\s*(\d+)|:\s*(\d+)|\s+(\d+)\s/);
         if (numMatch) return numMatch[1] || numMatch[2] || numMatch[3];
-        
         let simpleNum = combined.match(/(\d+)/);
         if (simpleNum) return simpleNum[1];
     }
@@ -1389,41 +1072,23 @@ function extractMetricValue(rowArray, isCurrency) {
 }
 
 function processSheet(rows, proj, sheetName, isLatest) {
-  const targets = [];
-  let lastDept = 'General';
-  let inTargetSection = false; 
-  let tasksAdded = 0;
-  let targetsAdded = 0;
-  let rowsScanned = rows.length;
-
+  const targets = []; let lastDept = 'General'; let inTargetSection = false; let tasksAdded = 0; let targetsAdded = 0; let rowsScanned = rows.length;
   let colMap = { dept: 1, action: 2, due: 3, result: 4, explanation: 5, status: 7 };
 
   for (let r = 0; r < Math.min(12, rows.length); r++) {
     if (!rows[r]) continue;
     const rowStr = rows[r].join(' ').toLowerCase();
-    if ((rowStr.includes('department') || rowStr.includes('dept')) &&
-        (rowStr.includes('step') || rowStr.includes('action') || rowStr.includes('task') || rowStr.includes('next'))) {
-      
+    if ((rowStr.includes('department') || rowStr.includes('dept')) && (rowStr.includes('step') || rowStr.includes('action') || rowStr.includes('task') || rowStr.includes('next'))) {
       for (let ci = 0; ci < rows[r].length; ci++) {
         const h = String(rows[r][ci]).toLowerCase().trim();
         if (!h) continue;
-
         if (h.includes('department') || h === 'dept') { colMap.dept = ci; continue; }
-
-        if (h.includes('timeline') || h === 'due date' || (h.includes('due') && !h.includes('next'))) {
-          colMap.due = ci; continue;
-        }
-
-        if ((h.includes('next step') || h.includes('action') || h === 'task') &&
-            !h.includes('timeline') && !h.includes('due')) {
-          colMap.action = ci; continue;
-        }
-
+        if (h.includes('timeline') || h === 'due date' || (h.includes('due') && !h.includes('next'))) { colMap.due = ci; continue; }
+        if ((h.includes('next step') || h.includes('action') || h === 'task') && !h.includes('timeline') && !h.includes('due')) { colMap.action = ci; continue; }
         if (h.includes('result') || h.includes('description')) { colMap.result = ci; continue; }
         if (h.includes('explanation') || h.includes('note')) { colMap.explanation = ci; continue; }
         if (h === 'status' || (h.includes('status') && h.length < 15)) { colMap.status = ci; continue; }
       }
-
       sheetDiag[sheetName] = sheetDiag[sheetName] || {};
       sheetDiag[sheetName].colMap = {...colMap};
       sheetDiag[sheetName].headerRow = rows[r].map(String);
@@ -1434,85 +1099,96 @@ function processSheet(rows, proj, sheetName, isLatest) {
   let operationsOfferFound = false;
 
   for (let i = 0; i < rows.length; i++) {
-    const c = rows[i];
-    if (!c || c.length < 2) continue;
-
+    const c = rows[i]; if (!c || c.length < 2) continue;
     const rowStr = c.join(' ').toLowerCase();
 
-    // ── DEPT TRACKING ──
+    // DEPT TRACKING
     {
       const deptCellEarly = String(c[colMap.dept] || '').trim();
-      if (deptCellEarly &&
-          !/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline)$/i.test(deptCellEarly) &&
-          !/^\d{5,}$/.test(deptCellEarly) &&
-          !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(deptCellEarly)) {
+      if (deptCellEarly && !/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline)$/i.test(deptCellEarly) && !/^\d{5,}$/.test(deptCellEarly) && !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(deptCellEarly)) {
         lastDept = deptCellEarly;
       }
     }
 
     if (isLatest) {
       if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) {
-        setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', extractMetricValue(c, true));
-        continue;
+        setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', extractMetricValue(c, true)); continue;
       }
       if ((rowStr.includes('sales-') || rowStr.includes('sale:') || rowStr.includes('sales:')) && !rowStr.includes('value')) {
-        setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false));
+        if (proj === 'Crossings') {
+             if (/operations/i.test(lastDept)) { setMetric('val-cx-units', extractMetricValue(c, false)); }
+        } else {
+             setMetric('val-annex-units', extractMetricValue(c, false));
+        }
         continue;
       }
       if (rowStr.includes('value of sales') || rowStr.includes('tvs')) {
-        setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', extractMetricValue(c, true));
-        continue;
+        setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', extractMetricValue(c, true)); continue;
       }
       if (rowStr.includes('budget spent')) {
-        setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', extractMetricValue(c, true));
-        continue;
+        setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', extractMetricValue(c, true)); continue;
       }
       if (rowStr.includes('balance') || rowStr.includes('bal:')) {
-        setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', extractMetricValue(c, true));
-        continue;
+        setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', extractMetricValue(c, true)); continue;
       }
-
       if (!operationsOfferFound && /operations/i.test(lastDept) && rowStr.includes('offer letter')) {
         setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', extractMetricValue(c, false));
         operationsOfferFound = true;
       }
 
-      // ── TARGETS ROW DETECTION (Supports merged headers and explicit Target dept names) ──
+      // TARGETS ROW DETECTION
       const isTargetHeader = /end of .+ target/i.test(rowStr) || /target/i.test(String(c[colMap.dept] || '').trim());
-      if (isTargetHeader) {
-        inTargetSection = true;
-        continue; 
-      }
+      if (isTargetHeader) { inTargetSection = true; continue; }
 
       if (inTargetSection) {
         const deptCell = String(c[colMap.dept] || '').trim().toLowerCase();
         const allCells = c.map(v => String(v || '').trim()).filter(Boolean);
 
-        if (allCells.length === 0) {
-          inTargetSection = false;
-          continue;
-        }
+        if (allCells.length === 0) { inTargetSection = false; continue; }
         if (deptCell && !/target/i.test(deptCell) && allCells.length > 1) {
           inTargetSection = false;
         } else {
-          const targetColIndex = proj === 'Crossings' ? colMap.explanation : colMap.result;
-          let tContent = String(c[targetColIndex] || '').trim();
-          let tLabel = String(c[colMap.action] || '').trim();
+          let tContent = "";
+          let statusRawText = "";
           
-          if (!tContent && tLabel) tContent = tLabel; // Fallback
+          if (proj === 'Crossings') {
+              if (c[colMap.explanation] && String(c[colMap.explanation]).trim()) {
+                  tContent = String(c[colMap.explanation]).trim();
+                  statusRawText = String(c[colMap.explanation + 1] || '');
+              } else if (c[1] && String(c[1]).trim()) {
+                  tContent = String(c[1]).trim();
+                  statusRawText = String(c[2] || '');
+              } else {
+                  let idx = c.findIndex((val, i) => i > 0 && String(val).trim().length > 0 && !String(val).toLowerCase().includes('target'));
+                  if (idx !== -1) {
+                      tContent = String(c[idx]).trim();
+                      statusRawText = String(c[idx + 1] || '');
+                  }
+              }
+          } else {
+              if (c[colMap.explanation] && String(c[colMap.explanation]).trim()) {
+                  tContent = String(c[colMap.explanation]).trim();
+                  statusRawText = String(c[colMap.explanation + 1] || '');
+              } else {
+                  let idx = c.findIndex((val, i) => i > 0 && String(val).trim().length > 0 && !String(val).toLowerCase().includes('target'));
+                  if (idx !== -1) {
+                      tContent = String(c[idx]).trim();
+                      statusRawText = String(c[idx + 1] || '');
+                  }
+              }
+          }
 
-          const tStatRaw = String(c[colMap.status] || '').toLowerCase().replace(/[^a-z]/g,'');
-          let tCls = 't-ongoing'; 
-          if (tStatRaw.includes('done') || tStatRaw.includes('achieve') || tStatRaw.includes('complete')) tCls = 't-done';
-          else if (tStatRaw.includes('risk') || tStatRaw.includes('delay') || tStatRaw.includes('red')) tCls = 't-atrisk';
-          else if (rowStr.includes('done') || rowStr.includes('achieved') || rowStr.includes('complete')) tCls = 't-done';
-          else if (rowStr.includes('at risk') || rowStr.includes('delayed') || rowStr.includes('offtrack')) tCls = 't-atrisk';
+          let tCls = 't-atrisk'; 
           
-          const displayText = tContent || tLabel;
-          const displayLabel = (tContent && tLabel) ? tLabel : '▸';
-          
-          if (displayText) {
-            targets.push(`<div class="target-item ${tCls}"><div class="t-status-bar"></div><div class="t-body"><div class="t-name">${displayLabel}</div><div class="t-note">${displayText}</div></div></div>`);
+          let combinedStatus = statusRawText.toLowerCase();
+          if (combinedStatus.includes('done') || combinedStatus.includes('achieved') || combinedStatus.includes('complete')) {
+              tCls = 't-done';
+          } else if (combinedStatus.includes('ongoing') || combinedStatus.includes('progress')) {
+              tCls = 't-ongoing';
+          }
+
+          if (tContent) {
+            targets.push(`<div class="target-item ${tCls}"><div class="t-status-bar"></div><div class="t-body"><div class="t-note">${tContent}</div></div></div>`);
             targetsAdded++;
           }
           continue;
@@ -1521,18 +1197,16 @@ function processSheet(rows, proj, sheetName, isLatest) {
     }
 
     let action = String(c[colMap.action] || '').trim();
-
     if (!action || action.length < 4) continue;
     if (/^(department|next step|action point|s\/n|status|result|explanation|due|timeline)$/i.test(action)) continue;
     if (/^\d{5,}$/.test(action) || /gmt\+/i.test(action) || /west africa standard time/i.test(action)) continue;
     if (/end of .+ target/i.test(action)) continue;
 
-    // ── STATUS (INCLUDING ON HOLD BUCKET) ──
+    // STATUS (INCLUDING ON HOLD BUCKET)
     let rawStat = String(c[colMap.status] || 'ontrack').toLowerCase();
     let statusRaw = rawStat.replace(/[^a-z]/g, '');
     
-    if (rowStr.includes('on hold')) statusRaw = 'onhold';
-    else if (statusRaw.includes('onhold')) statusRaw = 'onhold';
+    if (rowStr.includes('on hold') || rowStr.includes('on-hold') || statusRaw.includes('onhold')) statusRaw = 'onhold';
     else if (statusRaw.includes('delay') || statusRaw.includes('offtrack')) statusRaw = 'delayed';
     else if (statusRaw.includes('achieve') || statusRaw.includes('done') || statusRaw.includes('complete')) statusRaw = 'achieved';
     else if (statusRaw.includes('update')) statusRaw = 'update';
@@ -1541,14 +1215,9 @@ function processSheet(rows, proj, sheetName, isLatest) {
     const explanationText = String(c[colMap.explanation] || '').trim();
 
     taskDatabase.push({
-      project: proj,
-      session: sheetName,
-      dept: lastDept,
-      action: action,
-      due: formatExcelDate(c[colMap.due]),
-      resultToAchieve: String(c[colMap.result] || '').trim(),
-      explanation: explanationText,
-      status: statusRaw
+      project: proj, session: sheetName, dept: lastDept, action: action,
+      due: formatExcelDate(c[colMap.due]), resultToAchieve: String(c[colMap.result] || '').trim(),
+      explanation: explanationText, status: statusRaw
     });
     tasksAdded++;
   }
@@ -1559,117 +1228,61 @@ function processSheet(rows, proj, sheetName, isLatest) {
   }
 
   sheetDiag[sheetName] = sheetDiag[sheetName] || {};
-  Object.assign(sheetDiag[sheetName], {
-    proj, isLatest, rowsScanned, tasksAdded, targetsAdded,
-    colMap: sheetDiag[sheetName].colMap || colMap,
-    headerRow: sheetDiag[sheetName].headerRow || [],
-    warnings: []
-  });
+  Object.assign(sheetDiag[sheetName], { proj, isLatest, rowsScanned, tasksAdded, targetsAdded, colMap: sheetDiag[sheetName].colMap || colMap, headerRow: sheetDiag[sheetName].headerRow || [], warnings: [] });
   const d = sheetDiag[sheetName];
   if (tasksAdded === 0) d.warnings.push('⚠ Zero tasks extracted — action column may be mapped incorrectly');
   if (isLatest && targetsAdded === 0) d.warnings.push('⚠ No targets found — check for "Target" dept or merged header row');
   if (d.colMap && d.colMap.action === d.colMap.due) d.warnings.push('❌ action and due columns map to same index — header scan failed');
   if (d.headerRow && d.colMap) {
-    const actionHeader = d.headerRow[d.colMap.action] || '(empty)';
-    const dueHeader = d.headerRow[d.colMap.due] || '(empty)';
+    const actionHeader = d.headerRow[d.colMap.action] || '(empty)'; const dueHeader = d.headerRow[d.colMap.due] || '(empty)';
     d.info = `action col ${d.colMap.action} → "${actionHeader}" | due col ${d.colMap.due} → "${dueHeader}"`;
   }
   renderDiagPanel();
 }
 
-function setMetric(id, val) {
-  const el = document.getElementById(id);
-  if (el && val) el.textContent = val;
-}
-
+function setMetric(id, val) { const el = document.getElementById(id); if (el && val) el.textContent = val; }
 function parseMillions(str) {
-  if (!str) return null;
-  const s = str.replace(/[₦,\s]/g,'').toUpperCase();
-  const numMatch = s.match(/([\d.]+)([BMK]?)/);
-  if (!numMatch) return null;
+  if (!str) return null; const s = str.replace(/[₦,\s]/g,'').toUpperCase();
+  const numMatch = s.match(/([\d.]+)([BMK]?)/); if (!numMatch) return null;
   let val = parseFloat(numMatch[1]);
-  if (numMatch[2] === 'B') val *= 1000;
-  else if (numMatch[2] === 'K') val /= 1000;
-  return val;
+  if (numMatch[2] === 'B') val *= 1000; else if (numMatch[2] === 'K') val /= 1000; return val;
 }
 function balanceColorClass(valStr) {
-  const m = parseMillions(valStr);
-  if (m === null) return 'color-green';
-  if (m < 50) return 'color-red';
-  if (m < 100) return 'color-amber';
-  return 'color-green';
+  const m = parseMillions(valStr); if (m === null) return 'color-green';
+  if (m < 50) return 'color-red'; if (m < 100) return 'color-amber'; return 'color-green';
 }
 function offersColorClass(valStr) {
   const n = parseInt(valStr) || 0;
-  if (n === 0) return 'color-red';
-  if (n < 2) return 'color-amber';
-  return 'color-green';
+  if (n === 0) return 'color-red'; if (n < 2) return 'color-amber'; return 'color-green';
 }
 function applyPriorityColors() {
-  const cxBal = document.getElementById('val-cx-balance').textContent;
-  document.getElementById('card-cx-balance').className = 'metric-card priority-card ' + balanceColorClass(cxBal);
-  document.getElementById('val-cx-balance').className = 'metric-value ' + balanceColorClass(cxBal);
-
-  const cxOff = document.getElementById('val-cx-offers').textContent;
-  document.getElementById('card-cx-offers').className = 'metric-card priority-card ' + offersColorClass(cxOff);
-  document.getElementById('val-cx-offers').className = 'metric-value ' + offersColorClass(cxOff);
-
-  const aBal = document.getElementById('val-annex-balance').textContent;
-  document.getElementById('card-annex-balance').className = 'metric-card priority-card ' + balanceColorClass(aBal);
-  document.getElementById('val-annex-balance').className = 'metric-value ' + balanceColorClass(aBal);
-
-  const aOff = document.getElementById('val-annex-offers').textContent;
-  document.getElementById('card-annex-offers').className = 'metric-card priority-card ' + offersColorClass(aOff);
-  document.getElementById('val-annex-offers').className = 'metric-value ' + offersColorClass(aOff);
+  const cxBal = document.getElementById('val-cx-balance').textContent; document.getElementById('card-cx-balance').className = 'metric-card priority-card ' + balanceColorClass(cxBal); document.getElementById('val-cx-balance').className = 'metric-value ' + balanceColorClass(cxBal);
+  const cxOff = document.getElementById('val-cx-offers').textContent; document.getElementById('card-cx-offers').className = 'metric-card priority-card ' + offersColorClass(cxOff); document.getElementById('val-cx-offers').className = 'metric-value ' + offersColorClass(cxOff);
+  const aBal = document.getElementById('val-annex-balance').textContent; document.getElementById('card-annex-balance').className = 'metric-card priority-card ' + balanceColorClass(aBal); document.getElementById('val-annex-balance').className = 'metric-value ' + balanceColorClass(aBal);
+  const aOff = document.getElementById('val-annex-offers').textContent; document.getElementById('card-annex-offers').className = 'metric-card priority-card ' + offersColorClass(aOff); document.getElementById('val-annex-offers').className = 'metric-value ' + offersColorClass(aOff);
 }
 
 function renderOverduePanels() {
   ['Crossings','Annexe'].forEach(proj => {
-    const el = document.getElementById('overdue-' + proj.toLowerCase());
-    if (!el) return;
-    
+    const el = document.getElementById('overdue-' + proj.toLowerCase()); if (!el) return;
     const latest = availableSessions[proj] && availableSessions[proj][0];
     const overdue = taskDatabase.filter(t => t.project === proj && t.session === latest && isOverdue(t));
-    
     if (overdue.length === 0) { el.innerHTML = ''; return; }
-    
     let html = `<div class="overdue-panel" onclick="this.classList.toggle('expanded')">
       <div class="overdue-header">
-        <span style="display:flex; align-items:center; gap:6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          ${overdue.length} Overdue Task${overdue.length > 1?'s':''} — Click to review
-        </span>
-        <span class="overdue-toggle-icon">▼</span>
-      </div>
-      <div class="overdue-list">`;
-    overdue.forEach(t => {
-      html += `<div class="overdue-item">
-        <span class="overdue-dept">${t.dept}</span>
-        <span class="overdue-action">${t.action.length > 85 ? t.action.substring(0,82)+'...' : t.action}</span>
-        <span class="overdue-due">Due: ${t.due}</span>
-      </div>`;
-    });
-    html += '</div></div>';
-    el.innerHTML = html;
+        <span style="display:flex; align-items:center; gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>${overdue.length} Overdue Task${overdue.length > 1?'s':''} — Click to review</span><span class="overdue-toggle-icon">▼</span>
+      </div><div class="overdue-list">`;
+    overdue.forEach(t => { html += `<div class="overdue-item"><span class="overdue-dept">${t.dept}</span><span class="overdue-action">${t.action.length > 85 ? t.action.substring(0,82)+'...' : t.action}</span><span class="overdue-due">Due: ${t.due}</span></div>`; });
+    html += '</div></div>'; el.innerHTML = html;
   });
 }
 
 function updateSidebarCounts() {
   document.querySelectorAll('.sidebar-item').forEach(btn => {
-    const oc = btn.getAttribute('onclick') || '';
-    const m = oc.match(/showDept\(this,'([^']+)','([^']+)'\)/);
-    if (!m) return;
-    
-    const proj = m[1];
-    const deptFilter = m[2].toLowerCase();
-    const latest = availableSessions[proj] && availableSessions[proj][0];
-    
+    const oc = btn.getAttribute('onclick') || ''; const m = oc.match(/showDept\(this,'([^']+)','([^']+)'\)/); if (!m) return;
+    const proj = m[1]; const deptFilter = m[2].toLowerCase(); const latest = availableSessions[proj] && availableSessions[proj][0];
     const count = taskDatabase.filter(t => t.project === proj && t.dept.toLowerCase().includes(deptFilter) && t.session === latest).length;
-    const span = btn.querySelector('.dept-count');
-    if (span) span.textContent = count;
+    const span = btn.querySelector('.dept-count'); if (span) span.textContent = count;
   });
   rebuildMobilePills();
 }
@@ -1678,13 +1291,9 @@ const CX_DEPTS = ['Design','Costing','AMC','IPD','Landscape','Operations','Finco
 const ANNEX_DEPTS = ['Design','Costing','IPD','Operations','Fincon','Telemarketing','MCC','Sales','Legal'];
 
 function rebuildMobilePills() {
-  const container = document.getElementById('mobile-dept-pills');
-  if (!container || !currentProject) { if(container) container.innerHTML=''; return; }
-  
-  const depts = currentProject === 'Crossings' ? CX_DEPTS : ANNEX_DEPTS;
-  const activeClass = currentProject === 'Crossings' ? 'active-cx' : 'active-annex';
+  const container = document.getElementById('mobile-dept-pills'); if (!container || !currentProject) { if(container) container.innerHTML=''; return; }
+  const depts = currentProject === 'Crossings' ? CX_DEPTS : ANNEX_DEPTS; const activeClass = currentProject === 'Crossings' ? 'active-cx' : 'active-annex';
   const latest = availableSessions[currentProject] && availableSessions[currentProject][0];
-  
   container.innerHTML = depts.map(d => {
     const count = taskDatabase.filter(t => t.project === currentProject && t.dept.toLowerCase().includes(d.toLowerCase()) && t.session === latest).length;
     const isActive = currentDept === d ? activeClass : '';
@@ -1692,105 +1301,50 @@ function rebuildMobilePills() {
   }).join('');
 }
 
-function showDeptMobile(dept) {
-  currentDept = dept;
-  viewingSessionDate = 'current';
-  updateSidebarCounts();
-  renderDeptContent(currentProject, dept);
-}
+function showDeptMobile(dept) { currentDept = dept; viewingSessionDate = 'current'; updateSidebarCounts(); renderDeptContent(currentProject, dept); }
 
 function buildHistoryBar() {
-  const bar = document.getElementById('history-bar');
-  if (!currentProject) return;
-  
-  const sessions = availableSessions[currentProject] || [];
-  const monthGroups = {};
-  sessions.forEach(s => {
-    const m = s.substring(0,3).toLowerCase();
-    if (!monthGroups[m]) monthGroups[m] = [];
-    monthGroups[m].push(s);
-  });
-  
-  const activeMonth = viewingSessionDate === 'current' ? null :
-    (viewingSessionDate.length === 3 ? viewingSessionDate : viewingSessionDate.substring(0,3).toLowerCase());
+  const bar = document.getElementById('history-bar'); if (!currentProject) return;
+  const sessions = availableSessions[currentProject] || []; const monthGroups = {};
+  sessions.forEach(s => { const m = s.substring(0,3).toLowerCase(); if (!monthGroups[m]) monthGroups[m] = []; monthGroups[m].push(s); });
+  const activeMonth = viewingSessionDate === 'current' ? null : (viewingSessionDate.length === 3 ? viewingSessionDate : viewingSessionDate.substring(0,3).toLowerCase());
   
   let monthRow = '<div class="history-row"><span class="history-label">Period:</span>';
   monthRow += `<button class="history-pill ${viewingSessionDate==='current'?'active':''}" onclick="switchSession('current')">Current</button>`;
-  Object.keys(monthGroups).forEach(m => {
-    const displayMonth = m.charAt(0).toUpperCase() + m.slice(1);
-    const isActive = activeMonth === m ? 'active' : '';
-    monthRow += `<button class="history-pill ${isActive}" onclick="expandMonth('${m}')">${displayMonth}</button>`;
-  });
+  Object.keys(monthGroups).forEach(m => { const displayMonth = m.charAt(0).toUpperCase() + m.slice(1); const isActive = activeMonth === m ? 'active' : ''; monthRow += `<button class="history-pill ${isActive}" onclick="expandMonth('${m}')">${displayMonth}</button>`; });
   monthRow += '</div>';
   
   let dateRow = '';
   if (activeMonth && monthGroups[activeMonth] && monthGroups[activeMonth].length > 0) {
     dateRow = '<div class="date-sub-row"><span class="date-sub-label">↳ Date:</span>';
-    monthGroups[activeMonth].forEach(sheetName => {
-      const label = formatSheetName(sheetName);
-      const isActive = viewingSessionDate === sheetName ? 'active' : '';
-      dateRow += `<button class="date-pill ${isActive}" onclick="switchSession('${sheetName}')">${label}</button>`;
-    });
+    monthGroups[activeMonth].forEach(sheetName => { const label = formatSheetName(sheetName); const isActive = viewingSessionDate === sheetName ? 'active' : ''; dateRow += `<button class="date-pill ${isActive}" onclick="switchSession('${sheetName}')">${label}</button>`; });
     dateRow += '</div>';
   }
-  
   bar.innerHTML = monthRow + dateRow;
 }
 
-function formatSheetName(sheetName) {
-  return sheetName.replace(/^([a-z]{3})\s*(\d+)/i, (_, m, d) => 
-    m.charAt(0).toUpperCase() + m.slice(1).toLowerCase() + ' ' + d.padStart(2,'0')
-  );
-}
+function formatSheetName(sheetName) { return sheetName.replace(/^([a-z]{3})\s*(\d+)/i, (_, m, d) => m.charAt(0).toUpperCase() + m.slice(1).toLowerCase() + ' ' + d.padStart(2,'0')); }
 
 function expandMonth(m) {
-  const sessions = availableSessions[currentProject] || [];
-  const monthSessions = sessions.filter(s => s.toLowerCase().startsWith(m));
-  if (monthSessions.length === 1) {
-    switchSession(monthSessions[0]);
-  } else if (monthSessions.length > 0) {
-    switchSession(monthSessions[0]);
-  }
+  const sessions = availableSessions[currentProject] || []; const monthSessions = sessions.filter(s => s.toLowerCase().startsWith(m));
+  if (monthSessions.length === 1) { switchSession(monthSessions[0]); } else if (monthSessions.length > 0) { switchSession(monthSessions[0]); }
 }
 
 function switchSession(val) {
-  viewingSessionDate = val;
-  buildHistoryBar();
-  const dateLabel = document.getElementById('viewing-date-label');
-  if (val === 'current') {
-    dateLabel.textContent = 'Current';
-  } else if (val.length === 3) {
-    dateLabel.textContent = val.charAt(0).toUpperCase() + val.slice(1) + ' Rollup';
-  } else {
-    dateLabel.textContent = formatSheetName(val);
-  }
+  viewingSessionDate = val; buildHistoryBar(); const dateLabel = document.getElementById('viewing-date-label');
+  if (val === 'current') { dateLabel.textContent = 'Current'; } else if (val.length === 3) { dateLabel.textContent = val.charAt(0).toUpperCase() + val.slice(1) + ' Rollup'; } else { dateLabel.textContent = formatSheetName(val); }
   renderCurrentDept();
 }
 
-function showDept(btn, proj, dept) {
-  currentDept = dept;
-  viewingSessionDate = 'current';
-  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderDeptContent(proj, dept);
-}
+function showDept(btn, proj, dept) { currentDept = dept; viewingSessionDate = 'current'; document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderDeptContent(proj, dept); }
 
 function renderDeptContent(proj, dept) {
-  document.getElementById('panel-placeholder').style.display = 'none';
-  const container = document.getElementById('dynamic-dept-container');
-  container.style.display = 'block';
-
-  document.getElementById('dynamic-dept-title').textContent = dept;
-  const badge = document.getElementById('dynamic-dept-badge');
-  badge.textContent = proj;
-  badge.className = 'nav-badge ' + (proj==='Crossings' ? 'badge-cx' : 'badge-annex');
-
-  buildHistoryBar();
-  document.getElementById('viewing-date-label').textContent = viewingSessionDate === 'current' ? 'Current' : (viewingSessionDate.charAt(0).toUpperCase() + viewingSessionDate.slice(1) + ' Rollup');
+  document.getElementById('panel-placeholder').style.display = 'none'; const container = document.getElementById('dynamic-dept-container'); container.style.display = 'block';
+  document.getElementById('dynamic-dept-title').textContent = dept; const badge = document.getElementById('dynamic-dept-badge'); badge.textContent = proj; badge.className = 'nav-badge ' + (proj==='Crossings' ? 'badge-cx' : 'badge-annex');
+  buildHistoryBar(); document.getElementById('viewing-date-label').textContent = viewingSessionDate === 'current' ? 'Current' : (viewingSessionDate.charAt(0).toUpperCase() + viewingSessionDate.slice(1) + ' Rollup');
   renderCurrentDept();
 }
 
-// ── V3 UPDATE: STATUS ACCORDION GROUPING ──
 function renderCurrentDept() {
   if (!currentProject || !currentDept) return;
   const showDone = document.getElementById('show-done-toggle') && document.getElementById('show-done-toggle').checked;
@@ -1810,10 +1364,7 @@ function renderCurrentDept() {
   tasks = tasks.map(t => ({ ...t, status: overrides[taskId(t)] || t.status }));
 
   if (viewingSessionDate === 'current') {
-    tasks = tasks.map(t => {
-      if (isOverdue(t) && t.status === 'ontrack') return { ...t, status: 'delayed' };
-      return t;
-    });
+    tasks = tasks.map(t => { if (isOverdue(t) && t.status === 'ontrack') return { ...t, status: 'delayed' }; return t; });
   }
 
   let filtered = tasks;
@@ -1829,13 +1380,8 @@ function renderCurrentDept() {
 
   const isHistory = viewingSessionDate !== 'current';
   
-  // Group by specific status buckets
   const groupedByStatus = { ontrack: [], delayed: [], onhold: [], update: [], achieved: [] };
-  filtered.forEach(t => {
-      let s = t.status || 'ontrack';
-      if (!groupedByStatus[s]) s = 'ontrack';
-      groupedByStatus[s].push(t);
-  });
+  filtered.forEach(t => { let s = t.status || 'ontrack'; if (!groupedByStatus[s]) s = 'ontrack'; groupedByStatus[s].push(t); });
 
   const statusConfig = [
       { key: 'ontrack', title: 'On Track', expanded: true },
@@ -1851,11 +1397,7 @@ function renderCurrentDept() {
       if (groupTasks.length === 0) return;
 
       let tasksHTML = groupTasks.map(t => {
-          const id = taskId(t);
-          const status = t.status || 'ontrack';
-          const statusLabel = {ontrack:'On Track',delayed:'Delayed',onhold:'On Hold',update:'Update',achieved:'Achieved'}[status] || 'On Track';
-          const dueCls = isOverdue(t) ? 'overdue' : '';
-          
+          const id = taskId(t); const status = t.status || 'ontrack'; const statusLabel = {ontrack:'On Track',delayed:'Delayed',onhold:'On Hold',update:'Update',achieved:'Achieved'}[status] || 'On Track'; const dueCls = isOverdue(t) ? 'overdue' : '';
           const actionButtons = !isHistory ? `
             <div class="status-actions" onclick="event.stopPropagation()">
               <button class="status-btn btn-achieved" onclick="setTaskStatus('${id}','achieved')">✓ Achieved</button>
@@ -1869,10 +1411,7 @@ function renderCurrentDept() {
             ${t.resultToAchieve ? `<div class="step-context">${t.resultToAchieve}</div>` : ''}
             <div class="step-card-top">
               <div class="step-text">${t.action}</div>
-              <div class="step-meta">
-                <span class="step-date ${dueCls}">Due: ${t.due}</span>
-                <span class="status-badge sb-${status}">${statusLabel}</span>
-              </div>
+              <div class="step-meta"><span class="step-date ${dueCls}">Due: ${t.due}</span><span class="status-badge sb-${status}">${statusLabel}</span></div>
             </div>
             <div class="step-details-pane" onclick="event.stopPropagation()">
               <div class="pane-title">Details</div>
@@ -1883,19 +1422,12 @@ function renderCurrentDept() {
       }).join('');
 
       const expClass = cfg.expanded ? 'expanded' : '';
-
       finalHTML += `
       <div class="status-accordion ${expClass}">
           <div class="status-header" onclick="this.parentElement.classList.toggle('expanded')">
-              <div style="display:flex; align-items:center; gap:8px;">
-                  <span>${cfg.title} Tasks</span>
-                  <span class="nav-badge" style="background:var(--border-md); color:var(--text-primary);">${groupTasks.length}</span>
-              </div>
+              <div style="display:flex; align-items:center; gap:8px;"><span>${cfg.title} Tasks</span><span class="nav-badge" style="background:var(--border-md); color:var(--text-primary);">${groupTasks.length}</span></div>
               <span class="status-toggle-icon">▼</span>
-          </div>
-          <div class="status-tasks-wrapper">
-              ${tasksHTML}
-          </div>
+          </div><div class="status-tasks-wrapper">${tasksHTML}</div>
       </div>`;
   });
 
@@ -1904,110 +1436,55 @@ function renderCurrentDept() {
 }
 
 function setTaskStatus(id, status) {
-  saveStatus(id, status);
-  const overrides = getStatusOverrides();
-  taskDatabase.forEach(t => { if (taskId(t) === id) t.status = overrides[id]; });
-  renderCurrentDept();
-  renderOverduePanels();
+  saveStatus(id, status); const overrides = getStatusOverrides(); taskDatabase.forEach(t => { if (taskId(t) === id) t.status = overrides[id]; });
+  renderCurrentDept(); renderOverduePanels();
 }
 
 function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderCurrentDept();
+  currentFilter = f; document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderCurrentDept();
 }
 
 // ═══════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════
 function showPage(id, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  if (btn) btn.classList.add('active');
-  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-  const bnav = document.getElementById('bnav-' + id);
-  if (bnav) bnav.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active')); document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active'); document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active')); const bnav = document.getElementById('bnav-' + id); if (bnav) bnav.classList.add('active');
 }
 
-function mobileNavClick(id, btn) {
-  const fakeBtn = document.querySelector(`.nav-tab[onclick*="${id}"]`);
-  showPage(id, fakeBtn);
-  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
+function mobileNavClick(id, btn) { const fakeBtn = document.querySelector(`.nav-tab[onclick*="${id}"]`); showPage(id, fakeBtn); document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
 
 function showLanding() {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-landing').classList.add('active');
-  document.getElementById('nav-tabs-group').style.display = 'none';
-  document.getElementById('bottom-nav').style.display = 'none';
-  document.querySelectorAll('.nav-project-btn').forEach(b => b.classList.remove('active'));
-  currentProject = null; currentDept = null;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-landing').classList.add('active');
+  document.getElementById('nav-tabs-group').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'none';
+  document.querySelectorAll('.nav-project-btn').forEach(b => b.classList.remove('active')); currentProject = null; currentDept = null;
 }
 
 function selectProject(proj) {
-  currentProject = proj;
-  currentDept = null;
-  viewingSessionDate = 'current';
-  currentFilter = 'all';
-
-  const themeColor = proj === 'Crossings' ? '#1b5e20' : '#D32F2F';
-  document.documentElement.style.setProperty('--active-theme-color', themeColor);
-
-  document.querySelectorAll('.nav-project-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(proj === 'Crossings' ? 'btn-nav-cx' : 'btn-nav-annex').classList.add('active');
-
-  document.getElementById('block-crossings').style.display = proj === 'Crossings' ? 'block' : 'none';
-  document.getElementById('block-annexe').style.display = proj === 'Annexe' ? 'block' : 'none';
-  
-  document.getElementById('sidebar-crossings').style.display = proj === 'Crossings' ? 'block' : 'none';
-  document.getElementById('sidebar-annexe').style.display = proj === 'Annexe' ? 'block' : 'none';
-
-  document.getElementById('nav-tabs-group').style.display = 'flex';
-  document.getElementById('bottom-nav').style.display = 'block';
-
-  const dashTab = document.querySelector('.nav-tab');
-  showPage('dashboard', dashTab);
-
-  document.getElementById('panel-placeholder').style.display = '';
-  document.getElementById('dynamic-dept-container').style.display = 'none';
-  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-
-  updateTargetHeaders();
-
-  updateSidebarCounts();
-  applyPriorityColors();
-  renderOverduePanels();
-  rebuildMobilePills();
+  currentProject = proj; currentDept = null; viewingSessionDate = 'current'; currentFilter = 'all';
+  const themeColor = proj === 'Crossings' ? '#1b5e20' : '#D32F2F'; document.documentElement.style.setProperty('--active-theme-color', themeColor);
+  document.querySelectorAll('.nav-project-btn').forEach(b => b.classList.remove('active')); document.getElementById(proj === 'Crossings' ? 'btn-nav-cx' : 'btn-nav-annex').classList.add('active');
+  document.getElementById('block-crossings').style.display = proj === 'Crossings' ? 'block' : 'none'; document.getElementById('block-annexe').style.display = proj === 'Annexe' ? 'block' : 'none';
+  document.getElementById('sidebar-crossings').style.display = proj === 'Crossings' ? 'block' : 'none'; document.getElementById('sidebar-annexe').style.display = proj === 'Annexe' ? 'block' : 'none';
+  document.getElementById('nav-tabs-group').style.display = 'flex'; document.getElementById('bottom-nav').style.display = 'block';
+  const dashTab = document.querySelector('.nav-tab'); showPage('dashboard', dashTab);
+  document.getElementById('panel-placeholder').style.display = ''; document.getElementById('dynamic-dept-container').style.display = 'none'; document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+  updateTargetHeaders(); updateSidebarCounts(); applyPriorityColors(); renderOverduePanels(); rebuildMobilePills();
 }
 
 function updateDashboardDates() {
   const monthNames = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
   ['Crossings','Annexe'].forEach(proj => {
-    const sessions = availableSessions[proj];
-    if (!sessions || sessions.length === 0) return;
-    const latest = sessions[0]; 
-    const m = latest.match(/^([a-z]{3})\s*(\d+)/i);
-    if (!m) return;
-    const mon = monthNames[m[1].toLowerCase()] || m[1];
-    const day = parseInt(m[2]);
-    const dateStr = `Jan 5 – ${mon} ${day}, 2026`;
-    const elId = proj === 'Crossings' ? 'ph-date-cx' : 'ph-date-annex';
-    const el = document.getElementById(elId);
-    if (el) el.textContent = dateStr;
+    const sessions = availableSessions[proj]; if (!sessions || sessions.length === 0) return; const latest = sessions[0]; 
+    const m = latest.match(/^([a-z]{3})\s*(\d+)/i); if (!m) return; const mon = monthNames[m[1].toLowerCase()] || m[1]; const day = parseInt(m[2]);
+    const dateStr = `Jan 5 – ${mon} ${day}, 2026`; const elId = proj === 'Crossings' ? 'ph-date-cx' : 'ph-date-annex'; const el = document.getElementById(elId); if (el) el.textContent = dateStr;
   });
 }
 
 function updateTargetHeaders() {
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const currentMonthName = months[new Date().getMonth()];
-  const label = `End of ${currentMonthName} Targets`;
-  const cxEl = document.getElementById('targets-cx-title');
-  const annexEl = document.getElementById('targets-annex-title');
-  if (cxEl) cxEl.textContent = label;
-  if (annexEl) annexEl.textContent = label;
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December']; const currentMonthName = months[new Date().getMonth()];
+  const label = `End of ${currentMonthName} Targets`; const cxEl = document.getElementById('targets-cx-title'); const annexEl = document.getElementById('targets-annex-title');
+  if (cxEl) cxEl.textContent = label; if (annexEl) annexEl.textContent = label;
 }
 
 // ═══════════════════════════════════════════════
@@ -2018,25 +1495,10 @@ const lastPointPlugin = {
   afterDatasetsDraw(chart) {
     const { ctx, data } = chart;
     data.datasets.forEach((ds, i) => {
-      const meta = chart.getDatasetMeta(i);
-      if (meta.hidden) return;
-      const lastIdx = ds.data.length - 1;
-      if (lastIdx < 0) return;
-      const pt = meta.data[lastIdx];
-      const val = ds.data[lastIdx];
-      if (val == null) return;
-      let label;
-      if (ds.label && (ds.label.includes('Inflow') || ds.label.includes('₦B'))) {
-        label = '₦' + val.toFixed(2) + 'B';
-      } else {
-        label = '₦' + (val * 100).toFixed(0) + 'M';
-      }
-      ctx.save();
-      ctx.font = 'bold 10px DM Mono, monospace';
-      ctx.fillStyle = ds.borderColor;
-      ctx.textAlign = 'right';
-      ctx.fillText(label, pt.x - 4, pt.y - 10);
-      ctx.restore();
+      const meta = chart.getDatasetMeta(i); if (meta.hidden) return; const lastIdx = ds.data.length - 1; if (lastIdx < 0) return;
+      const pt = meta.data[lastIdx]; const val = ds.data[lastIdx]; if (val == null) return;
+      let label; if (ds.label && (ds.label.includes('Inflow') || ds.label.includes('₦B'))) { label = '₦' + val.toFixed(2) + 'B'; } else { label = '₦' + (val * 100).toFixed(0) + 'M'; }
+      ctx.save(); ctx.font = 'bold 10px DM Mono, monospace'; ctx.fillStyle = ds.borderColor; ctx.textAlign = 'right'; ctx.fillText(label, pt.x - 4, pt.y - 10); ctx.restore();
     });
   }
 };
@@ -2049,77 +1511,36 @@ const cxInflow = [1.05,1.179,1.3,1.3,1.3,1.415,1.415,1.415,1.415,1.415,2.07,1.68
 
 const gridC = 'rgba(0,0,0,0.06)', textC = '#999';
 const baseOpts = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: true, position: 'bottom',
-      labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 }
-    }
-  },
-  scales: {
-    x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } },
-    y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } }
-  }
+  responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 } } },
+  scales: { x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } }, y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } } }
 };
 
 new Chart(document.getElementById('c1'), {
-  type: 'line',
-  data: {
-    labels,
-    datasets: [
-      { label: 'Inflow (₦B)', data: annexInflow, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4, yAxisID: 'y' },
-      { label: 'Balance (₦100M)', data: annexBalance.map(v => +(v/100).toFixed(2)), borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' }
-    ]
-  },
+  type: 'line', data: { labels, datasets: [ { label: 'Inflow (₦B)', data: annexInflow, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4, yAxisID: 'y' }, { label: 'Balance (₦100M)', data: annexBalance.map(v => +(v/100).toFixed(2)), borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' } ] },
   options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { ...baseOpts.scales.y, position: 'right', grid: { display: false } } } }
 });
 
 new Chart(document.getElementById('c3'), {
-  type: 'line',
-  data: {
-    labels,
-    datasets: [
-      { label: 'Inflow (₦B)', data: cxInflow, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4 }
-    ]
-  },
+  type: 'line', data: { labels, datasets: [ { label: 'Inflow (₦B)', data: cxInflow, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4 } ] },
   options: baseOpts
 });
 
 function renderDiagPanel() {
-  const body = document.getElementById('diag-body');
-  const badge = document.getElementById('diag-issue-count');
-  if (!body) return;
-  const sheets = Object.keys(sheetDiag);
-  if (sheets.length === 0) {
-    body.innerHTML = '<div class="diag-empty">Sync data to see sheet diagnostics</div>';
-    return;
-  }
-  let totalIssues = 0;
-  let html = '';
+  const body = document.getElementById('diag-body'); const badge = document.getElementById('admin-badge');
+  if (!body) return; const sheets = Object.keys(sheetDiag);
+  if (sheets.length === 0) { body.innerHTML = '<div class="diag-empty">Sync data to see sheet diagnostics</div>'; return; }
+  let totalIssues = 0; let html = '';
   sheets.forEach(name => {
-    const d = sheetDiag[name];
-    const hasWarn = d.warnings && d.warnings.length > 0;
-    if (hasWarn) totalIssues += d.warnings.length;
-    html += `<div class="diag-sheet">`;
-    html += `<div class="diag-sheet-name">📄 ${name} <span style="color:#546e7a;font-weight:400;">[${d.proj}${d.isLatest?' · latest':''}]</span></div>`;
-    html += `<div class="diag-stat">Rows scanned: ${d.rowsScanned} &nbsp;|&nbsp; Tasks: <span style="color:${d.tasksAdded>0?'#81c784':'#ef9a9a'}">${d.tasksAdded}</span> &nbsp;|&nbsp; Targets: <span style="color:${d.targetsAdded>0?'#81c784':'#ffb74d'}">${d.targetsAdded}</span></div>`;
+    const d = sheetDiag[name]; const hasWarn = d.warnings && d.warnings.length > 0; if (hasWarn) totalIssues += d.warnings.length;
+    html += `<div class="diag-sheet"><div class="diag-sheet-name">📄 ${name} <span style="color:#546e7a;font-weight:400;">[${d.proj}${d.isLatest?' · latest':''}]</span></div><div class="diag-stat">Rows scanned: ${d.rowsScanned} &nbsp;|&nbsp; Tasks: <span style="color:${d.tasksAdded>0?'#81c784':'#ef9a9a'}">${d.tasksAdded}</span> &nbsp;|&nbsp; Targets: <span style="color:${d.targetsAdded>0?'#81c784':'#ffb74d'}">${d.targetsAdded}</span></div>`;
     if (d.info) html += `<div class="diag-info">${d.info}</div>`;
-    if (hasWarn) {
-      d.warnings.forEach(w => {
-        const cls = w.startsWith('❌') ? 'diag-err' : 'diag-warn';
-        html += `<div class="${cls}">${w}</div>`;
-      });
-    } else {
-      html += `<div class="diag-ok">✓ No issues detected</div>`;
-    }
+    if (hasWarn) { d.warnings.forEach(w => { const cls = w.startsWith('❌') ? 'diag-err' : 'diag-warn'; html += `<div class="${cls}">${w}</div>`; }); } else { html += `<div class="diag-ok">✓ No issues detected</div>`; }
     html += `</div>`;
   });
-  body.innerHTML = html;
-  badge.textContent = totalIssues;
+  body.innerHTML = html; badge.textContent = totalIssues;
   
   if (totalIssues > 0 && diagUnlocked) {
-    badge.classList.add('has-issues');
-    document.getElementById('diag-panel').classList.add('open');
+    badge.classList.add('has-issues'); document.getElementById('diag-panel').classList.add('open');
   } else if (totalIssues > 0) {
     badge.classList.add('has-issues');
   } else {
@@ -2128,9 +1549,7 @@ function renderDiagPanel() {
 }
 
 window.onload = function () {
-  updateTargetHeaders();
-  applyPriorityColors();
-  syncWithGoogleSheet();
+  updateTargetHeaders(); applyPriorityColors(); syncWithGoogleSheet();
   setInterval(syncWithGoogleSheet, AUTO_SYNC_MINUTES * 60 * 1000);
 };
 </script>
