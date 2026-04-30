@@ -685,6 +685,91 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
   .pi-metrics-row { grid-template-columns: repeat(2, 1fr); }
   .pi-forecast-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Status Confirmation Modal ── */
+.confirm-overlay {
+  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.55); z-index: 4000; align-items: center; justify-content: center;
+  backdrop-filter: blur(3px);
+}
+.confirm-overlay.open { display: flex; animation: fadeInScale 0.18s ease; }
+.confirm-modal {
+  background: #fff; border-radius: var(--radius); width: 90%; max-width: 360px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.18); overflow: hidden;
+  font-family: 'DM Sans', sans-serif;
+}
+.confirm-header {
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.confirm-header h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; color: var(--text-primary); }
+.confirm-header p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.confirm-task-preview {
+  margin: 10px 20px 0;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--border-md);
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+  max-height: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.confirm-body { padding: 16px 20px; }
+.confirm-new-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 800; margin-bottom: 16px;
+}
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-actions button {
+  flex: 1; padding: 11px; border-radius: var(--radius-sm);
+  border: none; font-weight: 700; cursor: pointer; font-family: inherit;
+  font-size: 13px; transition: all 0.2s;
+}
+.confirm-cancel { background: var(--brand-grey-light); color: var(--text-secondary); }
+.confirm-cancel:hover { background: #e0e0e0; }
+.confirm-proceed { background: var(--text-primary); color: #fff; }
+.confirm-proceed:hover { opacity: 0.85; }
+
+/* Achieved tasks - always show with distinct style, revert button visible */
+.step-card.s-achieved { opacity: 1 !important; }
+.step-card.s-achieved .step-text { text-decoration: line-through; color: var(--text-muted); }
+.revert-note {
+  font-size: 10px; color: var(--status-blue); font-weight: 700; margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Admin Updates Feed */
+.admin-feed-section {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+.admin-feed-proj-label {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #90caf9; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.admin-feed-item {
+  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 11px; line-height: 1.5;
+}
+.admin-feed-item:last-child { border-bottom: none; }
+.admin-feed-meta { color: #546e7a; font-size: 10px; margin-bottom: 2px; }
+.admin-feed-author { color: #90caf9; font-weight: 700; }
+.admin-feed-dept { color: #ffb74d; font-weight: 700; }
+.admin-feed-text { color: #b0bec5; }
+.admin-feed-empty { color: #546e7a; font-size: 10px; padding: 6px 0; }
+.admin-feed-refresh {
+  background: rgba(144,202,249,0.1); border: 1px solid rgba(144,202,249,0.2);
+  color: #90caf9; border-radius: 4px; padding: 4px 10px; font-size: 10px;
+  font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s;
+  margin-left: auto;
+}
+.admin-feed-refresh:hover { background: rgba(144,202,249,0.2); }
+
 </style>
 <script>
 (function() {
@@ -802,77 +887,77 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
       </div>
     </div>
     <div class="pi-scenario-desc" id="cx-scenario-desc">
-      <strong>Base Case:</strong> Sales velocity maintained at current pace. ₦800M civil mobilization threshold reached by Q3 2026. Phase 1 clearing completes May–Jun despite wet season. Civil works start Q3. Handover forecast Jan 2028.
+      <strong>Base Case (most likely):</strong> Sales keep coming in at the same slow pace. We hit the ₦800M construction trigger sometime in Q3 2026, allowing the main civil contractor to mobilise. Phase 1 land clearing wraps up by June despite the rains. On this path, the first residents receive their homes in January 2028.
     </div>
 
     <!-- 1. CASH RUNWAY -->
     <div class="pi-section">
-      <div class="pi-section-title">Cash Runway Model</div>
+      <div class="pi-section-title">How much money is left — and how long will it last?</div>
     </div>
     <div class="pi-metrics-row">
       <div class="pi-metric danger">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Current Balance</div>
+        <div class="pi-metric-label">Money in the Account Now</div>
         <div class="pi-metric-value">₦40M</div>
-        <div class="pi-metric-sub">↓81% from ₦206M (6 wks)</div>
+        <div class="pi-metric-sub">Down 81% from ₦206M — dropped in just 6 weeks</div>
       </div>
       <div class="pi-metric danger">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Avg Weekly Burn</div>
+        <div class="pi-metric-label">We Spend Each Week</div>
         <div class="pi-metric-value" id="cx-pi-burn">₦18M</div>
-        <div class="pi-metric-sub">Ops + park works + prelims</div>
+        <div class="pi-metric-sub">On site operations, park works, and project management</div>
       </div>
       <div class="pi-metric danger">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Cash Runway</div>
+        <div class="pi-metric-label">We Run Out In</div>
         <div class="pi-metric-value" id="cx-pi-runway">~2.2 wks</div>
-        <div class="pi-metric-sub">Until zero balance</div>
+        <div class="pi-metric-sub">At this spend rate, money runs out in about 2 weeks</div>
       </div>
       <div class="pi-metric warning">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Civil Threshold Gap</div>
+        <div class="pi-metric-label">Gap to Start Construction</div>
         <div class="pi-metric-value">₦350M</div>
-        <div class="pi-metric-sub">Need ₦800M inflow; at ₦1.72B</div>
+        <div class="pi-metric-sub">We need ₦800M total inflow to unlock the main builder — we're ₦350M short</div>
       </div>
     </div>
 
     <!-- 2. SALES VELOCITY -->
     <div class="pi-section">
-      <div class="pi-section-title">Sales Velocity &amp; Collection</div>
+      <div class="pi-section-title">Are we still selling? What the numbers say</div>
     </div>
     <div class="pi-metrics-row">
       <div class="pi-metric warning">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Total Inflow</div>
+        <div class="pi-metric-label">Total Cash Collected (All Time)</div>
         <div class="pi-metric-value">₦1.72B</div>
-        <div class="pi-metric-sub">Jan 5 – Apr 27, 2026</div>
+        <div class="pi-metric-sub">Received from buyers between January and April 2026</div>
       </div>
       <div class="pi-metric danger">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Sales Value</div>
+        <div class="pi-metric-label">Total Value of Units Sold</div>
         <div class="pi-metric-value">₦2.07B</div>
-        <div class="pi-metric-sub">Uncollected gap: ₦350M</div>
+        <div class="pi-metric-sub">₦350M still to be collected from existing buyers</div>
       </div>
       <div class="pi-metric warning">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Avg Monthly Inflow</div>
+        <div class="pi-metric-label">Average Monthly Collection</div>
         <div class="pi-metric-value">₦105M</div>
-        <div class="pi-metric-sub">Trailing Sep '25 – Apr '26</div>
+        <div class="pi-metric-sub">Average over the past 7 months</div>
       </div>
       <div class="pi-metric danger">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Inflow (Jan–Apr)</div>
+        <div class="pi-metric-label">New Cash Received (Last 4 Months)</div>
         <div class="pi-metric-value">₦0M</div>
-        <div class="pi-metric-sub">Flat since Jan 2026</div>
+        <div class="pi-metric-sub">No new money has come in since January — sales have completely stalled</div>
       </div>
     </div>
     <div style="padding: 8px 18px 4px;">
       <div style="padding: 10px 14px; background: #fff5f5; border: 1px solid #ef9a9a; border-radius: var(--radius-sm); font-size: 11px; color: #7f1d1d; font-weight: 600; line-height: 1.5;">
-        ⚠ <strong>Stagnation Alert:</strong> Crossings inflow has been flat at ₦1.72B since January 2026 — zero new inflow in 17 weeks. Civil contractor mobilization is explicitly gated on ₦800M inflow threshold not yet met. Major hospitality site redesign (CX9→CX10) has added 6 commercial + 68 residential units but delayed renders and billboard. Design freeze is the critical unlock for new sales momentum.
+        ⚠ <strong>Sales have completely stopped for 17 weeks:</strong> Not a single new payment has come in for Lakowe Crossings since January. The main civil contractor cannot be brought on site until we have collected ₦800M — and we are still ₦350M short of that. The hospitality area of the project has just been redesigned, adding 6 commercial units and 68 new residential plots, which is good news for the product. But the marketing visuals (renders and billboard) cannot be produced until the design is finalised. Getting that design freeze agreed is the single most important step to unlocking new sales.
       </div>
     </div>
     <div class="pi-section" style="padding-top: 12px;">
-      <div class="pi-section-title">90-Day Revenue Forecast</div>
+      <div class="pi-section-title">What could our cash collections look like over the next 3 months?</div>
     </div>
     <div class="pi-chart-wrap" style="height: 120px; margin-bottom: 8px;">
       <canvas id="pi-cx-forecast"></canvas>
@@ -885,40 +970,41 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
 
     <!-- 3. SCHEDULE VELOCITY / CONSTRUCTION PROGRESS -->
     <div class="pi-section">
-      <div class="pi-section-title">Construction Velocity vs. Plan</div>
+      <div class="pi-section-title">How is site preparation progressing?</div>
     </div>
+    <div style="padding: 0 18px 10px;"><div style="font-size:11px; color:var(--text-muted); font-weight:600;">The site needs to be filled with sand and the roads laid out before any building can start. Each bar shows how far along that work is. The faint marker shows where we should be by now. Note: the main construction phase has not started yet — it depends on reaching the ₦800M sales milestone first.</div></div>
     <div class="pi-progress-list">
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">Phase 1 Sandfill</div>
+          <div class="pi-progress-name">Phase 1 Sand Filling (slightly behind)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 50%</span><span style="color:var(--metric-amber)">Actual 44%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill at-risk" style="width:44%"></div><div class="pi-projected-marker" style="left:50%"></div></div>
       </div>
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">Road Alignment Clearing</div>
+          <div class="pi-progress-name">Road Layout Clearing (slightly behind)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 60%</span><span style="color:var(--metric-amber)">Actual 56.5%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill at-risk" style="width:56.5%"></div><div class="pi-projected-marker" style="left:60%"></div></div>
       </div>
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">Civil Works (Main Contractor)</div>
+          <div class="pi-progress-name">Main Building &amp; Civil Works (not yet started — waiting on ₦800M trigger)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Target Jun '26</span><span style="color:var(--metric-red)">Not Started</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill delayed" style="width:0%"></div><div class="pi-projected-marker" style="left:0%"></div></div>
       </div>
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">Park &amp; Landscaping (Crossings)</div>
+          <div class="pi-progress-name">Park &amp; Landscaping (nearly done but fountain payment pending)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 100%</span><span style="color:var(--metric-amber)">Actual ~70%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill at-risk" style="width:70%"></div><div class="pi-projected-marker" style="left:100%"></div></div>
       </div>
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">Overall Programme Progress</div>
+          <div class="pi-progress-name">Overall Site Progress vs. Plan</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 30.6%</span><span style="color:var(--metric-amber)">Actual 27.8%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill at-risk" style="width:27.8%"></div><div class="pi-projected-marker" style="left:30.6%"></div></div>
@@ -926,50 +1012,51 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
     </div>
     <div style="padding: 10px 18px 4px;">
       <div style="padding: 10px 14px; background: #fff4e5; border: 1px solid #ffcc80; border-radius: var(--radius-sm); font-size: 11px; color: #7c3200; font-weight: 600; line-height: 1.5;">
-        ⏱ <strong>Wet Season Risk:</strong> Phase 1 clearing at 56.5% with rainy season beginning May. Sandfill operations stall in sustained rain. Civil mobilization gated on ₦800M sales threshold — if this slips to Q4, all subsequent phases sequence off that delay. Model projects <strong>3–6 week slip</strong> on clearing in bear case.
+        ⏱ <strong>The rainy season could stop sand-filling just when we need to finish it:</strong> We are about 56% through clearing the road layout and 44% through filling the site with sand. Sustained rain in May makes this type of work very difficult. If sand-filling stops for the rainy season, we lose our best window to prepare the site before construction begins. On top of that, the main civil contractor cannot mobilise until we collect ₦800M — so any delay in either sales or site prep pushes every subsequent milestone back. In the worst case, we project a 3–6 week slip on clearing alone.
       </div>
     </div>
 
     <!-- 4. SCENARIO-BASED COMPLETION FORECAST -->
     <div class="pi-section">
-      <div class="pi-section-title">Scenario-Based Milestone Forecast</div>
+      <div class="pi-section-title">When will each part of the project finish — based on current progress?</div>
     </div>
+    <div style="padding: 0 18px 10px;"><div style="font-size:11px; color:var(--text-muted); font-weight:600;">These dates update when you switch between Bear, Base and Bull scenarios above. Everything below the first two rows depends on the ₦800M sales milestone being hit — until then, the clock on construction hasn't started.</div></div>
     <div class="pi-forecast-grid" style="margin-bottom: 4px;">
       <div class="pi-forecast-col">
         <div class="pi-forecast-col-label" style="color: var(--cx-color);">Work Package</div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">Phase 1 Clearing</span>
+          <span class="pi-forecast-item">Site Fully Cleared</span>
           <span class="pi-forecast-date pred" id="cx-fc-clear">May–Jun 2026</span>
         </div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">Civil Works Start</span>
+          <span class="pi-forecast-item">🔑 Main Builder On Site</span>
           <span class="pi-forecast-date slipped" id="cx-fc-civil">Q3 2026</span>
         </div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">Road &amp; Drainage</span>
+          <span class="pi-forecast-item">Roads &amp; Drains Complete</span>
           <span class="pi-forecast-date slipped" id="cx-fc-roads">Nov 2026</span>
         </div>
         <div class="pi-forecast-row" style="font-weight: 700;">
-          <span class="pi-forecast-item">Project Handover</span>
+          <span class="pi-forecast-item">🏠 Keys Given to Residents</span>
           <span class="pi-forecast-date slipped" id="cx-fc-handover">Jan 2028</span>
         </div>
       </div>
       <div class="pi-forecast-col">
-        <div class="pi-forecast-col-label" style="color: var(--text-muted);">Cash Runway Model</div>
+        <div class="pi-forecast-col-label" style="color: var(--text-muted);">Money &amp; Cash Flow</div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">Current Balance</span>
+          <span class="pi-forecast-item">Money in Account Now</span>
           <span class="pi-forecast-date" style="color: var(--metric-red);">₦40M</span>
         </div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">Weekly Burn Rate</span>
+          <span class="pi-forecast-item">We Spend Per Week</span>
           <span class="pi-forecast-date slipped" id="cx-fc-burn">₦18M</span>
         </div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">Cash Runway</span>
+          <span class="pi-forecast-item">Runs Out In</span>
           <span class="pi-forecast-date slipped" id="cx-fc-runway">~2.2 wks</span>
         </div>
         <div class="pi-forecast-row" style="font-weight: 700;">
-          <span class="pi-forecast-item">Civil Threshold Inflow</span>
+          <span class="pi-forecast-item">Needed to Start Building</span>
           <span class="pi-forecast-date pred" id="cx-fc-inflow-needed">₦800M+</span>
         </div>
       </div>
@@ -977,54 +1064,55 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
 
     <!-- 5. RISK REGISTRY -->
     <div class="pi-section">
-      <div class="pi-section-title">Risk Horizon Registry</div>
+      <div class="pi-section-title">What are the biggest things that could go wrong right now?</div>
     </div>
+    <div style="padding: 0 18px 10px;"><div style="font-size:11px; color:var(--text-muted); font-weight:600;">Red dot = needs action this week. Amber dot = needs monitoring. Blue dot = watch but not urgent.</div></div>
     <div class="pi-risk-list">
       <div class="pi-risk-item">
         <div class="pi-risk-dot critical"></div>
         <div>
-          <div class="pi-risk-title">Cash Exhaustion — Balance ₦40M, ~2.2-Week Runway</div>
-          <div class="pi-risk-body">Balance has eroded 81% from ₦206M to ₦40M in 6 weeks. Weekly burn ₦18M against zero new sales inflow since January. All construction milestones gated on inflow recovery. Civil contractor mobilization requires ₦800M threshold — currently ₦350M short.</div>
+          <div class="pi-risk-title">🔴 The account is almost empty and could hit zero in 2 weeks</div>
+          <div class="pi-risk-body">Six weeks ago the Crossings account had ₦206M. It now has ₦40M — an 81% drop. The project is spending ₦18M per week and not a single naira of new money has come in since January. Every construction milestone — clearing, sandfill, and the main civil works — depends on the account staying funded. The main contractor cannot even be called on site until total inflow reaches ₦800M, and we are ₦350M short of that right now.</div>
           <div class="pi-risk-tag critical">● Critical · Likelihood: High · Horizon: &lt;2 Weeks</div>
         </div>
       </div>
       <div class="pi-risk-item">
         <div class="pi-risk-dot critical"></div>
         <div>
-          <div class="pi-risk-title">Sales Stagnation — Zero New Inflow Since January</div>
-          <div class="pi-risk-body">No new inflow in 17 weeks. Hospitality site redesign (CX9→CX10) has delayed all marketing materials — renders and billboard pending design freeze. No offer letters active. Until design freeze is confirmed and marketing activates, sales pipeline remains at zero.</div>
-          <div class="pi-risk-tag critical">● Critical · Likelihood: High · Horizon: Immediate</div>
+          <div class="pi-risk-title">🔴 No new sales in 17 weeks — and nothing to show buyers yet</div>
+          <div class="pi-risk-body">The project has not received any new buyer payments since January. The hospitality area has just been redesigned — adding new units is positive, but it has paused all sales activity because the marketing visuals (renders and the "coming soon" billboard) cannot be produced until the new design is finalised. There are no active offer letters, meaning no one is currently in the process of purchasing. Until the design is frozen and the renders are ready, the sales team has nothing to show new buyers.</div>
+          <div class="pi-risk-tag critical">● Needs action this week · High chance of continuing · Happening now</div>
         </div>
       </div>
       <div class="pi-risk-item">
         <div class="pi-risk-dot high"></div>
         <div>
-          <div class="pi-risk-title">Phase 1 Clearing at Risk from Rainy Season</div>
-          <div class="pi-risk-body">Sandfill at 44% and road clearing at 56.5% — both vulnerable to the onset of wet season in May. If clearing stalls for 4+ weeks, civil contractor mobilization (already delayed) slips into Q4 2026, cascading to a mid-2028 handover in bear case.</div>
-          <div class="pi-risk-tag high">● High · Likelihood: Certain · Horizon: 2–4 Weeks</div>
+          <div class="pi-risk-title">🟡 The rains are about to arrive and we're not done preparing the site</div>
+          <div class="pi-risk-body">We are 44% through filling the site with sand and 56.5% through clearing the road layout. Both activities slow significantly in heavy rain, which typically begins in May. If clearing is paused for 4 or more weeks, the main contractor cannot mobilise even when the sales milestone is hit — pushing the whole project into a late-2026 start and a mid-2028 handover at best.</div>
+          <div class="pi-risk-tag high">● Important · Almost certain to slow us down · 2–4 weeks away</div>
         </div>
       </div>
       <div class="pi-risk-item">
         <div class="pi-risk-dot high"></div>
         <div>
-          <div class="pi-risk-title">BAFF / FUNKUS Contractor Decision Unresolved</div>
-          <div class="pi-risk-body">Civil contractor selection (BAFF vs. FUNKUS) remains open at DA level. Procurement delay means civil mobilization cannot begin even if sales threshold is met. Pattern of contractor responsiveness issues (BOLAD lights, signage) suggests escalation protocol needed.</div>
-          <div class="pi-risk-tag high">● High · Likelihood: Medium · Horizon: 4–8 Weeks</div>
+          <div class="pi-risk-title">🟡 We haven't decided which contractor will build the project yet</div>
+          <div class="pi-risk-body">A decision is still pending at the DA level on whether BAFF or FUNKUS will be the main civil contractor. This means that even if we hit the ₦800M sales milestone tomorrow, we could not call a contractor on site — because we haven't formally chosen one. There are also recurring issues with smaller contractors (the BOLAD lights contractor is classified as "elusive and unresponsive") suggesting we need a clearer escalation process for contractor accountability.</div>
+          <div class="pi-risk-tag high">● Important · Medium chance of resolution · 4–8 weeks to escalate</div>
         </div>
       </div>
       <div class="pi-risk-item">
         <div class="pi-risk-dot medium"></div>
         <div>
-          <div class="pi-risk-title">Design Freeze Dependency — Render + Billboard Chain</div>
-          <div class="pi-risk-body">Major redesign adds 6 commercial + 68 residential units (net positive for revenue) but render production and billboard fabrication cannot start until design is frozen. Every week of delay here compresses the sales window before wet season dampens buyer sentiment.</div>
-          <div class="pi-risk-tag medium">● Medium · Likelihood: Medium · Horizon: 2–3 Weeks</div>
+          <div class="pi-risk-title">🔵 The redesign is good for the project — but the design needs to be signed off this week</div>
+          <div class="pi-risk-body">Moving the hospitality area to a new location (CX10) adds 6 commercial spaces and 68 more residential units, which increases the project's total value significantly. But the architects cannot produce the final renders, and the billboard company cannot fabricate the "coming soon" board, until the design layout is formally frozen and signed off. Every week this is delayed is a week the sales team cannot actively market to new buyers. With the rainy season dampening buyer interest from May, there is a narrow window to get marketing live.</div>
+          <div class="pi-risk-tag medium">● Worth watching · Medium urgency · Decision needed in 2–3 weeks</div>
         </div>
       </div>
     </div>
 
     <div class="pi-footer">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-      Predictive model · Trailing velocity + KD program of works · Civil mobilization gated on ₦800M threshold · Rainy season buffer May–Sep · Updated Apr 30, 2026
+      This analysis is based on the past 12 weeks of financial and construction data, adjusted for the upcoming rainy season (May–September). The ₦800M construction trigger is tracked against live inflow data. Updated every time the dashboard syncs with the Google Sheet. Last updated: Apr 30, 2026.
     </div>
   </div>
 </div>
@@ -1084,77 +1172,77 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
       </div>
     </div>
     <div class="pi-scenario-desc" id="ann-scenario-desc">
-      <strong>Base Case:</strong> Current execution velocity maintained. Rainy season causes 3–4 week delay on road works (May–Jun). Sales close ~1 deal/month. MEP mobilization maintained. Handover forecast Oct 2026.
+      <strong>Base Case (most likely):</strong> Things continue as they are right now. The rainy season slows road and drainage work by about 3–4 weeks from May onwards. We close roughly one new sale per month. The underground utilities (MEP) team stays on site. On this path, we hand over the project to residents in October 2026 — four months later than the original June target.
     </div>
 
     <!-- 1. CASH RUNWAY -->
     <div class="pi-section">
-      <div class="pi-section-title">Cash Runway Model</div>
+      <div class="pi-section-title">How much money is left — and how long will it last?</div>
     </div>
     <div class="pi-metrics-row">
       <div class="pi-metric warning">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Current Balance</div>
+        <div class="pi-metric-label">Money in the Account Now</div>
         <div class="pi-metric-value">₦61.9M</div>
-        <div class="pi-metric-sub">Post two large disbursements</div>
+        <div class="pi-metric-sub">Down from ₦150M after two large contractor payments</div>
       </div>
       <div class="pi-metric danger">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Avg Weekly Burn</div>
+        <div class="pi-metric-label">We Spend Each Week</div>
         <div class="pi-metric-value" id="ann-pi-burn">₦35M</div>
-        <div class="pi-metric-sub">Civil + MEP + ops</div>
+        <div class="pi-metric-sub">On roads, utilities, site management</div>
       </div>
       <div class="pi-metric danger">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Cash Runway</div>
+        <div class="pi-metric-label">We Run Out In</div>
         <div class="pi-metric-value" id="ann-pi-runway">~1.8 wks</div>
-        <div class="pi-metric-sub">Until zero balance</div>
+        <div class="pi-metric-sub">At current spend, money runs out in under 2 weeks</div>
       </div>
       <div class="pi-metric warning">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Inflow Needed</div>
+        <div class="pi-metric-label">New Money Needed Urgently</div>
         <div class="pi-metric-value" id="ann-pi-inflow">₦200M+</div>
-        <div class="pi-metric-sub">To restore 6-week buffer</div>
+        <div class="pi-metric-sub">Minimum to keep construction running for 6 weeks</div>
       </div>
     </div>
 
     <!-- 2. SALES VELOCITY -->
     <div class="pi-section">
-      <div class="pi-section-title">Sales Velocity Decay</div>
+      <div class="pi-section-title">Are we still selling? What the numbers say</div>
     </div>
     <div class="pi-metrics-row">
       <div class="pi-metric safe">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Total Inflow</div>
+        <div class="pi-metric-label">Total Cash Received (All Time)</div>
         <div class="pi-metric-value">₦6.25B</div>
-        <div class="pi-metric-sub">Cumulative Jun '25 – Apr '26</div>
+        <div class="pi-metric-sub">Collected from buyers since June 2025</div>
       </div>
       <div class="pi-metric warning">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Avg Monthly Rate</div>
+        <div class="pi-metric-label">Average Monthly Collection</div>
         <div class="pi-metric-value">₦130M</div>
-        <div class="pi-metric-sub">Jan–Apr 2026 avg</div>
+        <div class="pi-metric-sub">How much has been coming in each month this year</div>
       </div>
       <div class="pi-metric danger">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Recent Growth Rate</div>
+        <div class="pi-metric-label">Sales Growth (Recently)</div>
         <div class="pi-metric-value">&lt;1%</div>
-        <div class="pi-metric-sub">Was +6%/mo Jun–Sep '25</div>
+        <div class="pi-metric-sub">Was growing at +6%/month last year — now almost flat</div>
       </div>
       <div class="pi-metric warning">
         <div class="pi-metric-accent"></div>
-        <div class="pi-metric-label">Collection Efficiency</div>
+        <div class="pi-metric-label">How Much Buyers Have Actually Paid</div>
         <div class="pi-metric-value">87%</div>
-        <div class="pi-metric-sub">Inflow / Sales Value</div>
+        <div class="pi-metric-sub">Of the ₦6.89B sold, 87% has been collected — ₦640M is still outstanding</div>
       </div>
     </div>
     <div style="padding: 8px 18px 4px;">
       <div style="padding: 10px 14px; background: #fff5f5; border: 1px solid #ef9a9a; border-radius: var(--radius-sm); font-size: 11px; color: #7f1d1d; font-weight: 600; line-height: 1.5;">
-        ⚠ <strong>Velocity Alert:</strong> Inflow decelerated from +6%/month to under 1% over four months. No active ad campaign running as of Apr 27. Zero offer letters = zero near-term pipeline conversion. Uncollected gap between sales value (₦6.89B) and inflow (₦6.25B) stands at ₦640M.
+        ⚠ <strong>Sales have effectively stopped:</strong> A year ago, Annexe was bringing in 6% more cash every month. Now that growth has dropped to almost nothing. There are no active offer letters, which means there is nobody in the process of buying right now. There is also no ad campaign running to attract new buyers. The gap between what buyers owe and what we've collected is ₦640M — chasing this down should be a priority alongside finding new sales.
       </div>
     </div>
     <div class="pi-section" style="padding-top: 12px;">
-      <div class="pi-section-title">90-Day Revenue Forecast</div>
+      <div class="pi-section-title">What could our cash collections look like over the next 3 months?</div>
     </div>
     <div class="pi-chart-wrap" style="height: 120px; margin-bottom: 8px;">
       <canvas id="pi-ann-forecast"></canvas>
@@ -1167,47 +1255,48 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
 
     <!-- 3. SCHEDULE VELOCITY / CONSTRUCTION PROGRESS -->
     <div class="pi-section">
-      <div class="pi-section-title">Construction Velocity vs. Plan</div>
+      <div class="pi-section-title">How is construction progressing street by street?</div>
     </div>
+    <div style="padding: 0 18px 10px;"><div style="font-size:11px; color:var(--text-muted); font-weight:600;">Each bar shows how far along work is on that street or package. The faint marker shows where we <em>should</em> be by now. If the bar falls short of the marker, we're running behind schedule.</div></div>
     <div class="pi-progress-list">
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">External Works (LNT Road)</div>
+          <div class="pi-progress-name">External Works — LNT Road (done, no issue)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 85%</span><span style="color:var(--metric-green)">Actual 85%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill on-track" style="width:85%"></div><div class="pi-projected-marker" style="left:85%"></div></div>
       </div>
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">Internal Roads (Westerhof / S. Keshi / Jay Jay)</div>
+          <div class="pi-progress-name">Internal Roads — Westerhof, S. Keshi, Jay Jay (ahead of schedule)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 65%</span><span style="color:var(--metric-green)">Actual 85%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill on-track" style="width:85%"></div><div class="pi-projected-marker" style="left:65%"></div></div>
       </div>
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">Internal Roads (General)</div>
+          <div class="pi-progress-name">Internal Roads — General (slightly behind plan)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 47.5%</span><span style="color:var(--metric-amber)">Actual 42.7%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill at-risk" style="width:42.7%"></div><div class="pi-projected-marker" style="left:47.5%"></div></div>
       </div>
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">Finidi George / Peter Rufai Streets</div>
+          <div class="pi-progress-name">Finidi George &amp; Peter Rufai Streets (significantly behind — needs attention)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 45%</span><span style="color:var(--metric-red)">Actual 7–22%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill delayed" style="width:15%"></div><div class="pi-projected-marker" style="left:45%"></div></div>
       </div>
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">MEP Infrastructure (ALMOG)</div>
+          <div class="pi-progress-name">Underground Utilities — ALMOG Team (just getting started)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 0%</span><span style="color:var(--status-blue)">Actual 1%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill" style="width:1%; background:var(--status-blue)"></div><div class="pi-projected-marker" style="left:0%"></div></div>
       </div>
       <div class="pi-progress-item">
         <div class="pi-progress-header">
-          <div class="pi-progress-name">Segun Odegbami / Tobi Amusan (Pending)</div>
+          <div class="pi-progress-name">Segun Odegbami &amp; Tobi Amusan Streets (not yet cleared — blocking progress)</div>
           <div class="pi-progress-stats"><span style="color:var(--text-muted)">Proj 20%</span><span style="color:var(--metric-red)">Actual 7%</span></div>
         </div>
         <div class="pi-track"><div class="pi-fill delayed" style="width:7%"></div><div class="pi-projected-marker" style="left:20%"></div></div>
@@ -1215,38 +1304,39 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
     </div>
     <div style="padding: 10px 18px 4px;">
       <div style="padding: 10px 14px; background: #fff4e5; border: 1px solid #ffcc80; border-radius: var(--radius-sm); font-size: 11px; color: #7c3200; font-weight: 600; line-height: 1.5;">
-        ⏱ <strong>Rainy Season Impact:</strong> Open-cut drainage and road compaction works susceptible to May–Sep rains. Modelled delay: <strong>3–5 weeks</strong>. 140-manhole target at risk given 3 pending streets not yet cleared. Construction velocity must sustain 47%+ weekly output to hit Oct handover in base case.
+        ⏱ <strong>The rainy season starts next month and will slow us down:</strong> Digging drainage channels and compacting roads becomes much harder in heavy rain. We expect this to push some work back by 3–5 weeks. Our target of installing 140 manholes is also at risk because 3 streets haven't even been cleared yet. To hand over the project in October as planned (Base Case), construction teams need to maintain a strong pace of work every week from now through the dry window.
       </div>
     </div>
 
     <!-- 4. SCENARIO-BASED COMPLETION FORECAST -->
     <div class="pi-section">
-      <div class="pi-section-title">Scenario-Based Milestone Forecast</div>
+      <div class="pi-section-title">When will each part of the project finish — based on current progress?</div>
     </div>
+    <div style="padding: 0 18px 10px;"><div style="font-size:11px; color:var(--text-muted); font-weight:600;">These dates update when you switch between Bear, Base and Bull scenarios above. The "original target" was set at the start of the project. The "predicted" date is our best estimate based on what's happening right now.</div></div>
     <div class="pi-forecast-grid" style="margin-bottom: 4px;">
       <div class="pi-forecast-col">
         <div class="pi-forecast-col-label" style="color: var(--annex-color);">Work Package</div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">Internal Roads</span>
+          <span class="pi-forecast-item">All Internal Roads Complete</span>
           <span class="pi-forecast-date pred" id="ann-fc-roads">Aug 2026</span>
         </div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">MEP Works</span>
+          <span class="pi-forecast-item">Underground Utilities (MEP) Complete</span>
           <span class="pi-forecast-date pred" id="ann-fc-mep">Sep 2026</span>
         </div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">External Works</span>
+          <span class="pi-forecast-item">External Works (LNT Road)</span>
           <span class="pi-forecast-date done" id="ann-fc-ext">May 2026 ✓</span>
         </div>
         <div class="pi-forecast-row" style="font-weight: 700;">
-          <span class="pi-forecast-item">Project Handover</span>
+          <span class="pi-forecast-item">🏠 Keys Given to Residents</span>
           <span class="pi-forecast-date slipped" id="ann-fc-handover">Oct 2026</span>
         </div>
       </div>
       <div class="pi-forecast-col">
-        <div class="pi-forecast-col-label" style="color: var(--text-muted);">Cash Runway Model</div>
+        <div class="pi-forecast-col-label" style="color: var(--text-muted);">Money & Cash Flow</div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">Current Balance</span>
+          <span class="pi-forecast-item">Money in Account Now</span>
           <span class="pi-forecast-date" style="color: var(--metric-amber);">₦61.9M</span>
         </div>
         <div class="pi-forecast-row">
@@ -1254,11 +1344,11 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
           <span class="pi-forecast-date" id="ann-fc-burn" style="color: var(--metric-red);">₦35M</span>
         </div>
         <div class="pi-forecast-row">
-          <span class="pi-forecast-item">Cash Runway</span>
+          <span class="pi-forecast-item">Runs Out In</span>
           <span class="pi-forecast-date slipped" id="ann-fc-runway">~1.8 wks</span>
         </div>
         <div class="pi-forecast-row" style="font-weight: 700;">
-          <span class="pi-forecast-item">Next Inflow Needed</span>
+          <span class="pi-forecast-item">Urgent Cash Needed</span>
           <span class="pi-forecast-date pred" id="ann-fc-inflow-needed">₦200M+</span>
         </div>
       </div>
@@ -1266,46 +1356,47 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
 
     <!-- 5. RISK REGISTRY -->
     <div class="pi-section">
-      <div class="pi-section-title">Risk Horizon Registry</div>
+      <div class="pi-section-title">What are the biggest things that could go wrong right now?</div>
     </div>
+    <div style="padding: 0 18px 10px;"><div style="font-size:11px; color:var(--text-muted); font-weight:600;">Red dot = needs action this week. Amber dot = needs monitoring. Blue dot = watch but not urgent.</div></div>
     <div class="pi-risk-list">
       <div class="pi-risk-item">
         <div class="pi-risk-dot critical"></div>
         <div>
-          <div class="pi-risk-title">Cash Exhaustion — 1.8-Week Runway</div>
-          <div class="pi-risk-body">Balance ₦61.9M against weekly burn of ₦35M. No active offer letters or ad campaign to generate near-term inflow. Construction acceleration (MEP + road teams) and BAFF maintenance both require continuous funding. QS onboarding closure by Apr 23 now critical path.</div>
+          <div class="pi-risk-title">🔴 We could run out of money in under 2 weeks</div>
+          <div class="pi-risk-body">There is ₦61.9M in the account. The project spends about ₦35M every week on contractors and site management. With no new sales coming in and no active buyers in the pipeline, the account could hit zero before the end of May. Both the BAFF road team and the ALMOG utilities team need to be paid continuously to avoid work stopping. The QS (cost manager) also needs to be formally onboarded to sign off contractor payments.</div>
           <div class="pi-risk-tag critical">● Critical · Likelihood: High · Horizon: &lt;2 Weeks</div>
         </div>
       </div>
       <div class="pi-risk-item">
         <div class="pi-risk-dot critical"></div>
         <div>
-          <div class="pi-risk-title">Rainy Season Construction Halt (May–Sep)</div>
-          <div class="pi-risk-body">Open-cut drainage, compaction, and sandfilling stall in wet season. MEP mobilization start now at 1% — any 6-week delay cascades to Dec 2026+ handover. 3 pending streets (Segun Odegbami, Tobi Amusan) not yet cleared before onset.</div>
-          <div class="pi-risk-tag critical">● Critical · Likelihood: Certain · Horizon: 2 Weeks</div>
+          <div class="pi-risk-title">🔴 The rains are coming — and 3 streets are not ready</div>
+          <div class="pi-risk-body">Heavy rains start in May and make open trench digging and road compaction nearly impossible. The underground utilities team (ALMOG) has barely started — they are only 1% in. If rain delays them by 6 weeks or more, the whole handover shifts past December 2026. Three streets — Segun Odegbami and Tobi Amusan — have not been cleared at all yet, meaning teams cannot even start work on them before the rains arrive.</div>
+          <div class="pi-risk-tag critical">● Needs action this week · Almost certain to happen · 2 weeks away</div>
         </div>
       </div>
       <div class="pi-risk-item">
         <div class="pi-risk-dot high"></div>
         <div>
-          <div class="pi-risk-title">Sales Velocity Plateau — Zero Pipeline Signal</div>
-          <div class="pi-risk-body">Inflow growth rate collapsed from +6%/month to &lt;1%. Zero active offer letters means no imminent conversion events. Target of ₦1B+ needed to sustain BAFF momentum. Without a reactivated marketing campaign, bear-case trajectory materialises by June.</div>
-          <div class="pi-risk-tag high">● High · Likelihood: High · Horizon: Immediate</div>
+          <div class="pi-risk-title">🟡 Nobody is buying right now — and there's no campaign to change that</div>
+          <div class="pi-risk-body">Sales have slowed from strong growth (6% per month) to almost nothing. There are zero active offer letters — meaning no one is currently in the process of purchasing a unit. We also have no running marketing or advertising campaign to bring new buyers in. The project needs at least ₦1 billion in new cash to keep contractors funded. If we don't reactivate sales by June, the project enters its worst-case financial scenario.</div>
+          <div class="pi-risk-tag high">● Important · High chance of happening · Needs attention now</div>
         </div>
       </div>
       <div class="pi-risk-item">
         <div class="pi-risk-dot high"></div>
         <div>
-          <div class="pi-risk-title">Layout Approval Bottleneck — 40+ Weeks Overdue</div>
-          <div class="pi-risk-body">Provisional approval pending Commissioner signature since Oct 2025. Blocks client site mobilization and final offer letter conversion flow. No handover date can be committed to board without this resolved.</div>
-          <div class="pi-risk-tag high">● High · Likelihood: Medium · Horizon: Ongoing</div>
+          <div class="pi-risk-title">🟡 Government approval has been stuck for over 40 weeks</div>
+          <div class="pi-risk-body">The Commissioner still hasn't signed the provisional layout approval — a process that started in October 2025. Without this signature, buyers cannot formally take possession of their land, and some offer letters cannot be converted to final sales. We cannot give residents a firm handover date until this is resolved. This needs political escalation.</div>
+          <div class="pi-risk-tag high">● Important · Medium chance of resolution soon · Ongoing issue</div>
         </div>
       </div>
     </div>
 
     <div class="pi-footer">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-      Predictive model · Trailing 12-week velocity + KD program of works · Rainy season: 3–5 wk buffer applied May–Sep · Updated Apr 30, 2026
+      This analysis is based on the past 12 weeks of financial and construction data, adjusted for the upcoming rainy season (May–September). It is updated every time the dashboard syncs with the Google Sheet. Last updated: Apr 30, 2026.
     </div>
   </div>
 </div>
@@ -1459,10 +1550,10 @@ function isOverdue(task) {
   const today = new Date(); today.setHours(0,0,0,0); return due < today;
 }
 
-function openDiagAuth() { if (diagUnlocked) { document.getElementById('diag-panel').classList.add('open'); } else { document.getElementById('admin-pwd').value = ''; document.getElementById('admin-modal').style.display = 'flex'; } }
+function openDiagAuth() { if (diagUnlocked) { renderDiagPanel(); document.getElementById('diag-panel').classList.add('open'); } else { document.getElementById('admin-pwd').value = ''; document.getElementById('admin-modal').style.display = 'flex'; } }
 function closeDiagPanel() { document.getElementById('diag-panel').classList.remove('open'); }
 function closeAdminModal() { document.getElementById('admin-modal').style.display = 'none'; }
-function submitAdmin() { const pwd = document.getElementById('admin-pwd').value; if (pwd === 'PDadmin1234') { diagUnlocked = true; closeAdminModal(); document.getElementById('diag-panel').classList.add('open'); } else { alert('Incorrect admin password.'); } }
+function submitAdmin() { const pwd = document.getElementById('admin-pwd').value; if (pwd === 'PDadmin1234') { diagUnlocked = true; closeAdminModal(); renderDiagPanel(); document.getElementById('diag-panel').classList.add('open'); } else { alert('Incorrect admin password.'); } }
 
 function submitTeamUpdate() {
   const text = document.getElementById('new-update-text').value.trim();
@@ -1695,7 +1786,7 @@ function renderCurrentDept() {
   tasks = tasks.map(t => ({ ...t, status: overrides[taskId(t)] || t.status }));
   if (viewingSessionDate === 'current') tasks = tasks.map(t => { if (isOverdue(t) && t.status === 'ontrack') return { ...t, status: 'delayed' }; return t; });
   let filtered = tasks;
-  if (!showDone) filtered = filtered.filter(t => t.status !== 'achieved');
+  // Note: achieved tasks are always visible so users can revert accidental status changes
   if (currentFilter !== 'all') filtered = filtered.filter(t => t.status === currentFilter);
   const list = document.getElementById('dynamic-tasks-list');
   if (filtered.length === 0) { list.innerHTML = `<div class="empty-state"><h3>No tasks found</h3><p>Try changing your filter or hit "Sync" to fetch latest data.</p></div>`; renderUpdatesList(); return; }
@@ -1708,7 +1799,14 @@ function renderCurrentDept() {
     const groupTasks = groupedByStatus[cfg.key]; if (groupTasks.length === 0) return;
     let tasksHTML = groupTasks.map(t => {
       const id = taskId(t); const status = t.status || 'ontrack'; const statusLabel = {ontrack:'On Track',delayed:'Delayed',onhold:'On Hold',update:'Update',achieved:'Achieved'}[status] || 'On Track'; const dueCls = isOverdue(t) ? 'overdue' : '';
-      const actionButtons = !isHistory ? `<div class="status-actions" onclick="event.stopPropagation()"><button class="status-btn btn-achieved" onclick="setTaskStatus('${id}','achieved')">✓ Achieved</button><button class="status-btn btn-delayed" onclick="setTaskStatus('${id}','delayed')">⚠ Delayed</button><button class="status-btn btn-onhold" onclick="setTaskStatus('${id}','onhold')">● On Hold</button><button class="status-btn btn-update" onclick="setTaskStatus('${id}','update')">▶ Update</button><button class="status-btn btn-ontrack" onclick="setTaskStatus('${id}','ontrack')">▲ On Track</button></div>` : '';
+      const statusLabels = {achieved:'✓ Mark as Achieved',delayed:'⚠ Mark as Delayed',onhold:'● Put On Hold',update:'▶ Needs Update',ontrack:'▲ Back On Track'};
+      const actionButtons = !isHistory ? `<div class="status-actions" onclick="event.stopPropagation()">
+        <button class="status-btn btn-achieved" onclick="askConfirm('${id}','achieved','${t.action.replace(/'/g,"\'").substring(0,80)}')">✓ Achieved</button>
+        <button class="status-btn btn-delayed" onclick="askConfirm('${id}','delayed','${t.action.replace(/'/g,"\'").substring(0,80)}')">⚠ Delayed</button>
+        <button class="status-btn btn-onhold" onclick="askConfirm('${id}','onhold','${t.action.replace(/'/g,"\'").substring(0,80)}')">● On Hold</button>
+        <button class="status-btn btn-update" onclick="askConfirm('${id}','update','${t.action.replace(/'/g,"\'").substring(0,80)}')">▶ Update</button>
+        <button class="status-btn btn-ontrack" onclick="askConfirm('${id}','ontrack','${t.action.replace(/'/g,"\'").substring(0,80)}')">▲ On Track</button>
+      </div>${status === 'achieved' ? '<div class="revert-note">↩ To undo, click any status button above and confirm</div>' : ''}` : '';
       return `<div class="step-card s-${status}" onclick="this.classList.toggle('expanded')" id="card-${id}">${t.resultToAchieve ? `<div class="step-context">${t.resultToAchieve}</div>` : ''}<div class="step-card-top"><div class="step-text">${t.action}</div><div class="step-meta"><span class="step-date ${dueCls}">Due: ${t.due}</span><span class="status-badge sb-${status}">${statusLabel}</span></div></div><div class="step-details-pane" onclick="event.stopPropagation()"><div class="pane-title">Details</div><div style="margin-bottom:8px"><strong>Explanation:</strong> ${t.explanation || 'No further explanation provided in sheet.'}</div>${actionButtons}</div></div>`;
     }).join('');
     const expClass = cfg.expanded ? 'expanded' : '';
@@ -1716,7 +1814,57 @@ function renderCurrentDept() {
   });
   list.innerHTML = finalHTML; renderUpdatesList();
 }
-function setTaskStatus(id, status) { saveStatus(id, status); const overrides = getStatusOverrides(); taskDatabase.forEach(t => { if (taskId(t) === id) t.status = overrides[id]; }); renderCurrentDept(); renderOverduePanels(); }
+// ── Status change confirmation system ──
+let _pendingStatusId = null;
+let _pendingStatus = null;
+
+const _statusMeta = {
+  achieved: { label: '✓ Achieved', bg: 'rgba(21,101,192,0.1)', color: '#1565c0', desc: 'This marks the task as complete. You can always undo this by selecting a different status.' },
+  delayed:  { label: '⚠ Delayed',  bg: 'rgba(198,40,40,0.1)',  color: '#c62828', desc: 'This flags the task as running behind schedule. The team lead will see this in the overdue panel.' },
+  onhold:   { label: '● On Hold',  bg: 'rgba(97,97,97,0.1)',   color: '#616161', desc: 'This pauses the task. Use this when progress is blocked and needs a decision.' },
+  update:   { label: '▶ Needs Update', bg: 'rgba(237,108,2,0.1)', color: '#ed6c02', desc: 'This flags the task as needing a status update before the next meeting.' },
+  ontrack:  { label: '▲ On Track', bg: 'rgba(46,125,50,0.1)',  color: '#2e7d32', desc: 'This marks the task as progressing normally with no blockers.' }
+};
+
+function askConfirm(id, status, taskPreview) {
+  _pendingStatusId = id;
+  _pendingStatus = status;
+  const meta = _statusMeta[status] || { label: status, bg: '#eee', color: '#333', desc: '' };
+  document.getElementById('confirm-title').textContent = 'Update this task?';
+  document.getElementById('confirm-desc').textContent = 'You are about to change the status of:';
+  document.getElementById('confirm-task-preview').textContent = taskPreview + (taskPreview.length >= 80 ? '...' : '');
+  const badge = document.getElementById('confirm-new-status-badge');
+  badge.textContent = meta.label;
+  badge.style.background = meta.bg;
+  badge.style.color = meta.color;
+  // Replace the desc paragraph
+  document.getElementById('confirm-desc').textContent = meta.desc;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  _pendingStatusId = null; _pendingStatus = null;
+}
+
+function confirmStatusChange() {
+  if (!_pendingStatusId || !_pendingStatus) return;
+  setTaskStatus(_pendingStatusId, _pendingStatus);
+  closeConfirm();
+}
+
+function setTaskStatus(id, status) {
+  saveStatus(id, status);
+  const overrides = getStatusOverrides();
+  taskDatabase.forEach(t => { if (taskId(t) === id) t.status = overrides[id]; });
+  renderCurrentDept();
+  renderOverduePanels();
+}
+
+// Close confirm on overlay click
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'confirm-overlay') closeConfirm();
+});
 function setFilter(f, btn) { currentFilter = f; document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderCurrentDept(); }
 
 function showPage(id, btn) {
@@ -1788,19 +1936,78 @@ new Chart(document.getElementById('c3'), {
 function renderDiagPanel() {
   const body = document.getElementById('diag-body'); const badge = document.getElementById('admin-badge');
   if (!body) return; const sheets = Object.keys(sheetDiag);
-  if (sheets.length === 0) { body.innerHTML = '<div class="diag-empty">Sync data to see sheet diagnostics</div>'; return; }
   let totalIssues = 0; let html = '';
-  sheets.forEach(name => {
-    const d = sheetDiag[name]; const hasWarn = d.warnings && d.warnings.length > 0; if (hasWarn) totalIssues += d.warnings.length;
-    html += `<div class="diag-sheet"><div class="diag-sheet-name">📄 ${name} <span style="color:#546e7a;font-weight:400;">[${d.proj}${d.isLatest?' · latest':''}]</span></div><div class="diag-stat">Rows scanned: ${d.rowsScanned} &nbsp;|&nbsp; Tasks: <span style="color:${d.tasksAdded>0?'#81c784':'#ef9a9a'}">${d.tasksAdded}</span> &nbsp;|&nbsp; Targets: <span style="color:${d.targetsAdded>0?'#81c784':'#ffb74d'}">${d.targetsAdded}</span></div>`;
-    if (d.info) html += `<div class="diag-info">${d.info}</div>`;
-    if (hasWarn) { d.warnings.forEach(w => { const cls = w.startsWith('❌') ? 'diag-err' : 'diag-warn'; html += `<div class="${cls}">${w}</div>`; }); } else { html += `<div class="diag-ok">✓ No issues detected</div>`; }
-    html += `</div>`;
-  });
+
+  if (sheets.length === 0) {
+    html = '<div class="diag-empty">Sync data to see sheet diagnostics</div>';
+  } else {
+    sheets.forEach(name => {
+      const d = sheetDiag[name]; const hasWarn = d.warnings && d.warnings.length > 0; if (hasWarn) totalIssues += d.warnings.length;
+      html += `<div class="diag-sheet"><div class="diag-sheet-name">📄 ${name} <span style="color:#546e7a;font-weight:400;">[${d.proj}${d.isLatest?' · latest':''}]</span></div><div class="diag-stat">Rows scanned: ${d.rowsScanned} &nbsp;|&nbsp; Tasks: <span style="color:${d.tasksAdded>0?'#81c784':'#ef9a9a'}">${d.tasksAdded}</span> &nbsp;|&nbsp; Targets: <span style="color:${d.targetsAdded>0?'#81c784':'#ffb74d'}">${d.targetsAdded}</span></div>`;
+      if (d.info) html += `<div class="diag-info">${d.info}</div>`;
+      if (hasWarn) { d.warnings.forEach(w => { const cls = w.startsWith('❌') ? 'diag-err' : 'diag-warn'; html += `<div class="${cls}">${w}</div>`; }); } else { html += `<div class="diag-ok">✓ No issues detected</div>`; }
+      html += `</div>`;
+    });
+  }
+
+  // ── Team Updates Feed ──
+  html += renderAdminUpdatesFeed();
+
   body.innerHTML = html; badge.textContent = totalIssues;
   if (totalIssues > 0 && diagUnlocked) { badge.classList.add('has-issues'); document.getElementById('diag-panel').classList.add('open'); }
   else if (totalIssues > 0) badge.classList.add('has-issues');
   else badge.classList.remove('has-issues');
+}
+
+function renderAdminUpdatesFeed() {
+  const ALL_DEPTS = {
+    Crossings: ['Design','Costing','AMC','IPD','Landscape','Operations','Fincon','Sales','MCC','Legal','General'],
+    Annexe: ['Design','Costing','IPD','Operations','Fincon','Telemarketing','MCC','Sales','Legal']
+  };
+
+  let allUpdates = [];
+  ['Crossings','Annexe'].forEach(proj => {
+    ALL_DEPTS[proj].forEach(dept => {
+      const key = `deptupdate:${proj}:${dept}`;
+      try {
+        const updates = JSON.parse(localStorage.getItem(key) || '[]');
+        updates.forEach(u => allUpdates.push({ ...u, proj, dept }));
+      } catch(e) {}
+    });
+  });
+
+  if (allUpdates.length === 0) {
+    return `<div class="admin-feed-section"><div class="admin-feed-proj-label">📋 Team Updates — All Departments</div><div class="admin-feed-empty">No team updates have been submitted yet across any department.</div></div>`;
+  }
+
+  // Sort newest first
+  allUpdates.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  let html = `<div class="admin-feed-section">
+    <div class="admin-feed-proj-label" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>📋 Team Updates — All Departments (${allUpdates.length})</span>
+      <button class="admin-feed-refresh" onclick="renderDiagPanel()">↻ Refresh</button>
+    </div>`;
+
+  allUpdates.slice(0, 50).forEach(u => {
+    const projColor = u.proj === 'Crossings' ? '#60a5fa' : '#fbbf24';
+    const time = new Date(u.timestamp).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    html += `<div class="admin-feed-item">
+      <div class="admin-feed-meta">
+        <span class="admin-feed-author">${u.author || 'Anonymous'}</span>
+        &nbsp;·&nbsp;
+        <span class="admin-feed-dept" style="color:${projColor}">${u.proj} / ${u.dept}</span>
+        &nbsp;·&nbsp;${time}
+      </div>
+      <div class="admin-feed-text">${u.text}</div>
+    </div>`;
+  });
+
+  if (allUpdates.length > 50) {
+    html += `<div class="admin-feed-empty">Showing 50 most recent of ${allUpdates.length} total updates.</div>`;
+  }
+  html += `</div>`;
+  return html;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1816,19 +2023,19 @@ function togglePI(id) {
 // ── Annexe Scenario Data ──
 const annexScenarios = {
   bear: {
-    desc: '<strong>Bear Case:</strong> Sales velocity drops 30% — no active campaign, rainy season dampens buyer sentiment. Cash hits zero by mid-May. Civil works delayed. Handover slips to Q1 2027.',
+    desc: '<strong>Bear Case (worst outcome):</strong> Sales drop by 30% — no new campaign and the rainy season discourages buyers. Both projects run out of money by mid-May. Construction delays to Q4 2026 at earliest. Residents wouldn\'t receive keys until early 2027 at the latest.',
     burn: '₦35M', runway: '~1.8 wks', inflow: '₦300M+',
     roads: 'Oct 2026', mep: 'Dec 2026', ext: 'May 2026 ✓', handover: 'Q1 2027',
     fcBurn: '₦35M', fcRunway: '~1.8 wks', fcInflowNeeded: '₦300M+'
   },
   base: {
-    desc: '<strong>Base Case:</strong> Current execution velocity maintained. Rainy season causes 3–4 week delay on road works (May–Jun). Sales close ~1 deal/month. MEP mobilization maintained. Handover forecast Oct 2026.',
+    desc: '<strong>Base Case (most likely):</strong> Things continue as they are. The rains slow road work by 3–4 weeks. We close about one sale per month. The utilities team stays on site. Handover in October 2026 — four months later than originally planned.',
     burn: '₦35M', runway: '~1.8 wks', inflow: '₦200M+',
     roads: 'Aug 2026', mep: 'Sep 2026', ext: 'May 2026 ✓', handover: 'Oct 2026',
     fcBurn: '₦35M', fcRunway: '~1.8 wks', fcInflowNeeded: '₦200M+'
   },
   bull: {
-    desc: '<strong>Bull Case:</strong> Marketing campaign reactivated, driving 2+ deals/month. Emergency inflow resolves cash position. Dry-season window maximised before May. MEP accelerated. Handover target Aug 2026.',
+    desc: '<strong>Bull Case (best outcome):</strong> A new marketing campaign brings in 2+ sales per month. Emergency inflow clears the cash crunch. All dry-season work is maximised before May. The utilities team accelerates. On this path, handover could happen as early as August 2026.',
     burn: '₦35M', runway: '5+ wks*', inflow: '₦150M',
     roads: 'Jul 2026', mep: 'Aug 2026', ext: 'May 2026 ✓', handover: 'Aug 2026',
     fcBurn: '₦35M', fcRunway: '5+ wks*', fcInflowNeeded: '₦150M'
@@ -1838,19 +2045,19 @@ const annexScenarios = {
 // ── Crossings Scenario Data ──
 const cxScenarios = {
   bear: {
-    desc: '<strong>Bear Case:</strong> Prolonged stagnation — no design freeze, no active marketing. Phase 1 clearing stalls in wet season. Civil mobilization slips to Q4 2026. Handover forecast Jun 2028.',
+    desc: '<strong>Bear Case (worst outcome):</strong> The design stays frozen in review, no new marketing, Phase 1 clearing stalls completely in the rains. The main contractor cannot start until Q4 2026. On this path, residents receive their homes in mid-2028.',
     burn: '₦18M', runway: '~2.2 wks', inflow: '₦1.2B+',
     clear: 'Jul 2026', civil: 'Q4 2026', roads: 'Mar 2027', handover: 'Jun 2028',
     fcBurn: '₦18M', fcRunway: '~2.2 wks', fcInflowNeeded: '₦1.2B+'
   },
   base: {
-    desc: '<strong>Base Case:</strong> Sales velocity maintained at current pace. ₦800M civil mobilization threshold reached by Q3 2026. Phase 1 clearing completes May–Jun despite wet season. Civil works start Q3. Handover forecast Jan 2028.',
+    desc: '<strong>Base Case (most likely):</strong> Sales keep coming in at the same pace. We hit the ₦800M trigger in Q3 2026. Clearing finishes despite the rains. The main builder is on site by Q3 2026. Residents receive their homes in January 2028.',
     burn: '₦18M', runway: '~2.2 wks', inflow: '₦800M+',
     clear: 'May–Jun 2026', civil: 'Q3 2026', roads: 'Nov 2026', handover: 'Jan 2028',
     fcBurn: '₦18M', fcRunway: '~2.2 wks', fcInflowNeeded: '₦800M+'
   },
   bull: {
-    desc: '<strong>Bull Case:</strong> Design freeze confirmed this week. Render + billboard live May 15. Active campaign drives 2 deals/month. ₦800M threshold hit Jun 2026. Civil mobilized Jun 2026. Handover Nov 2027.',
+    desc: '<strong>Bull Case (best outcome):</strong> Design is signed off this week. Renders and the billboard go live by May 15. An active campaign drives 2 sales per month. We hit the ₦800M trigger in June 2026. The main builder mobilises immediately. Handover in November 2027 — nine months ahead of the base case.',
     burn: '₦18M', runway: '6+ wks*', inflow: '₦500M',
     clear: 'May 2026', civil: 'Jun 2026', roads: 'Sep 2026', handover: 'Nov 2027',
     fcBurn: '₦18M', fcRunway: '6+ wks*', fcInflowNeeded: '₦500M'
@@ -1976,5 +2183,24 @@ window.onload = function () {
   setInterval(syncWithGoogleSheet, AUTO_SYNC_MINUTES * 60 * 1000);
 };
 </script>
+
+<!-- ── Status Confirmation Modal ── -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-modal">
+    <div class="confirm-header">
+      <h3 id="confirm-title">Change task status?</h3>
+      <p id="confirm-desc">You are about to mark this task as:</p>
+      <div class="confirm-task-preview" id="confirm-task-preview"></div>
+    </div>
+    <div class="confirm-body">
+      <div class="confirm-new-status" id="confirm-new-status-badge"></div>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" onclick="closeConfirm()">Cancel — keep as is</button>
+        <button class="confirm-proceed" id="confirm-proceed-btn" onclick="confirmStatusChange()">Yes, update it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
