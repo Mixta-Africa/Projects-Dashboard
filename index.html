@@ -1459,6 +1459,9 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         <span class="tool-nav-label">Report</span>
       </button>
+      <button class="diag-minimize-btn" onclick="minimizeDiagPanel()" title="Minimize" style="padding:8px 12px; font-size:12px; background:none; border:none; color:inherit; cursor:pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </button>
       <div class="diag-header-close" onclick="closeDiagPanel()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
     </div>
   </div>
@@ -1591,6 +1594,14 @@ function openDiagAuth() {
   } 
 }
 function closeDiagPanel() { document.getElementById('diag-panel').classList.remove('open'); }
+function minimizeDiagPanel() { 
+  const body = document.getElementById('diag-body'); 
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+  } else {
+    body.style.display = 'none';
+  }
+}
 function closeAdminModal() { document.getElementById('admin-modal').style.display = 'none'; }
 function toggleForgotPassword() { 
   const loginForm = document.getElementById('admin-login-form'); 
@@ -1756,10 +1767,24 @@ function processSheet(rows, proj, sheetName, isLatest) {
   const fuzzyMatchDept = (val) => {
     if (!val) return null;
     const clean = val.trim().toLowerCase();
+    
+    // Exact match first
     for (const dept of KNOWN_DEPTS) {
       if (clean === dept.toLowerCase()) return dept;
-      if (clean.includes(dept.toLowerCase())) return dept;
     }
+    
+    // Partial match (but avoid false positives)
+    for (const dept of KNOWN_DEPTS) {
+      const deptLower = dept.toLowerCase();
+      // Match if dept name is a standalone word, not embedded in garbage
+      if (clean === deptLower || 
+          clean.startsWith(deptLower + ' ') || 
+          clean.endsWith(' ' + deptLower) ||
+          clean.includes(' ' + deptLower + ' ')) {
+        return dept;
+      }
+    }
+    
     return null;
   };
   
@@ -1854,13 +1879,14 @@ function processSheet(rows, proj, sheetName, isLatest) {
       const matched = fuzzyMatchDept(deptCellValue);
       if (matched) {
         lastDept = matched;
-      } else if (!/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline|target|note)$/i.test(deptCellValue) &&
-                 !/^\d{5,}$/.test(deptCellValue) &&
-                 !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(deptCellValue) &&
-                 deptCellValue.length > 3) {
-        // Only update if it looks like a real department name (not garbage)
-        const fuzzy = fuzzyMatchDept(deptCellValue);
-        if (fuzzy) lastDept = fuzzy;
+      }
+      // Only skip updates for headers, junk, and dates
+      else if (!/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline|target|note)$/i.test(deptCellValue) &&
+               !/^\d{5,}$/.test(deptCellValue) &&
+               !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(deptCellValue) &&
+               deptCellValue.length > 2) {
+        // Unknown dept name — log it for debugging but don't update lastDept
+        // This prevents garbage from overwriting valid departments
       }
     }
 
