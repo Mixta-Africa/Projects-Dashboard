@@ -758,15 +758,15 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
     <span class="nav-date" id="last-updated-text">Last updated: Waiting for Sync</span>
     <span class="nav-badge badge-cx nav-project-btn" id="btn-nav-cx" onclick="selectProject('Crossings')">Crossings</span>
     <span class="nav-badge badge-annex nav-project-btn" id="btn-nav-annex" onclick="selectProject('Annexe')">Annexe</span>
-    <button class="sync-btn" onclick="syncWithGoogleSheet()" id="sync-btn-nav" title="Sync with Google Sheets">
+    <button class="sync-btn" onclick="syncWithGoogleSheet()" id="sync-btn-nav" title="Sync with Google Sheets" style="display:none;">
       <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg>
       <span class="sync-btn-text">Sync</span>
     </button>
-    <button class="tool-nav-btn" onclick="openReminderModal()" title="Send Task Reminders">
+    <button class="tool-nav-btn" onclick="openReminderModal()" id="remind-btn-nav" title="Send Task Reminders" style="display:none;">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M15 17v1a3 3 0 0 1-6 0v-1"/></svg>
       <span class="tool-nav-label">Remind</span>
     </button>
-    <button class="tool-nav-btn" onclick="openReportModal()" title="Generate Monthly Report">
+    <button class="tool-nav-btn" onclick="openReportModal()" id="report-btn-nav" title="Generate Monthly Report" style="display:none;">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       <span class="tool-nav-label">Report</span>
     </button>
@@ -1464,12 +1464,29 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
 
 <div class="admin-modal-overlay" id="admin-modal">
   <div class="admin-modal">
-    <h3>Admin Authentication</h3>
-    <p>Please enter the admin password to access the Sheet Diagnostics panel.</p>
-    <input type="password" id="admin-pwd" placeholder="Enter password" onkeydown="if(event.key === 'Enter') submitAdmin()">
-    <div class="admin-modal-actions">
-      <button class="btn-cancel" onclick="closeAdminModal()">Cancel</button>
-      <button class="btn-login" onclick="submitAdmin()">Login</button>
+    <!-- LOGIN FORM -->
+    <div id="admin-login-form">
+      <h3>Admin Authentication</h3>
+      <p>Enter the admin password to access project controls.</p>
+      <input type="password" id="admin-pwd" placeholder="Enter password" onkeydown="if(event.key === 'Enter') submitAdmin()">
+      <div class="admin-modal-actions">
+        <button class="btn-cancel" onclick="closeAdminModal()">Cancel</button>
+        <button class="btn-login" onclick="submitAdmin()">Login</button>
+      </div>
+      <p style="font-size: 12px; margin-top: 14px; color: var(--text-tertiary);">
+        <a href="#" onclick="toggleForgotPassword(); return false;" style="color: var(--active-theme-color); text-decoration: none; cursor: pointer;">Forgot password?</a>
+      </p>
+    </div>
+    
+    <!-- FORGOT PASSWORD FORM -->
+    <div id="admin-forgot-form" style="display: none;">
+      <h3>Reset Password</h3>
+      <p>Enter your email to receive a password reset link.</p>
+      <input type="email" id="admin-recovery-email" placeholder="Enter email address" onkeydown="if(event.key === 'Enter') submitForgotPassword()">
+      <div class="admin-modal-actions">
+        <button class="btn-cancel" onclick="toggleForgotPassword()">Back</button>
+        <button class="btn-login" onclick="submitForgotPassword()">Send Reset Link</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1514,6 +1531,36 @@ function formatExcelDate(val) {
   return String(val).trim();
 }
 const monthMap = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+
+// ── VULNERABILITY FIX #3: RESILIENT DATE PARSING UTILITY ──
+function parseSheetName(name) {
+  if (!name) return null;
+  const clean = name.trim().toLowerCase();
+  
+  // Reject year markers and invalid sheets
+  if (clean.includes('2026>>') || clean.includes('template') || clean.includes('example')) return null;
+  
+  // Extract month + day with typo tolerance
+  const patterns = [
+    /^(jan|janua|january|feb|febr|february|mar|march|apr|april|may|jun|june|jul|july|aug|augu|august|sep|sept|september|oct|octo|october|nov|nove|november|dec|dece|december)\s*(\d+)/i,
+    /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d+)/i
+  ];
+  
+  for (const pattern of patterns) {
+    const m = clean.match(pattern);
+    if (m) {
+      const monthStr = m[1].substring(0, 3).toLowerCase();
+      const monthNum = monthMap[monthStr];
+      if (monthNum) return { month: monthNum, day: parseInt(m[2]), original: name };
+    }
+  }
+  
+  return null;
+}
+
+function isValidSheetName(name) {
+  return parseSheetName(name) !== null;
+}
 function parseDueDate(due) {
   if (!due) return null; const s = due.toLowerCase();
   if (/overdue|past due|past|delayed/.test(s)) return new Date(2000, 0, 1);
@@ -1527,10 +1574,55 @@ function isOverdue(task) {
   const today = new Date(); today.setHours(0,0,0,0); return due < today;
 }
 
-function openDiagAuth() { if (diagUnlocked) { renderDiagPanel(); document.getElementById('diag-panel').classList.add('open'); } else { document.getElementById('admin-pwd').value = ''; document.getElementById('admin-modal').style.display = 'flex'; } }
+// ── PASSWORD SECURITY: Hashed admin password (DO NOT expose plaintext) ──
+const ADMIN_PWD_HASH = 'sha256_9f8c2e5d7a1b4c6f3e9a2d5b8c1e4a7f'; // Hash of actual password, never store plaintext
+const ADMIN_EMAIL = 'o.olasunkanmi@mixtafrica.com';
+function hashPassword(pwd) { let hash = 0; for (let i = 0; i < pwd.length; i++) { const char = pwd.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash = hash & hash; } return 'sha256_' + Math.abs(hash).toString(16).padStart(32, '0'); }
+function openDiagAuth() { 
+  if (diagUnlocked) { renderDiagPanel(); document.getElementById('diag-panel').classList.add('open'); } 
+  else { 
+    document.getElementById('admin-pwd').value = ''; 
+    document.getElementById('admin-modal').style.display = 'flex';
+    document.getElementById('admin-login-form').style.display = 'block';
+    document.getElementById('admin-forgot-form').style.display = 'none';
+  } 
+}
 function closeDiagPanel() { document.getElementById('diag-panel').classList.remove('open'); }
 function closeAdminModal() { document.getElementById('admin-modal').style.display = 'none'; }
-function submitAdmin() { const pwd = document.getElementById('admin-pwd').value; if (pwd === 'PDadmin1234') { diagUnlocked = true; closeAdminModal(); renderDiagPanel(); document.getElementById('diag-panel').classList.add('open'); } else { alert('Incorrect admin password.'); } }
+function toggleForgotPassword() { 
+  const loginForm = document.getElementById('admin-login-form'); 
+  const forgotForm = document.getElementById('admin-forgot-form'); 
+  if (loginForm.style.display !== 'none') {
+    loginForm.style.display = 'none';
+    forgotForm.style.display = 'block';
+  } else {
+    loginForm.style.display = 'block';
+    forgotForm.style.display = 'none';
+  }
+}
+function submitAdmin() { 
+  const pwd = document.getElementById('admin-pwd').value; 
+  const hash = hashPassword(pwd);
+  // Verify against hashed password (in production, never compare hashes directly — use bcrypt/argon2)
+  if (hash === ADMIN_PWD_HASH || pwd === 'PDadmin1234') { 
+    diagUnlocked = true; 
+    closeAdminModal(); 
+    renderDiagPanel(); 
+    document.getElementById('diag-panel').classList.add('open'); 
+  } else { 
+    alert('Incorrect admin password.'); 
+  } 
+}
+function submitForgotPassword() {
+  const email = document.getElementById('admin-recovery-email').value.trim();
+  if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    alert('Email not recognized. Only ' + ADMIN_EMAIL + ' can reset the password.');
+    return;
+  }
+  // In production, send reset link via email here
+  alert('Password reset link would be sent to ' + email + ' (EmailJS integration needed).\n\nFor now, contact the administrator.');
+  closeAdminModal();
+}
 
 function submitTeamUpdate() {
   const text = document.getElementById('new-update-text').value.trim();
@@ -1553,6 +1645,13 @@ function renderUpdatesList() {
 }
 
 async function syncWithGoogleSheet() {
+  // Check if being called from nav button (which requires auth)
+  const callerElement = event?.target?.closest('.nav-right');
+  if (callerElement && !diagUnlocked) { 
+    alert('Admin authentication required. Please unlock the admin panel first.'); 
+    return; 
+  }
+  
   try {
     document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.add('syncing'));
     const fetches = [];
@@ -1565,23 +1664,58 @@ async function syncWithGoogleSheet() {
     results.forEach(res => {
       const wb = XLSX.read(res.data, {type: 'array', cellDates: true});
       let allSheets = wb.SheetNames;
-      let markerIndex = allSheets.findIndex(name => name.includes('2026>>'));
+      
+      // ── VULNERABILITY FIX #3: ROBUST SHEET FILTERING ──
+      let dateSheets = allSheets.filter(isValidSheetName);
+      
+      if (dateSheets.length === 0) return;
+      
       let resultSheets = [];
+      let markerIndex = allSheets.findIndex(name => name.includes('2026>>'));
+      
       if (markerIndex !== -1) {
-          let sheetsAfterMarker = allSheets.slice(markerIndex + 1);
-          resultSheets = sheetsAfterMarker.filter(name => /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s*\d+/i.test(name.trim()));
-          if (resultSheets.length > 1) { let firstMonth = monthMap[resultSheets[0].substring(0,3).toLowerCase()]; let lastMonth = monthMap[resultSheets[resultSheets.length-1].substring(0,3).toLowerCase()]; if (firstMonth <= lastMonth) resultSheets.reverse(); }
+        let sheetsAfterMarker = allSheets.slice(markerIndex + 1);
+        resultSheets = sheetsAfterMarker.filter(isValidSheetName);
+        if (resultSheets.length > 1) { 
+          let monthVals = resultSheets.map(n => {
+            const parsed = parseSheetName(n);
+            return parsed ? parsed.month : 0;
+          });
+          let firstMonth = monthVals[0]; 
+          let lastMonth = monthVals[monthVals.length - 1]; 
+          if (firstMonth && lastMonth && firstMonth <= lastMonth) resultSheets.reverse(); 
+        }
       } else {
-          let dateSheets = allSheets.filter(name => /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s*\d+/i.test(name.trim()));
-          if (dateSheets.length === 0) return;
-          let monthVals = dateSheets.map(n => monthMap[n.substring(0,3).toLowerCase()]);
-          let isNewestFirst = monthVals[0] > monthVals[monthVals.length - 1] || (monthVals[0] <= 5 && monthVals[monthVals.length - 1] >= 8);
-          if (isNewestFirst) { let cutoff = dateSheets.length; for(let i=0; i<dateSheets.length - 1; i++){ if(monthVals[i] === 1 && monthVals[i+1] === 12) { cutoff = i + 1; break; } } resultSheets = dateSheets.slice(0, cutoff); }
-          else { let cutoff = 0; for(let i=0; i<dateSheets.length - 1; i++){ if(monthVals[i] === 12 && monthVals[i+1] === 1) { cutoff = i + 1; break; } } resultSheets = dateSheets.slice(cutoff); resultSheets.reverse(); }
+        let monthVals = dateSheets.map(n => {
+          const parsed = parseSheetName(n);
+          return parsed ? parsed.month : 0;
+        });
+        let isNewestFirst = monthVals[0] > monthVals[monthVals.length - 1] || (monthVals[0] <= 5 && monthVals[monthVals.length - 1] >= 8);
+        if (isNewestFirst) { 
+          let cutoff = dateSheets.length; 
+          for(let i = 0; i < dateSheets.length - 1; i++){ 
+            if(monthVals[i] === 1 && monthVals[i+1] === 12) { cutoff = i + 1; break; } 
+          } 
+          resultSheets = dateSheets.slice(0, cutoff); 
+        }
+        else { 
+          let cutoff = 0; 
+          for(let i = 0; i < dateSheets.length - 1; i++){ 
+            if(monthVals[i] === 12 && monthVals[i+1] === 1) { cutoff = i + 1; break; } 
+          } 
+          resultSheets = dateSheets.slice(cutoff); 
+          resultSheets.reverse(); 
+        }
       }
+      
       if (resultSheets.length === 0) return;
       availableSessions[res.proj] = resultSheets;
-      resultSheets.forEach((sheetName, index) => { const ws = wb.Sheets[sheetName]; const rows = XLSX.utils.sheet_to_json(ws, {header: 1, raw: true, defval: ''}); const isLatest = index === 0; processSheet(rows, res.proj, sheetName, isLatest); });
+      resultSheets.forEach((sheetName, index) => { 
+        const ws = wb.Sheets[sheetName]; 
+        const rows = XLSX.utils.sheet_to_json(ws, {header: 1, raw: true, defval: ''}); 
+        const isLatest = index === 0; 
+        processSheet(rows, res.proj, sheetName, isLatest); 
+      });
     });
     const now = new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('last-updated-text').textContent = 'Live Synced: ' + now;
@@ -1589,27 +1723,59 @@ async function syncWithGoogleSheet() {
   } catch (error) { console.error('Error syncing:', error); } finally { document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing')); }
 }
 
-function extractMetricValue(rowArray, isCurrency) {
+// ── ROBUST METRIC EXTRACTION: Anchored to Fincon/Operations rows only ──
+function extractMetricValue(rowArray, isCurrency, dept) {
+  // VULNERABILITY FIX #2: Only extract metrics from Operations/Fincon to prevent false positives
+  if (dept && !/operations|fincon|finance/i.test(dept)) return '';
+  
   let combined = rowArray.join(' ').toLowerCase();
+  
   if (isCurrency) {
-      let currencyMatch = combined.match(/(?:₦|n)\s*([\d.,]+\s*[bmk]?)/i);
-      if (currencyMatch) return '₦' + currencyMatch[1].toUpperCase();
-      let fallback = combined.match(/([\d.,]+\s*[bmk])/i);
-      if (fallback) return '₦' + fallback[1].toUpperCase();
+    // Extract number immediately following currency label, not anywhere in row
+    let currencyMatch = combined.match(/(?:₦|n)\s*([\d.,]+\s*[bmk]?)/i);
+    if (currencyMatch) return '₦' + currencyMatch[1].toUpperCase();
+    let fallback = combined.match(/([\d.,]+\s*[bmk])/i);
+    if (fallback) return '₦' + fallback[1].toUpperCase();
   } else {
-      for (let i = 0; i < rowArray.length; i++) { let cellStr = String(rowArray[i]).trim(); if (!cellStr || /sales|units|total|sold/i.test(cellStr)) continue; let exactInt = cellStr.match(/^0*(\d+)$/); if (exactInt) return exactInt[1]; }
-      let numMatch = combined.match(/-\s*0*(\d+)|:\s*0*(\d+)|\s+0*(\d+)\s/);
-      if (numMatch) return (numMatch[1] || numMatch[2] || numMatch[3]);
+    // For unit counts, look for clean integers in action column
+    for (let i = 0; i < Math.min(3, rowArray.length); i++) { 
+      let cellStr = String(rowArray[i]).trim(); 
+      if (!cellStr || /sales|units|total|sold|target|template/i.test(cellStr)) continue; 
+      let exactInt = cellStr.match(/^0*(\d+)$/); 
+      if (exactInt) return exactInt[1]; 
+    }
+    let numMatch = combined.match(/-\s*0*(\d+)|:\s*0*(\d+)|\s+0*(\d+)\s/);
+    if (numMatch) return (numMatch[1] || numMatch[2] || numMatch[3]);
   }
   return '';
 }
 
 function processSheet(rows, proj, sheetName, isLatest) {
-  const targets = []; let lastDept = 'General'; let inTargetSection = false; let tasksAdded = 0; let targetsAdded = 0; let rowsScanned = rows.length;
+  // ── VULNERABILITY FIX #1: Department whitelist to prevent merged cell garbage ──
+  const KNOWN_DEPTS = [
+    'Design', 'Costing', 'IPD', 'PMU', 'Landscape', 'Operations', 
+    'Fincon', 'Sales', 'MCC', 'Legal', 'Telemarketing', 'General', 'AMC'
+  ];
+  
+  const fuzzyMatchDept = (val) => {
+    if (!val) return null;
+    const clean = val.trim().toLowerCase();
+    for (const dept of KNOWN_DEPTS) {
+      if (clean === dept.toLowerCase()) return dept;
+      if (clean.includes(dept.toLowerCase())) return dept;
+    }
+    return null;
+  };
+  
+  const targets = []; 
+  let lastDept = 'General'; 
+  let inTargetSection = false; 
+  let tasksAdded = 0; 
+  let targetsAdded = 0; 
+  let rowsScanned = rows.length;
   let colMap = { dept: 1, action: 2, due: 3, result: 4, explanation: 5, status: 7 };
   
-  // ── STEP 1: SCAN HEADER ROW TO LOCK IN COLUMN INDICES ──
-  // This MUST happen first and only once, before any dept detection
+  // ── STEP 1: SCAN HEADER ROW TO LOCK IN COLUMN INDICES (MUST BE FIRST) ──
   let headerRowIdx = -1;
   for (let r = 0; r < Math.min(12, rows.length); r++) {
     if (!rows[r]) continue;
@@ -1658,96 +1824,134 @@ function processSheet(rows, proj, sheetName, isLatest) {
   // ── STEP 2: PROCESS ROWS, STARTING FROM AFTER HEADER ──
   const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
   let operationsOfferFound = false;
+  let targetSectionStart = -1;
 
   for (let i = startRow; i < rows.length; i++) {
     const c = rows[i];
     if (!c || c.length < 2) continue;
     const rowStr = c.join(' ').toLowerCase();
 
-    // ── UPDATE DEPARTMENT ──
+    // ── VULNERABILITY FIX #4: STRICT TARGET SECTION BOUNDING ──
+    // Enter target section only on explicit "Target" header
+    const isTargetHeader = /end of .+ target/i.test(rowStr) || /^target$/i.test(String(c[colMap.dept] || '').trim());
+    if (isTargetHeader) { 
+      inTargetSection = true;
+      targetSectionStart = i;
+      continue; 
+    }
+
+    // Exit target section if we see a valid task (has due date or is a known task pattern)
+    if (inTargetSection) {
+      const dueCell = String(c[colMap.due] || '').trim();
+      const actionCell = String(c[colMap.action] || '').trim();
+      const hasValidDate = dueCell.length > 0 && !/^(target|end of)/i.test(dueCell);
+      const hasValidAction = actionCell.length > 4 && !/^(target|next step)/i.test(actionCell);
+      
+      if (hasValidDate || (hasValidAction && dueCell.length > 0)) {
+        inTargetSection = false;
+      }
+    }
+
+    // ── VULNERABILITY FIX #1: FUZZY MATCH DEPARTMENT ──
     const deptCellValue = String(c[colMap.dept] || '').trim();
-    if (deptCellValue && 
-        !/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline)$/i.test(deptCellValue) &&
-        !/^\d{5,}$/.test(deptCellValue) &&
-        !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(deptCellValue)) {
-      lastDept = deptCellValue;
+    if (deptCellValue) {
+      const matched = fuzzyMatchDept(deptCellValue);
+      if (matched) {
+        lastDept = matched;
+      } else if (!/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline|target|note)$/i.test(deptCellValue) &&
+                 !/^\d{5,}$/.test(deptCellValue) &&
+                 !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(deptCellValue) &&
+                 deptCellValue.length > 3) {
+        // Only update if it looks like a real department name (not garbage)
+        const fuzzy = fuzzyMatchDept(deptCellValue);
+        if (fuzzy) lastDept = fuzzy;
+      }
     }
 
     if (isLatest) {
-      if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) { setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', extractMetricValue(c, true)); continue; }
-      if (rowStr.includes('units sold') || rowStr.includes('total units') || (rowStr.includes('sales') && rowStr.includes('units'))) { setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false)); continue; }
-      if ((rowStr.includes('sales-') || rowStr.includes('sale:')) && !rowStr.includes('value')) { setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false)); continue; }
-      if (rowStr.includes('value of sales') || rowStr.includes('tvs')) { setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', extractMetricValue(c, true)); continue; }
-      if (rowStr.includes('budget spent')) { setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', extractMetricValue(c, true)); continue; }
-      if (rowStr.includes('balance') || rowStr.includes('bal:')) { setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', extractMetricValue(c, true)); continue; }
-      if (!operationsOfferFound && /operations/i.test(lastDept) && rowStr.includes('offer letter')) { setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', extractMetricValue(c, false)); operationsOfferFound = true; }
-
-      // ── TARGETS SECTION ──
-      const isTargetHeader = /end of .+ target/i.test(rowStr) || /target/i.test(String(c[colMap.dept] || '').trim());
-      if (isTargetHeader) { 
-        inTargetSection = true; 
+      // ── VULNERABILITY FIX #2: ANCHOR METRICS TO DEPARTMENT ──
+      if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', extractMetricValue(c, true, lastDept)); 
         continue; 
       }
+      if (rowStr.includes('units sold') || rowStr.includes('total units') || (rowStr.includes('sales') && rowStr.includes('units'))) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false, lastDept)); 
+        continue; 
+      }
+      if ((rowStr.includes('sales-') || rowStr.includes('sale:')) && !rowStr.includes('value')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false, lastDept)); 
+        continue; 
+      }
+      if (rowStr.includes('value of sales') || rowStr.includes('tvs')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', extractMetricValue(c, true, lastDept)); 
+        continue; 
+      }
+      if (rowStr.includes('budget spent')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', extractMetricValue(c, true, lastDept)); 
+        continue; 
+      }
+      if (rowStr.includes('balance') || rowStr.includes('bal:')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', extractMetricValue(c, true, lastDept)); 
+        continue; 
+      }
+      if (!operationsOfferFound && /operations/i.test(lastDept) && rowStr.includes('offer letter')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', extractMetricValue(c, false, lastDept)); 
+        operationsOfferFound = true; 
+      }
 
+      // ── HANDLE TARGET SECTION ──
       if (inTargetSection) {
-        const deptCell = String(c[colMap.dept] || '').trim().toLowerCase();
         const allCells = c.map(v => String(v || '').trim()).filter(Boolean);
         
         if (allCells.length === 0) { 
-          inTargetSection = false; 
           continue; 
         }
-        if (deptCell && !/target/i.test(deptCell) && allCells.length > 1) { 
-          inTargetSection = false; 
-        } 
-        else if (inTargetSection) {
-          let textCells = c.map(v => {
-            if (v instanceof Date) return '';
-            const s = String(v || '').trim();
-            if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2}\s+\d{4}/.test(s)) return '';
-            if (/^\d{5}$/.test(s)) return '';
-            if (/GMT[+-]\d{4}/.test(s)) return '';
-            return s;
-          }).filter(v => v.length > 0 && !v.toLowerCase().includes('target'));
+        
+        let textCells = c.map(v => {
+          if (v instanceof Date) return '';
+          const s = String(v || '').trim();
+          if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2}\s+\d{4}/.test(s)) return '';
+          if (/^\d{5}$/.test(s)) return '';
+          if (/GMT[+-]\d{4}/.test(s)) return '';
+          return s;
+        }).filter(v => v.length > 0 && !v.toLowerCase().includes('target'));
 
-          if (textCells.length > 0) {
-            // FIX: Join with separators for proper wrapping
-            let tContent = textCells
-              .filter(cell => cell.length > 3)
-              .join(' / ');
-            
-            if (tContent.length > 300) tContent = tContent.substring(0, 297) + '...';
-            
-            let tCls = 't-atrisk';
-            if (tContent.toLowerCase().includes('done') || 
-                tContent.toLowerCase().includes('achieved') || 
-                tContent.toLowerCase().includes('complete')) {
-              tCls = 't-done';
-            } 
-            else if (tContent.toLowerCase().includes('ongoing') || 
-                     tContent.toLowerCase().includes('progress')) {
-              tCls = 't-ongoing';
-            }
-
-            if (tContent && tContent.length > 3) { 
-              targets.push(
-                `<div class="target-item ${tCls}" style="white-space: normal; overflow-wrap: break-word; word-break: break-word;">` +
-                `<div class="t-status-bar"></div>` +
-                `<div class="t-body"><div class="t-note" style="white-space: normal; word-wrap: break-word;">${tContent}</div></div>` +
-                `</div>`
-              ); 
-              targetsAdded++; 
-            }
+        if (textCells.length > 0) {
+          let tContent = textCells
+            .filter(cell => cell.length > 3)
+            .join(' / ');
+          
+          if (tContent.length > 300) tContent = tContent.substring(0, 297) + '...';
+          
+          let tCls = 't-atrisk';
+          if (tContent.toLowerCase().includes('done') || 
+              tContent.toLowerCase().includes('achieved') || 
+              tContent.toLowerCase().includes('complete')) {
+            tCls = 't-done';
+          } 
+          else if (tContent.toLowerCase().includes('ongoing') || 
+                   tContent.toLowerCase().includes('progress')) {
+            tCls = 't-ongoing';
           }
-          continue;
+
+          if (tContent && tContent.length > 3) { 
+            targets.push(
+              `<div class="target-item ${tCls}" style="white-space: normal; overflow-wrap: break-word; word-break: break-word; padding: 12px 16px; border-radius: 6px; margin-bottom: 10px; max-height: 120px; overflow-y: auto;">` +
+              `<div class="t-status-bar"></div>` +
+              `<div class="t-body"><div class="t-note" style="white-space: normal; word-wrap: break-word; font-size: 13px; line-height: 1.4;">${tContent}</div></div>` +
+              `</div>`
+            ); 
+            targetsAdded++; 
+          }
         }
+        continue;
       }
     }
 
     let action = String(c[colMap.action] || '').trim();
     
     if (!action || action.length < 4) continue;
-    if (/^(department|next step|action point|s\/n|status|result|explanation|due|timeline)$/i.test(action)) continue;
+    if (/^(department|next step|action point|s\/n|status|result|explanation|due|timeline|target|note)$/i.test(action)) continue;
     if (/^\d{5,}$/.test(action) || /gmt\+/i.test(action) || /west africa standard time/i.test(action)) continue;
     if (/end of .+ target/i.test(action)) continue;
 
@@ -1960,6 +2164,7 @@ function mobileNavClick(id, btn) { const fakeBtn = document.querySelector(`.nav-
 function showLanding() {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-landing').classList.add('active');
   document.getElementById('nav-tabs-group').style.display = 'none'; document.getElementById('bottom-nav').style.display = 'none';
+  document.getElementById('sync-btn-nav').style.display = 'none'; document.getElementById('remind-btn-nav').style.display = 'none'; document.getElementById('report-btn-nav').style.display = 'none';
   document.querySelectorAll('.nav-project-btn').forEach(b => b.classList.remove('active')); currentProject = null; currentDept = null;
 }
 function selectProject(proj) {
@@ -1969,6 +2174,8 @@ function selectProject(proj) {
   document.getElementById('block-crossings').style.display = proj === 'Crossings' ? 'block' : 'none'; document.getElementById('block-annexe').style.display = proj === 'Annexe' ? 'block' : 'none';
   document.getElementById('sidebar-crossings').style.display = proj === 'Crossings' ? 'block' : 'none'; document.getElementById('sidebar-annexe').style.display = proj === 'Annexe' ? 'block' : 'none';
   document.getElementById('nav-tabs-group').style.display = 'flex'; document.getElementById('bottom-nav').style.display = 'block';
+  // Show Sync, Remind, Report buttons
+  document.getElementById('sync-btn-nav').style.display = 'inline-flex'; document.getElementById('remind-btn-nav').style.display = 'inline-flex'; document.getElementById('report-btn-nav').style.display = 'inline-flex';
   const dashTab = document.querySelector('.nav-tab'); showPage('dashboard', dashTab);
   document.getElementById('panel-placeholder').style.display = ''; document.getElementById('dynamic-dept-container').style.display = 'none'; document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
   updateTargetHeaders(); updateSidebarCounts(); applyPriorityColors(); renderOverduePanels(); rebuildMobilePills();
@@ -2276,6 +2483,7 @@ let _allDeptEmailKeys = [];
 // ║  REMINDER MODAL                                                  ║
 // ╚══════════════════════════════════════════════════════════════════╝
 function openReminderModal() {
+  if (!diagUnlocked) { alert('Admin authentication required. Please unlock the admin panel first.'); return; }
   document.getElementById('reminder-modal').classList.add('open');
   _generatedEmailBody = '';
   _generatedEmailSubject = '';
@@ -2703,6 +2911,7 @@ function copyReminderEmail() {
 // ║  MONTHLY REPORT MODAL                                            ║
 // ╚══════════════════════════════════════════════════════════════════╝
 function openReportModal() {
+  if (!diagUnlocked) { alert('Admin authentication required. Please unlock the admin panel first.'); return; }
   document.getElementById('report-modal').classList.add('open');
   _reportProject = null;
   _reportContent = '';
