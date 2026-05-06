@@ -1607,25 +1607,72 @@ function extractMetricValue(rowArray, isCurrency) {
 function processSheet(rows, proj, sheetName, isLatest) {
   const targets = []; let lastDept = 'General'; let inTargetSection = false; let tasksAdded = 0; let targetsAdded = 0; let rowsScanned = rows.length;
   let colMap = { dept: 1, action: 2, due: 3, result: 4, explanation: 5, status: 7 };
+  
+  // ── STEP 1: SCAN HEADER ROW TO LOCK IN COLUMN INDICES ──
+  // This MUST happen first and only once, before any dept detection
+  let headerRowIdx = -1;
   for (let r = 0; r < Math.min(12, rows.length); r++) {
-    if (!rows[r]) continue; const rowStr = rows[r].join(' ').toLowerCase();
-    if ((rowStr.includes('department') || rowStr.includes('dept')) && (rowStr.includes('step') || rowStr.includes('action') || rowStr.includes('task') || rowStr.includes('next'))) {
+    if (!rows[r]) continue;
+    
+    const rowStr = rows[r].join(' ').toLowerCase();
+    const isDeptHeader = (rowStr.includes('department') || rowStr.includes('dept')) &&
+                         (rowStr.includes('step') || rowStr.includes('action') || 
+                          rowStr.includes('task') || rowStr.includes('next'));
+    
+    if (isDeptHeader) {
+      headerRowIdx = r;
       for (let ci = 0; ci < rows[r].length; ci++) {
-        const h = String(rows[r][ci]).toLowerCase().trim(); if (!h) continue;
-        if (h.includes('department') || h === 'dept') { colMap.dept = ci; continue; }
-        if (h.includes('timeline') || h === 'due date' || (h.includes('due') && !h.includes('next'))) { colMap.due = ci; continue; }
-        if ((h.includes('next step') || h.includes('action') || h === 'task') && !h.includes('timeline') && !h.includes('due')) { colMap.action = ci; continue; }
-        if (h.includes('result') || h.includes('description')) { colMap.result = ci; continue; }
-        if (h.includes('explanation') || h.includes('note')) { colMap.explanation = ci; continue; }
-        if (h === 'status' || (h.includes('status') && h.length < 15)) { colMap.status = ci; continue; }
+        const h = String(rows[r][ci]).toLowerCase().trim();
+        if (!h) continue;
+        
+        if (h === 'department' || h === 'dept' || h === 's/n') {
+          colMap.dept = ci;
+        } 
+        else if (h === 'next steps' || h.includes('action') || h === 'task') {
+          if (!rows[r][ci].toString().toLowerCase().includes('timeline')) {
+            colMap.action = ci;
+          }
+        } 
+        else if (h === 'due date' || h === 'next steps timeline' || (h.includes('due') && !h.includes('next'))) {
+          colMap.due = ci;
+        } 
+        else if (h === 'result' || h.includes('description')) {
+          colMap.result = ci;
+        } 
+        else if (h === 'explanation' || h.includes('note')) {
+          colMap.explanation = ci;
+        } 
+        else if (h === 'status' && h.length < 15) {
+          colMap.status = ci;
+        }
       }
-      sheetDiag[sheetName] = sheetDiag[sheetName] || {}; sheetDiag[sheetName].colMap = {...colMap}; sheetDiag[sheetName].headerRow = rows[r].map(String); break;
+      
+      sheetDiag[sheetName] = sheetDiag[sheetName] || {};
+      sheetDiag[sheetName].colMap = {...colMap};
+      sheetDiag[sheetName].headerRow = rows[r].map(String);
+      sheetDiag[sheetName].headerRowIdx = r;
+      break;
     }
   }
+
+  // ── STEP 2: PROCESS ROWS, STARTING FROM AFTER HEADER ──
+  const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
   let operationsOfferFound = false;
-  for (let i = 0; i < rows.length; i++) {
-    const c = rows[i]; if (!c || c.length < 2) continue; const rowStr = c.join(' ').toLowerCase();
-    { const deptCellEarly = String(c[colMap.dept] || '').trim(); if (deptCellEarly && !/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline)$/i.test(deptCellEarly) && !/^\d{5,}$/.test(deptCellEarly) && !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(deptCellEarly)) { lastDept = deptCellEarly; } }
+
+  for (let i = startRow; i < rows.length; i++) {
+    const c = rows[i];
+    if (!c || c.length < 2) continue;
+    const rowStr = c.join(' ').toLowerCase();
+
+    // ── UPDATE DEPARTMENT ──
+    const deptCellValue = String(c[colMap.dept] || '').trim();
+    if (deptCellValue && 
+        !/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline)$/i.test(deptCellValue) &&
+        !/^\d{5,}$/.test(deptCellValue) &&
+        !/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(deptCellValue)) {
+      lastDept = deptCellValue;
+    }
+
     if (isLatest) {
       if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) { setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', extractMetricValue(c, true)); continue; }
       if (rowStr.includes('units sold') || rowStr.includes('total units') || (rowStr.includes('sales') && rowStr.includes('units'))) { setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false)); continue; }
@@ -1634,45 +1681,76 @@ function processSheet(rows, proj, sheetName, isLatest) {
       if (rowStr.includes('budget spent')) { setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', extractMetricValue(c, true)); continue; }
       if (rowStr.includes('balance') || rowStr.includes('bal:')) { setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', extractMetricValue(c, true)); continue; }
       if (!operationsOfferFound && /operations/i.test(lastDept) && rowStr.includes('offer letter')) { setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', extractMetricValue(c, false)); operationsOfferFound = true; }
+
+      // ── TARGETS SECTION ──
       const isTargetHeader = /end of .+ target/i.test(rowStr) || /target/i.test(String(c[colMap.dept] || '').trim());
-      if (isTargetHeader) { inTargetSection = true; continue; }
+      if (isTargetHeader) { 
+        inTargetSection = true; 
+        continue; 
+      }
+
       if (inTargetSection) {
         const deptCell = String(c[colMap.dept] || '').trim().toLowerCase();
         const allCells = c.map(v => String(v || '').trim()).filter(Boolean);
-        if (allCells.length === 0) { inTargetSection = false; continue; }
-        if (deptCell && !/target/i.test(deptCell) && allCells.length > 1) { inTargetSection = false; }
-        else {
+        
+        if (allCells.length === 0) { 
+          inTargetSection = false; 
+          continue; 
+        }
+        if (deptCell && !/target/i.test(deptCell) && allCells.length > 1) { 
+          inTargetSection = false; 
+        } 
+        else if (inTargetSection) {
           let textCells = c.map(v => {
-              // Skip raw Date objects and Date.toString() strings (e.g. "Tue Dec 08 2026 23:59:25 GMT+0100")
-              if (v instanceof Date) return '';
-              const s = String(v || '').trim();
-              // Skip strings that look like Date.toString() output
-              if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2}\s+\d{4}/.test(s)) return '';
-              // Skip strings that are pure numbers (serial dates)
-              if (/^\d{5}$/.test(s)) return '';
-              // Skip GMT timezone strings
-              if (/GMT[+-]\d{4}/.test(s)) return '';
-              return s;
-            }).filter(v => v.length > 0 && !v.toLowerCase().includes('target'));
+            if (v instanceof Date) return '';
+            const s = String(v || '').trim();
+            if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2}\s+\d{4}/.test(s)) return '';
+            if (/^\d{5}$/.test(s)) return '';
+            if (/GMT[+-]\d{4}/.test(s)) return '';
+            return s;
+          }).filter(v => v.length > 0 && !v.toLowerCase().includes('target'));
+
           if (textCells.length > 0) {
-            // Pick the longest meaningful text — but cap at 200 chars to prevent overflow
-            let tContent = textCells.reduce((a, b) => a.length > b.length ? a : b, "");
-            if (tContent.length > 200) tContent = tContent.substring(0, 197) + '...';
-            let combinedStatus = textCells.join(' ').toLowerCase();
+            // FIX: Join with separators for proper wrapping
+            let tContent = textCells
+              .filter(cell => cell.length > 3)
+              .join(' / ');
+            
+            if (tContent.length > 300) tContent = tContent.substring(0, 297) + '...';
+            
             let tCls = 't-atrisk';
-            if (combinedStatus.includes('done') || combinedStatus.includes('achieved') || combinedStatus.includes('complete')) tCls = 't-done';
-            else if (combinedStatus.includes('ongoing') || combinedStatus.includes('progress')) tCls = 't-ongoing';
-            if (tContent && tContent.length > 3) { targets.push(`<div class="target-item ${tCls}"><div class="t-status-bar"></div><div class="t-body"><div class="t-note">${tContent}</div></div></div>`); targetsAdded++; }
+            if (tContent.toLowerCase().includes('done') || 
+                tContent.toLowerCase().includes('achieved') || 
+                tContent.toLowerCase().includes('complete')) {
+              tCls = 't-done';
+            } 
+            else if (tContent.toLowerCase().includes('ongoing') || 
+                     tContent.toLowerCase().includes('progress')) {
+              tCls = 't-ongoing';
+            }
+
+            if (tContent && tContent.length > 3) { 
+              targets.push(
+                `<div class="target-item ${tCls}" style="white-space: normal; overflow-wrap: break-word; word-break: break-word;">` +
+                `<div class="t-status-bar"></div>` +
+                `<div class="t-body"><div class="t-note" style="white-space: normal; word-wrap: break-word;">${tContent}</div></div>` +
+                `</div>`
+              ); 
+              targetsAdded++; 
+            }
           }
           continue;
         }
       }
     }
+
     let action = String(c[colMap.action] || '').trim();
+    
     if (!action || action.length < 4) continue;
     if (/^(department|next step|action point|s\/n|status|result|explanation|due|timeline)$/i.test(action)) continue;
     if (/^\d{5,}$/.test(action) || /gmt\+/i.test(action) || /west africa standard time/i.test(action)) continue;
     if (/end of .+ target/i.test(action)) continue;
+
     let rawStat = String(c[colMap.status] || 'ontrack').toLowerCase();
     let statusRaw = rawStat.replace(/[^a-z]/g, '');
     if (rowStr.includes('on hold') || rowStr.includes('on-hold') || statusRaw.includes('onhold')) statusRaw = 'onhold';
@@ -1680,18 +1758,35 @@ function processSheet(rows, proj, sheetName, isLatest) {
     else if (statusRaw.includes('achieve') || statusRaw.includes('done') || statusRaw.includes('complete')) statusRaw = 'achieved';
     else if (statusRaw.includes('update')) statusRaw = 'update';
     else statusRaw = 'ontrack';
+
     const explanationText = String(c[colMap.explanation] || '').trim();
-    taskDatabase.push({ project: proj, session: sheetName, dept: lastDept, action: action, due: formatExcelDate(c[colMap.due]), resultToAchieve: String(c[colMap.result] || '').trim(), explanation: explanationText, status: statusRaw });
+    taskDatabase.push({ 
+      project: proj, 
+      session: sheetName, 
+      dept: lastDept,
+      action: action, 
+      due: formatExcelDate(c[colMap.due]), 
+      resultToAchieve: String(c[colMap.result] || '').trim(), 
+      explanation: explanationText, 
+      status: statusRaw 
+    });
     tasksAdded++;
   }
-  if (isLatest && targets.length > 0) { const el = document.getElementById(proj === 'Crossings' ? 'targets-crossings' : 'targets-annexe'); if (el) el.innerHTML += targets.join(''); }
+
+  if (isLatest && targets.length > 0) { 
+    const el = document.getElementById(proj === 'Crossings' ? 'targets-crossings' : 'targets-annexe'); 
+    if (el) el.innerHTML += targets.join(''); 
+  }
+
   sheetDiag[sheetName] = sheetDiag[sheetName] || {};
-  Object.assign(sheetDiag[sheetName], { proj, isLatest, rowsScanned, tasksAdded, targetsAdded, colMap: sheetDiag[sheetName].colMap || colMap, headerRow: sheetDiag[sheetName].headerRow || [], warnings: [] });
+  Object.assign(sheetDiag[sheetName], { proj, isLatest, rowsScanned, tasksAdded, targetsAdded, colMap, headerRow: sheetDiag[sheetName].headerRow || [], warnings: [] });
   const d = sheetDiag[sheetName];
-  if (tasksAdded === 0) d.warnings.push('⚠ Zero tasks extracted — action column may be mapped incorrectly');
-  if (isLatest && targetsAdded === 0) d.warnings.push('⚠ No targets found — check for "Target" dept or merged header row');
+  
+  if (tasksAdded === 0 && rowsScanned > 20) d.warnings.push('⚠ Zero tasks extracted — check that action column mapped correctly (current: col ' + colMap.action + ')');
+  if (isLatest && targetsAdded === 0 && rowsScanned > 30) d.warnings.push('⚠ No targets extracted — check target section has "Target" dept header');
   if (d.colMap && d.colMap.action === d.colMap.due) d.warnings.push('❌ action and due columns map to same index — header scan failed');
   if (d.headerRow && d.colMap) { const actionHeader = d.headerRow[d.colMap.action] || '(empty)'; const dueHeader = d.headerRow[d.colMap.due] || '(empty)'; d.info = `action col ${d.colMap.action} → "${actionHeader}" | due col ${d.colMap.due} → "${dueHeader}"`; }
+  
   renderDiagPanel();
 }
 
@@ -2792,11 +2887,18 @@ Write in a direct, analytical tone for executive leadership. Use specific number
 
   try {
     // Use Groq API — fast, reliable, no CORS issues from static HTML
+    const groqKey = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
+    if (!groqKey) {
+      statusEl.textContent = '⚠ Groq API key not configured. Set GROQ_API_KEY in GitHub secrets or localStorage.';
+      console.error('GROQ_API_KEY not found in environment or localStorage');
+      return;
+    }
+    
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer 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'
+        'Authorization': 'Bearer ' + groqKey
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
@@ -3004,6 +3106,14 @@ document.addEventListener('click', function(e) {
 
 
 window.onload = function () {
+  // ── Load Groq API key from environment or GitHub secrets ──
+  // If deployed on GitHub Pages, you can set GROQ_API_KEY as an environment variable
+  // For local testing, set it in localStorage: localStorage.setItem('GROQ_API_KEY', 'gsk_xxx')
+  // For production, configure it as a GitHub Actions secret and pass it to the build
+  if (!window.GROQ_API_KEY && typeof process !== 'undefined' && process.env && process.env.GROQ_API_KEY) {
+    window.GROQ_API_KEY = process.env.GROQ_API_KEY;
+  }
+  
   updateTargetHeaders();
   applyPriorityColors();
   syncWithGoogleSheet();
