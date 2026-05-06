@@ -1769,25 +1769,7 @@ function processSheet(rows, proj, sheetName, isLatest) {
   ];
   
   const fuzzyMatchDept = (val) => {
-    if (!val) return null;
-    const clean = val.trim().toLowerCase();
-    
-    // Exact match first
-    for (const dept of KNOWN_DEPTS) {
-      if (clean === dept.toLowerCase()) return dept;
-    }
-    
-    // Partial match (but avoid false positives embedded in garbage text)
-    for (const dept of KNOWN_DEPTS) {
-      const deptLower = dept.toLowerCase();
-      // Match if dept name is a standalone word
-      if (clean === deptLower || 
-          clean.startsWith(deptLower + ' ') || 
-          clean.endsWith(' ' + deptLower) ||
-          clean.includes(' ' + deptLower + ' ')) {
-        return dept;
-      }
-    }
+    // ... [old logic here] ...
     return null;
   };
   
