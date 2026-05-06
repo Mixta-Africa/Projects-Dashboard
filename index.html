@@ -1731,7 +1731,6 @@ async function syncWithGoogleSheet() {
 }
 
 // ── ROBUST METRIC EXTRACTION: Anchored to Fincon/Operations rows only ──
-// ── ROBUST METRIC EXTRACTION: Anchored to Fincon/Operations rows only ──
 function extractMetricValue(rowArray, isCurrency, dept) {
   // LAYER 4: Only extract metrics from Operations/Fincon to prevent false positives
   if (dept && !/operations|fincon|finance/i.test(dept)) return '';
@@ -1761,6 +1760,266 @@ function extractMetricValue(rowArray, isCurrency, dept) {
   return '';
 }
 
+function processSheet(rows, proj, sheetName, isLatest) {
+  // ── LAYER 3: Department whitelist + fuzzy matching ──
+  const KNOWN_DEPTS = [
+    'Design', 'Costing', 'IPD', 'PDU', 'PMU', 'Landscape', 'Operations', 
+    'Fincon', 'Finance', 'Sales', 'MCC', 'Legal', 'Telemarketing', 'General', 'AMC'
+  ];
+  
+  const fuzzyMatchDept = (val) => {
+    if (!val) return null;
+    const clean = String(val).trim();
+    
+    // 1. Exact match first
+    for (const dept of KNOWN_DEPTS) {
+      if (clean.toLowerCase() === dept.toLowerCase()) {
+        return (dept === 'PDU') ? 'IPD' : (dept === 'Finance') ? 'Fincon' : dept;
+      }
+    }
+    
+    // 2. Regex Word Boundary match (handles "IPD/PDU", "Sales-Team", etc.)
+    for (const dept of KNOWN_DEPTS) {
+      const regex = new RegExp(`\\b${dept}\\b`, 'i');
+      if (regex.test(clean)) {
+        return (dept === 'PDU') ? 'IPD' : (dept === 'Finance') ? 'Fincon' : dept;
+      }
+    }
+    
+    return null;
+  };
+  
+  const targets = []; 
+  let lastDept = 'General'; 
+  let inTargetSection = false; 
+  let tasksAdded = 0; 
+  let targetsAdded = 0; 
+  let rowsScanned = rows.length;
+  let colMap = { dept: 1, action: 2, due: 3, result: 4, explanation: 5, status: 7 };
+  
+  // ── LAYER 2: SCAN HEADER ROW TO LOCK IN COLUMN INDICES ──
+  let headerRowIdx = -1;
+  for (let r = 0; r < Math.min(12, rows.length); r++) {
+    if (!rows[r]) continue;
+    
+    const rowStr = rows[r].join(' ').toLowerCase();
+    const isDeptHeader = (rowStr.includes('department') || rowStr.includes('dept')) &&
+                         (rowStr.includes('step') || rowStr.includes('action') || 
+                          rowStr.includes('task') || rowStr.includes('next'));
+    
+    if (isDeptHeader) {
+      headerRowIdx = r;
+      for (let ci = 0; ci < rows[r].length; ci++) {
+        const h = String(rows[r][ci]).toLowerCase().trim();
+        if (!h) continue;
+        
+        if (h === 'department' || h === 'dept' || h === 's/n') {
+          colMap.dept = ci;
+        } 
+        else if (h === 'next steps' || h.includes('action') || h === 'task') {
+          if (!h.includes('timeline')) colMap.action = ci;
+        } 
+        else if (h === 'due date' || h === 'timeline' || (h.includes('due') && !h.includes('next'))) {
+          colMap.due = ci;
+        } 
+        else if (h === 'result' || h.includes('description')) {
+          colMap.result = ci;
+        } 
+        else if (h === 'explanation' || h.includes('note')) {
+          colMap.explanation = ci;
+        } 
+        else if (h === 'status' && h.length < 15) {
+          colMap.status = ci;
+        }
+      }
+      
+      sheetDiag[sheetName] = sheetDiag[sheetName] || {};
+      sheetDiag[sheetName].colMap = {...colMap};
+      sheetDiag[sheetName].headerRow = rows[r].map(String);
+      sheetDiag[sheetName].headerRowIdx = r;
+      break;
+    }
+  }
+
+  // ── PROCESS ROWS ──
+  const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
+  let operationsOfferFound = false;
+
+  for (let i = startRow; i < rows.length; i++) {
+    const c = rows[i];
+    
+    // LAYER 4: Row Break Detection (empty rows reset department to prevent task bleeding)
+    if (!c || c.length < 2) {
+      lastDept = 'General';
+      continue;
+    }
+    
+    const rowStr = c.join(' ').toLowerCase();
+    if (rowStr.trim() === '') {
+      lastDept = 'General';
+      continue;
+    }
+
+    // Skip and reset if we hit a repeated header midway through the sheet
+    const isRepeatedHeader = (rowStr.includes('department') || rowStr.includes('dept')) &&
+                             (rowStr.includes('step') || rowStr.includes('action'));
+    if (isRepeatedHeader) {
+      lastDept = 'General';
+      continue;
+    }
+
+    // ── LAYER 4: STRICT TARGET SECTION BOUNDING ──
+    const isTargetHeader = /end of .+ target/i.test(rowStr) || /^target$/i.test(String(c[colMap.dept] || '').trim());
+    if (isTargetHeader) { 
+      inTargetSection = true;
+      continue; 
+    }
+
+    // Exit target section if we see a valid task property
+    if (inTargetSection) {
+      const dueCell = String(c[colMap.due] || '').trim();
+      const actionCell = String(c[colMap.action] || '').trim();
+      const hasValidDate = dueCell.length > 0 && !/^(target|end of)/i.test(dueCell);
+      const hasValidAction = actionCell.length > 4 && !/^(target|next step)/i.test(actionCell);
+      
+      if (hasValidDate || (hasValidAction && dueCell.length > 0)) {
+        inTargetSection = false;
+      }
+    }
+
+    // ── LAYER 3: FUZZY MATCH DEPARTMENT ──
+    const deptCellValue = String(c[colMap.dept] || '').trim();
+    if (deptCellValue) {
+      const matched = fuzzyMatchDept(deptCellValue);
+      if (matched) {
+        lastDept = matched; // Update only if valid
+      }
+    }
+
+    if (isLatest) {
+      // Metric extraction accurately anchored to lastDept
+      if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', extractMetricValue(c, true, lastDept)); 
+        continue; 
+      }
+      if (rowStr.includes('units sold') || rowStr.includes('total units') || (rowStr.includes('sales') && rowStr.includes('units'))) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false, lastDept)); 
+        continue; 
+      }
+      if ((rowStr.includes('sales-') || rowStr.includes('sale:')) && !rowStr.includes('value')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false, lastDept)); 
+        continue; 
+      }
+      if (rowStr.includes('value of sales') || rowStr.includes('tvs')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', extractMetricValue(c, true, lastDept)); 
+        continue; 
+      }
+      if (rowStr.includes('budget spent')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', extractMetricValue(c, true, lastDept)); 
+        continue; 
+      }
+      if (rowStr.includes('balance') || rowStr.includes('bal:')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', extractMetricValue(c, true, lastDept)); 
+        continue; 
+      }
+      if (!operationsOfferFound && /operations/i.test(lastDept) && rowStr.includes('offer letter')) { 
+        setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', extractMetricValue(c, false, lastDept)); 
+        operationsOfferFound = true; 
+      }
+
+      // ── HANDLE TARGET SECTION ──
+      if (inTargetSection) {
+        const allCells = c.map(v => String(v || '').trim()).filter(Boolean);
+        
+        if (allCells.length === 0) continue; 
+        
+        let textCells = c.map(v => {
+          if (v instanceof Date) return '';
+          const s = String(v || '').trim();
+          if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2}\s+\d{4}/.test(s)) return '';
+          if (/^\d{5}$/.test(s)) return '';
+          if (/GMT[+-]\d{4}/.test(s)) return '';
+          return s;
+        }).filter(v => v.length > 0 && !v.toLowerCase().includes('target'));
+
+        if (textCells.length > 0) {
+          let tContent = textCells
+            .filter(cell => cell.length > 3)
+            .join(' / ');
+          
+          if (tContent.length > 300) tContent = tContent.substring(0, 297) + '...';
+          
+          let tCls = 't-atrisk';
+          if (tContent.toLowerCase().includes('done') || 
+              tContent.toLowerCase().includes('achieved') || 
+              tContent.toLowerCase().includes('complete')) {
+            tCls = 't-done';
+          } 
+          else if (tContent.toLowerCase().includes('ongoing') || 
+                   tContent.toLowerCase().includes('progress')) {
+            tCls = 't-ongoing';
+          }
+
+          if (tContent && tContent.length > 3) { 
+            targets.push(
+              `<div class="target-item ${tCls}">` +
+              `<div class="t-status-bar"></div>` +
+              `<div class="t-body"><div class="t-note">${tContent}</div></div>` +
+              `</div>`
+            ); 
+            targetsAdded++; 
+          }
+        }
+        continue; // Skips adding target rows to the main task DB
+      }
+    }
+
+    // Process general row if neither skipping nor a target
+    let action = String(c[colMap.action] || '').trim();
+    
+    if (!action || action.length < 4) continue;
+    if (/^(department|next step|action point|s\/n|status|result|explanation|due|timeline|target|note)$/i.test(action)) continue;
+    if (/^\d{5,}$/.test(action) || /gmt\+/i.test(action) || /west africa standard time/i.test(action)) continue;
+    if (/end of .+ target/i.test(action)) continue;
+
+    let rawStat = String(c[colMap.status] || 'ontrack').toLowerCase();
+    let statusRaw = rawStat.replace(/[^a-z]/g, '');
+    if (rowStr.includes('on hold') || rowStr.includes('on-hold') || statusRaw.includes('onhold')) statusRaw = 'onhold';
+    else if (statusRaw.includes('delay') || statusRaw.includes('offtrack')) statusRaw = 'delayed';
+    else if (statusRaw.includes('achieve') || statusRaw.includes('done') || statusRaw.includes('complete')) statusRaw = 'achieved';
+    else if (statusRaw.includes('update')) statusRaw = 'update';
+    else statusRaw = 'ontrack';
+
+    const explanationText = String(c[colMap.explanation] || '').trim();
+    taskDatabase.push({ 
+      project: proj, 
+      session: sheetName, 
+      dept: lastDept,
+      action: action, 
+      due: formatExcelDate(c[colMap.due]), 
+      resultToAchieve: String(c[colMap.result] || '').trim(), 
+      explanation: explanationText, 
+      status: statusRaw 
+    });
+    tasksAdded++;
+  }
+
+  if (isLatest && targets.length > 0) { 
+    const el = document.getElementById(proj === 'Crossings' ? 'targets-crossings' : 'targets-annexe'); 
+    if (el) el.innerHTML += targets.join(''); 
+  }
+
+  sheetDiag[sheetName] = sheetDiag[sheetName] || {};
+  Object.assign(sheetDiag[sheetName], { proj, isLatest, rowsScanned, tasksAdded, targetsAdded, colMap, headerRow: sheetDiag[sheetName].headerRow || [], warnings: [] });
+  const d = sheetDiag[sheetName];
+  
+  if (tasksAdded === 0 && rowsScanned > 20) d.warnings.push('⚠ Zero tasks extracted — check that action column mapped correctly (current: col ' + colMap.action + ')');
+  if (isLatest && targetsAdded === 0 && rowsScanned > 30) d.warnings.push('⚠ No targets extracted — check target section has "Target" dept header');
+  if (d.colMap && d.colMap.action === d.colMap.due) d.warnings.push('❌ action and due columns map to same index — header scan failed');
+  if (d.headerRow && d.colMap) { const actionHeader = d.headerRow[d.colMap.action] || '(empty)'; const dueHeader = d.headerRow[d.colMap.due] || '(empty)'; d.info = `action col ${d.colMap.action} → "${actionHeader}" | due col ${d.colMap.due} → "${dueHeader}"`; }
+  
+  renderDiagPanel();
+}
 function processSheet(rows, proj, sheetName, isLatest) {
   // ── LAYER 3: Department whitelist + fuzzy matching ──
   const KNOWN_DEPTS = [
