@@ -2179,31 +2179,31 @@ async function syncWithGoogleSheet() {
   } catch (error) { console.error('Error syncing:', error); } finally { document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing')); }
 }
 
-// ── ROBUST METRIC EXTRACTION: Anchored to Fincon/Operations rows only ──
-function extractMetricValue(rowArray, isCurrency, dept) {
-  // LAYER 4: Only extract metrics from Operations/Fincon to prevent false positives
-  if (dept && !/operations|fincon|finance/i.test(dept)) return '';
-  
-  let combined = rowArray.join(' ').toLowerCase();
-  
-  if (isCurrency) {
-    // Look for ₦ symbol IMMEDIATELY followed by number
-    let currencyMatch = combined.match(/(?:₦|n)\s*([\d.,]+\s*[bmk]?)/i);
-    if (currencyMatch) return '₦' + currencyMatch[1].toUpperCase();
-    
-    // Fallback to any large number with a magnitude suffix
-    let fallback = combined.match(/([\d.,]+\s*[bmk])/i);
-    if (fallback) return '₦' + fallback[1].toUpperCase();
-  } else {
-    // For unit counts, look for clean integers only
-    for (let i = 0; i < Math.min(3, rowArray.length); i++) { 
-      let cellStr = String(rowArray[i]).trim(); 
-      // Skip garbage keywords
-      if (!cellStr || /sales|units|total|sold|target|template/i.test(cellStr)) continue; 
-      
-      // Strict: match exact integer values
-      let exactInt = cellStr.match(/^0*(\d+)$/); 
-      if (exactInt) return exactInt[1]; 
+// ── ROBUST METRIC EXTRACTION: reads the action column specifically, not the whole row ──
+function extractMetricValue(rowArray, isCurrency, dept, actionColIdx) {
+  // Extract from the action column first (most reliable), then fall back to full row scan
+  const actionCell = String(rowArray[actionColIdx] || '').trim();
+  const fullRow    = rowArray.join(' ');
+  const candidates = actionCell.length > 2 ? [actionCell, fullRow] : [fullRow];
+
+  for (const text of candidates) {
+    const t = text.toLowerCase();
+    if (isCurrency) {
+      // ₦ or N followed by number+magnitude
+      let m = text.match(/[₦N]\s*([\d,]+\.?\d*\s*[BMKbmk]?)/);
+      if (m) {
+        let raw = m[1].replace(/,/g,'').trim().toUpperCase();
+        return '₦' + raw;
+      }
+      // plain number with magnitude
+      m = text.match(/([\d,]+\.?\d*)\s*([BMKbmk])\b/);
+      if (m) return '₦' + m[1].replace(/,/g,'') + m[2].toUpperCase();
+    } else {
+      // Integer count — look for standalone number like "78" or "Sales- 78"
+      let m = text.match(/[-–:]\s*(\d{1,4})\b/);
+      if (m) return m[1];
+      m = text.match(/\b(\d{1,4})\b/);
+      if (m && parseInt(m[1]) > 0) return m[1];
     }
   }
   return '';
@@ -2285,15 +2285,17 @@ function processSheet(rows, proj, sheetName, isLatest) {
         const h = String(rows[r][ci]).toLowerCase().trim();
         if (!h) continue;
         
-        // Handle 'S/N' in col 1 (col 0 is blank): dept is always col 2 in this layout
-        if (h === 's/n' || h === 'no' || h === '#') {
-          colMap.dept = ci + 1; // dept follows S/N
-          colMap.action = ci + 2;
-          colMap.due = ci + 3;
-          colMap.result = ci + 4;
+        // S/N is in col B (index 1) because col A is intentionally blank.
+        // So: dept=C(2), action=D(3), due=E(4), result=F(5), explanation=G(6), project=H(7), status=I(8)
+        if (h === 's/n' || h === 'no.' || h === 'no' || h === '#') {
+          // ci is where S/N lives. Dept always one column to the right.
+          colMap.dept        = ci + 1;
+          colMap.action      = ci + 2;
+          colMap.due         = ci + 3;
+          colMap.result      = ci + 4;
           colMap.explanation = ci + 5;
-          colMap.project = ci + 6;
-          colMap.status = ci + 7;
+          colMap.project     = ci + 6;
+          colMap.status      = ci + 7;
         }
         else if (h === 'department' || h === 'dept') {
           colMap.dept = ci;
@@ -2393,43 +2395,56 @@ function processSheet(rows, proj, sheetName, isLatest) {
     }
 
     // ── LAYER 3: FUZZY MATCH DEPARTMENT ──
-    const deptCellValue = String(c[colMap.dept] || '').trim();
+    // Try colMap.dept first; if blank, try the adjacent column as fallback
+    // (handles sheets where dept is one column off due to blank col A)
+    let deptCellValue = String(c[colMap.dept] || '').trim();
+    if (!deptCellValue && colMap.dept > 1) {
+      // Fallback: try col immediately before (e.g. if dept is at index 1 not 2)
+      deptCellValue = String(c[colMap.dept - 1] || '').trim();
+    }
+    if (!deptCellValue && colMap.dept < c.length - 1) {
+      // Fallback: try col immediately after
+      deptCellValue = String(c[colMap.dept + 1] || '').trim();
+    }
     if (deptCellValue) {
       const matched = fuzzyMatchDept(deptCellValue);
       if (matched) {
-        lastDept = matched; // Update only if valid
+        lastDept = matched; // Update only if valid dept name
       }
     }
 
     if (isLatest) {
-      // Metric extraction accurately anchored to lastDept
-      if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) { 
-        setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', extractMetricValue(c, true, lastDept)); 
-        continue; 
-      }
-      if (rowStr.includes('units sold') || rowStr.includes('total units') || (rowStr.includes('sales') && rowStr.includes('units'))) { 
-        setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false, lastDept)); 
-        continue; 
-      }
-      if ((rowStr.includes('sales-') || rowStr.includes('sale:')) && !rowStr.includes('value')) { 
-        setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', extractMetricValue(c, false, lastDept)); 
-        continue; 
-      }
-      if (rowStr.includes('value of sales') || rowStr.includes('tvs')) { 
-        setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', extractMetricValue(c, true, lastDept)); 
-        continue; 
-      }
-      if (rowStr.includes('budget spent')) { 
-        setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', extractMetricValue(c, true, lastDept)); 
-        continue; 
-      }
-      if (rowStr.includes('balance') || rowStr.includes('bal:')) { 
-        setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', extractMetricValue(c, true, lastDept)); 
-        continue; 
-      }
-      if (!operationsOfferFound && /operations/i.test(lastDept) && rowStr.includes('offer letter')) { 
-        setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', extractMetricValue(c, false, lastDept)); 
-        operationsOfferFound = true; 
+      // ── METRIC EXTRACTION — anchored only to Operations/Fincon rows ──
+      // No 'continue' here: metric rows are ALSO valid tasks and must be pushed below.
+      const isOpsFin = /operations|fincon|finance/i.test(lastDept);
+      if (isOpsFin) {
+        if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) {
+          const v = extractMetricValue(c, true, lastDept, colMap.action);
+          if (v) setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', v);
+        }
+        if (rowStr.includes('units sold') || rowStr.includes('total units') ||
+            (rowStr.includes('no of sales') || rowStr.includes('no. of sales')) ||
+            (rowStr.match(/\bsales[-–:]\s*\d/) )) {
+          const v = extractMetricValue(c, false, lastDept, colMap.action);
+          if (v) setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', v);
+        }
+        if (rowStr.includes('value of sales') || rowStr.includes('tvs')) {
+          const v = extractMetricValue(c, true, lastDept, colMap.action);
+          if (v) setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', v);
+        }
+        if (rowStr.includes('account balance') || rowStr.includes('bal:') ||
+            (rowStr.includes('balance') && !rowStr.includes('refund'))) {
+          const v = extractMetricValue(c, true, lastDept, colMap.action);
+          if (v) setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', v);
+        }
+        if (!operationsOfferFound && rowStr.includes('offer letter')) {
+          const v = extractMetricValue(c, false, lastDept, colMap.action);
+          if (v) { setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', v); operationsOfferFound = true; }
+        }
+        if (rowStr.includes('budget spent')) {
+          const v = extractMetricValue(c, true, lastDept, colMap.action);
+          if (v) setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', v);
+        }
       }
 
       // ── HANDLE TARGET SECTION ──
@@ -2486,6 +2501,10 @@ function processSheet(rows, proj, sheetName, isLatest) {
     if (/^(department|next step|action point|s\/n|status|result|explanation|due|timeline|target|note)$/i.test(action)) continue;
     if (/^\d{5,}$/.test(action) || /gmt\+/i.test(action) || /west africa standard time/i.test(action)) continue;
     if (/end of .+ target/i.test(action)) continue;
+    // Skip pure metric data sub-rows (e.g. "Inflow - ₦6.27B", "Account balance - ₦388M")
+    // These are captured by extractMetricValue above; they are not actionable tasks.
+    if (/^(inflow|account balance|value of sales|no of sales|no\. of sales|units sold|budget spent|total inflow)\s*[-–:]/i.test(action)) continue;
+    if (/^(sales[-–:]\s*\d|bal[-–:])/i.test(action)) continue;
 
     let rawStat = String(c[colMap.status] || 'ontrack').toLowerCase();
     let statusRaw = rawStat.replace(/[^a-z]/g, '');
