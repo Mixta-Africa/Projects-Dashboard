@@ -2417,33 +2417,62 @@ function processSheet(rows, proj, sheetName, isLatest) {
       // ── METRIC EXTRACTION — anchored only to Operations/Fincon rows ──
       // No 'continue' here: metric rows are ALSO valid tasks and must be pushed below.
       const isOpsFin = /operations|fincon|finance/i.test(lastDept);
+      // ─────────────────────────────────────────────────────────────────
+// REPLACE the entire  if (isOpsFin) { ... }  block with this
+// ─────────────────────────────────────────────────────────────────
+
       if (isOpsFin) {
-        if (rowStr.includes('inflow') && !rowStr.includes('target') && !rowStr.includes('end of')) {
-          const v = extractMetricValue(c, true, lastDept, colMap.action);
-          if (v) setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', v);
+        // ── LABELED EXTRACTION: each metric anchored to its own label within the action cell ──
+        // Prevents value bleed where the first ₦ figure gets assigned to every metric card.
+        const actionText = String(c[colMap.action] || '');
+
+        function extractLabeled(text, labelPatterns) {
+          for (const pat of labelPatterns) {
+            const rx = new RegExp(pat + '[:\\s\\-]+([₦N]?\\s*[\\d,]+\\.?\\d*\\s*[BMKbmk]?(?:mn|MN|Mn)?)', 'i');
+            const m = text.match(rx);
+            if (m) {
+              let raw = m[1].trim().replace(/,/g,'').toUpperCase().replace(/MN$/,'M');
+              if (!raw.startsWith('₦')) raw = raw.replace(/^N(?=\d)/, '₦');
+              if (!raw.startsWith('₦')) raw = '₦' + raw;
+              return raw;
+            }
+          }
+          return null;
         }
-        if (rowStr.includes('units sold') || rowStr.includes('total units') ||
-            (rowStr.includes('no of sales') || rowStr.includes('no. of sales')) ||
-            (rowStr.match(/\bsales[-–:]\s*\d/) )) {
-          const v = extractMetricValue(c, false, lastDept, colMap.action);
-          if (v) setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', v);
+
+        function extractLabeledCount(text, labelPatterns) {
+          for (const pat of labelPatterns) {
+            let m = text.match(new RegExp(pat + '[:\\s\\-]+(\\d{1,4})\\b', 'i'));
+            if (m) return m[1];
+            m = text.match(new RegExp('(\\d{1,4})\\s+' + pat, 'i'));
+            if (m) return m[1];
+          }
+          return null;
         }
-        if (rowStr.includes('value of sales') || rowStr.includes('tvs')) {
-          const v = extractMetricValue(c, true, lastDept, colMap.action);
-          if (v) setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', v);
-        }
-        if (rowStr.includes('account balance') || rowStr.includes('bal:') ||
-            (rowStr.includes('balance') && !rowStr.includes('refund'))) {
-          const v = extractMetricValue(c, true, lastDept, colMap.action);
-          if (v) setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', v);
-        }
-        if (!operationsOfferFound && rowStr.includes('offer letter')) {
-          const v = extractMetricValue(c, false, lastDept, colMap.action);
-          if (v) { setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', v); operationsOfferFound = true; }
-        }
-        if (rowStr.includes('budget spent')) {
-          const v = extractMetricValue(c, true, lastDept, colMap.action);
-          if (v) setMetric(proj === 'Crossings' ? 'val-cx-budget' : 'val-annex-budget', v);
+
+        // Only extract from rows that actually contain metric data (not bare "Provide update..." prompts)
+        const hasMetricData = /[₦N][\d,]+|\bsales[-:\s]+\d|\d+\s*units|\d+\s*offer/i.test(actionText);
+
+        if (hasMetricData) {
+          const inflow = extractLabeled(actionText, ['inflow', 'total inflow']);
+          if (inflow) setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', inflow);
+
+          const units = extractLabeledCount(actionText, ['sales', 'units sold', 'no\\.?\\s*of\\s*sales']);
+          if (units) setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', units);
+
+          const salesVal = extractLabeled(actionText, ['value of sales', 'tvs']);
+          if (salesVal) setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', salesVal);
+
+          const balance = extractLabeled(actionText, ['account balance', 'account bal', 'bal(?!lard|lot|c)']);
+          if (balance) setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', balance);
+
+          if (!operationsOfferFound) {
+            const offers = extractLabeledCount(actionText, ['offer letters?', 'active offer']);
+            if (offers !== null) {
+              setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', offers);
+              operationsOfferFound = true;
+            }
+          }
         }
       }
 
