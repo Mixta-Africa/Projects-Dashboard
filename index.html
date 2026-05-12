@@ -2667,24 +2667,42 @@ function renderCurrentDept() {
   filtered.forEach(t => { let s = t.status || 'ontrack'; if (!groupedByStatus[s]) s = 'ontrack'; groupedByStatus[s].push(t); });
   const statusConfig = [ { key: 'ontrack', title: 'On Track', expanded: true }, { key: 'delayed', title: 'Delayed', expanded: true }, { key: 'onhold', title: 'On Hold', expanded: false }, { key: 'update', title: 'Update', expanded: false }, { key: 'achieved', title: 'Achieved', expanded: false } ];
   let finalHTML = '';
+  window._taskMap = window._taskMap || {};
   statusConfig.forEach(cfg => {
     const groupTasks = groupedByStatus[cfg.key]; if (groupTasks.length === 0) return;
     let tasksHTML = groupTasks.map(t => {
-      const id = taskId(t); const status = t.status || 'ontrack'; const statusLabel = {ontrack:'On Track',delayed:'Delayed',onhold:'On Hold',update:'Update',achieved:'Achieved'}[status] || 'On Track'; const dueCls = isOverdue(t) ? 'overdue' : '';
-      const statusLabels = {achieved:'✓ Mark as Achieved',delayed:'⚠ Mark as Delayed',onhold:'● Put On Hold',update:'▶ Needs Update',ontrack:'▲ Back On Track'};
+      const id = taskId(t);
+      const status = t.status || 'ontrack';
+      const statusLabel = {ontrack:'On Track',delayed:'Delayed',onhold:'On Hold',update:'Update',achieved:'Achieved'}[status] || 'On Track';
+      const dueCls = isOverdue(t) ? 'overdue' : '';
+ 
+      // ── FIX: Store task in map so onclick doesn't embed text in HTML ──
+      window._taskMap[id] = t;
+ 
       const actionButtons = !isHistory ? `<div class="status-actions" onclick="event.stopPropagation()">
-        <button class="status-btn btn-achieved" onclick="askConfirm('${id}','achieved','${t.action.replace(/'/g,"\'").substring(0,80)}')">✓ Achieved</button>
-        <button class="status-btn btn-delayed" onclick="askConfirm('${id}','delayed','${t.action.replace(/'/g,"\'").substring(0,80)}')">⚠ Delayed</button>
-        <button class="status-btn btn-onhold" onclick="askConfirm('${id}','onhold','${t.action.replace(/'/g,"\'").substring(0,80)}')">● On Hold</button>
-        <button class="status-btn btn-update" onclick="askConfirm('${id}','update','${t.action.replace(/'/g,"\'").substring(0,80)}')">▶ Update</button>
-        <button class="status-btn btn-ontrack" onclick="askConfirm('${id}','ontrack','${t.action.replace(/'/g,"\'").substring(0,80)}')">▲ On Track</button>
+        <button class="status-btn btn-achieved" onclick="askConfirm('${id}','achieved')">✓ Achieved</button>
+        <button class="status-btn btn-delayed"  onclick="askConfirm('${id}','delayed')">⚠ Delayed</button>
+        <button class="status-btn btn-onhold"   onclick="askConfirm('${id}','onhold')">● On Hold</button>
+        <button class="status-btn btn-update"   onclick="askConfirm('${id}','update')">▶ Update</button>
+        <button class="status-btn btn-ontrack"  onclick="askConfirm('${id}','ontrack')">▲ On Track</button>
       </div>${status === 'achieved' ? '<div class="revert-note">↩ To undo, click any status button above and confirm</div>' : ''}` : '';
-      return `<div class="step-card s-${status}" onclick="this.classList.toggle('expanded')" id="card-${id}">${t.resultToAchieve ? `<div class="step-context">${t.resultToAchieve}</div>` : ''}<div class="step-card-top"><div class="step-text">${t.action}</div><div class="step-meta"><span class="step-date ${dueCls}">Due: ${t.due}</span><span class="status-badge sb-${status}">${statusLabel}</span></div></div><div class="step-details-pane" onclick="event.stopPropagation()"><div class="pane-title">Details</div><div style="margin-bottom:8px"><strong>Explanation:</strong> ${t.explanation || 'No further explanation provided in sheet.'}</div>${actionButtons}</div></div>`;
+ 
+      return `<div class="step-card s-${status}" onclick="this.classList.toggle('expanded')" id="card-${id}">
+        ${t.resultToAchieve ? `<div class="step-context">${t.resultToAchieve}</div>` : ''}
+        <div class="step-card-top">
+          <div class="step-text">${t.action}</div>
+          <div class="step-meta">
+            <span class="step-date ${dueCls}">Due: ${t.due}</span>
+            <span class="status-badge sb-${status}">${statusLabel}</span>
+          </div>
+        </div>
+        <div class="step-details-pane" onclick="event.stopPropagation()">
+          <div class="pane-title">Details</div>
+          <div style="margin-bottom:8px"><strong>Explanation:</strong> ${t.explanation || 'No further explanation provided in sheet.'}</div>
+          ${actionButtons}
+        </div>
+      </div>`;
     }).join('');
-    const expClass = cfg.expanded ? 'expanded' : '';
-    finalHTML += `<div class="status-accordion ${expClass}"><div class="status-header" onclick="this.parentElement.classList.toggle('expanded')"><div style="display:flex; align-items:center; gap:8px;"><span>${cfg.title} Tasks</span><span class="nav-badge" style="background:var(--border-md); color:var(--text-primary);">${groupTasks.length}</span></div><span class="status-toggle-icon">▼</span></div><div class="status-tasks-wrapper">${tasksHTML}</div></div>`;
-  });
-  list.innerHTML = finalHTML; renderUpdatesList();
 }
 // ── Status change confirmation system ──
 let _pendingStatusId = null;
@@ -2698,18 +2716,21 @@ const _statusMeta = {
   ontrack:  { label: '▲ On Track', bg: 'rgba(46,125,50,0.1)',  color: '#2e7d32', desc: 'This marks the task as progressing normally with no blockers.' }
 };
 
-function askConfirm(id, status, taskPreview) {
+function askConfirm(id, status) {
   _pendingStatusId = id;
   _pendingStatus = status;
   const meta = _statusMeta[status] || { label: status, bg: '#eee', color: '#333', desc: '' };
+ 
+  // ── FIX: Get task preview from map, not from onclick attribute ──
+  const taskObj = window._taskMap && window._taskMap[id];
+  const taskPreview = taskObj ? taskObj.action.substring(0, 80) + (taskObj.action.length > 80 ? '...' : '') : '';
+ 
   document.getElementById('confirm-title').textContent = 'Update this task?';
-  document.getElementById('confirm-desc').textContent = 'You are about to change the status of:';
-  document.getElementById('confirm-task-preview').textContent = taskPreview + (taskPreview.length >= 80 ? '...' : '');
+  document.getElementById('confirm-task-preview').textContent = taskPreview;
   const badge = document.getElementById('confirm-new-status-badge');
   badge.textContent = meta.label;
   badge.style.background = meta.bg;
   badge.style.color = meta.color;
-  // Replace the desc paragraph
   document.getElementById('confirm-desc').textContent = meta.desc;
   document.getElementById('confirm-overlay').classList.add('open');
 }
