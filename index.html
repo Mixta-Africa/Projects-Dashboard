@@ -1584,13 +1584,13 @@ const AUTO_SYNC_MINUTES = 5;
 // console.firebase.google.com → Project Settings → Your apps → Firebase SDK snippet
 // ══════════════════════════════════════════════════════════════════════
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  databaseURL:       "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId:         "YOUR_PROJECT",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyC7SI9u4iRLVl3BMSX3WTDt1QCRnwwA5lk",
+  authDomain:        "mixta-projects-dashboard.firebaseapp.com",
+  databaseURL:       "https://mixta-projects-dashboard-default-rtdb.firebaseio.com",
+  projectId:         "mixta-projects-dashboard",
+  storageBucket:     "mixta-projects-dashboard.firebasestorage.app",
+  messagingSenderId: "386861034797",
+  appId:             "1:386861034797:web:04f7cbcc6ee2154c52b7a4"
 };
 
 // ══════════════════════════════════════════════════════════════════════
@@ -2703,6 +2703,11 @@ function renderCurrentDept() {
         </div>
       </div>`;
     }).join('');
+
+    const expClass = cfg.expanded ? 'expanded' : '';
+    finalHTML += `<div class="status-accordion ${expClass}"><div class="status-header" onclick="this.parentElement.classList.toggle('expanded')"><div style="display:flex; align-items:center; gap:8px;"><span>${cfg.title} Tasks</span><span class="nav-badge" style="background:var(--border-md); color:var(--text-primary);">${groupTasks.length}</span></div><span class="status-toggle-icon">▼</span></div><div class="status-tasks-wrapper">${tasksHTML}</div></div>`;
+  });
+  list.innerHTML = finalHTML; renderUpdatesList();
 }
 // ── Status change confirmation system ──
 let _pendingStatusId = null;
