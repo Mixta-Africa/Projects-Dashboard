@@ -879,7 +879,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
         <div class="target-list" id="targets-crossings"></div>
       </div>
     </div>
-    <div class="alert-strip alert-red"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span><strong>Major redesign:</strong> Hospitality site moved CX9 → CX10. New: 6 commercial + 68 residential units. Render + "coming soon" billboard pending design freeze. Civil mobilisation gated on ₦800M sales milestone.</span></div>
+    <div id="alert-crossings" class="alert-strip" style="display:none;"></div>
 
 <!-- ╔══════════════════════════════════════════════════════╗ -->
 <!-- ║  PREDICTIVE INTELLIGENCE PANEL — LAKOWE CROSSINGS   ║ -->
@@ -1165,7 +1165,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
         <div class="target-list" id="targets-annexe"></div>
       </div>
     </div>
-    <div class="alert-strip alert-grey"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><span><strong>Cash-construction risk:</strong> Balance ₦61.9M after two large disbursements. No active ad campaign or offer letters. Target ₦1B+ to sustain BAFF momentum. QS onboarding must close by Apr 23.</span></div>
+    <div id="alert-annexe" class="alert-strip" style="display:none;"></div>
 
 <!-- ╔══════════════════════════════════════════════════════╗ -->
 <!-- ║  PREDICTIVE INTELLIGENCE PANEL — LAKOWE ANNEXE      ║ -->
@@ -1959,6 +1959,7 @@ function loadSeedData() {
   document.getElementById('last-updated-text').textContent = 'Seed Data: ' + now + ' (syncing...)';
   updateDashboardDates();
   applyPriorityColors();
+  renderAlertStrips();
   updateSidebarCounts();
   renderOverduePanels();
   if (currentDept) renderCurrentDept();
@@ -2175,7 +2176,7 @@ async function syncWithGoogleSheet() {
     });
     const now = new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('last-updated-text').textContent = 'Live Synced: ' + now;
-    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept();
+    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept();
   } catch (error) { console.error('Error syncing:', error); } finally { document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing')); }
 }
 
@@ -2382,14 +2383,19 @@ function processSheet(rows, proj, sheetName, isLatest) {
       continue; 
     }
 
-    // Exit target section if we see a valid task property
+    // Exit target section only on a genuine numbered task row:
+    // requires a recognised dept + meaningful action + due date
     if (inTargetSection) {
-      const dueCell = String(c[colMap.due] || '').trim();
-      const actionCell = String(c[colMap.action] || '').trim();
-      const hasValidDate = dueCell.length > 0 && !/^(target|end of)/i.test(dueCell);
-      const hasValidAction = actionCell.length > 4 && !/^(target|next step)/i.test(actionCell);
-      
-      if (hasValidDate || (hasValidAction && dueCell.length > 0)) {
+      const deptCellRaw = String(c[colMap.dept] || '').trim();
+      const actionCellRaw = String(c[colMap.action] || '').trim();
+      const dueCellRaw = String(c[colMap.due] || '').trim();
+      const hasKnownDept = deptCellRaw.length > 1 &&
+        !/^(target|end of target|targets)$/i.test(deptCellRaw) &&
+        fuzzyMatchDept(deptCellRaw) !== null;
+      const hasAction = actionCellRaw.length > 4 &&
+        !/^(target|end of|done|achieved|complete|ongoing|at risk|not started)/i.test(actionCellRaw);
+      const hasDue = dueCellRaw.length > 0 && !/^(target|end of)/i.test(dueCellRaw);
+      if (hasKnownDept && hasAction && hasDue) {
         inTargetSection = false;
       }
     }
@@ -2584,6 +2590,59 @@ function applyPriorityColors() {
   const cxOff = document.getElementById('val-cx-offers').textContent; document.getElementById('card-cx-offers').className = 'metric-card priority-card ' + offersColorClass(cxOff); document.getElementById('val-cx-offers').className = 'metric-value ' + offersColorClass(cxOff);
   const aBal = document.getElementById('val-annex-balance').textContent; document.getElementById('card-annex-balance').className = 'metric-card priority-card ' + balanceColorClass(aBal); document.getElementById('val-annex-balance').className = 'metric-value ' + balanceColorClass(aBal);
   const aOff = document.getElementById('val-annex-offers').textContent; document.getElementById('card-annex-offers').className = 'metric-card priority-card ' + offersColorClass(aOff); document.getElementById('val-annex-offers').className = 'metric-value ' + offersColorClass(aOff);
+}
+function renderAlertStrips() {
+  ['Crossings', 'Annexe'].forEach(proj => {
+    const el = document.getElementById('alert-' + proj.toLowerCase());
+    if (!el) return;
+    const latest = availableSessions[proj] && availableSessions[proj][0];
+    if (!latest) { el.style.display = 'none'; return; }
+    const overrides = getStatusOverrides();
+    const tasks = taskDatabase
+      .filter(t => t.project === proj && t.session === latest)
+      .map(t => ({ ...t, status: overrides[taskId(t)] || t.status }));
+    if (tasks.length === 0) { el.style.display = 'none'; return; }
+    const delayed  = tasks.filter(t => t.status === 'delayed' || (t.status === 'ontrack' && isOverdue(t)));
+    const onhold   = tasks.filter(t => t.status === 'onhold');
+    const achieved = tasks.filter(t => t.status === 'achieved');
+    const open     = tasks.filter(t => t.status !== 'achieved').length;
+    const deptStats = {};
+    tasks.forEach(t => {
+      if (!deptStats[t.dept]) deptStats[t.dept] = { delayed: 0, onhold: 0 };
+      if (t.status === 'delayed' || (t.status === 'ontrack' && isOverdue(t))) deptStats[t.dept].delayed++;
+      if (t.status === 'onhold') deptStats[t.dept].onhold++;
+    });
+    const delayedDepts = Object.entries(deptStats)
+      .filter(([,v]) => v.delayed > 0)
+      .sort((a,b) => b[1].delayed - a[1].delayed)
+      .slice(0, 3)
+      .map(([dept, v]) => dept + ' (' + v.delayed + ')');
+    const holdDepts = Object.entries(deptStats)
+      .filter(([,v]) => v.onhold > 0)
+      .map(([dept]) => dept);
+    const isRed = delayed.length > 0;
+    el.className = 'alert-strip ' + (isRed ? 'alert-red' : 'alert-grey');
+    const parts = [];
+    if (delayed.length > 0) {
+      parts.push('<strong>' + delayed.length + ' delayed task' + (delayed.length !== 1 ? 's' : '') + '</strong>' +
+        (delayedDepts.length ? ' — ' + delayedDepts.join(', ') : ''));
+    }
+    if (onhold.length > 0) {
+      parts.push('<strong>' + onhold.length + ' on hold</strong>' +
+        (holdDepts.length <= 3 ? ' (' + holdDepts.join(', ') + ')' : ''));
+    }
+    if (achieved.length > 0) {
+      parts.push('<strong>' + achieved.length + ' achieved</strong> this session');
+    }
+    if (parts.length === 0) {
+      parts.push('<strong>' + open + ' open task' + (open !== 1 ? 's' : '') + '</strong> — all on track');
+    }
+    const icon = isRed
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+    el.innerHTML = icon + '<span>' + parts.join(' · ') + ' — <em>' + latest + ' snapshot</em></span>';
+    el.style.display = 'flex';
+  });
 }
 function renderOverduePanels() {
   ['Crossings','Annexe'].forEach(proj => {
@@ -2795,7 +2854,7 @@ function selectProject(proj) {
   document.getElementById('nav-tabs-group').style.display = 'flex'; document.getElementById('bottom-nav').style.display = 'block';
   const dashTab = document.querySelector('.nav-tab'); showPage('dashboard', dashTab);
   document.getElementById('panel-placeholder').style.display = ''; document.getElementById('dynamic-dept-container').style.display = 'none'; document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-  updateTargetHeaders(); updateSidebarCounts(); applyPriorityColors(); renderOverduePanels(); rebuildMobilePills();
+  updateTargetHeaders(); updateSidebarCounts(); applyPriorityColors(); renderAlertStrips(); renderOverduePanels(); rebuildMobilePills();
   piAutoExpand(proj);
 }
 function updateDashboardDates() {
@@ -3336,6 +3395,7 @@ function generateReminderEmail() {
     let totalTasks = 0;
     depts.forEach(dept => {
       const tasks = getDeptReminderTasks(_reminderProject, dept, latest, overrides);
+      if (tasks.total === 0) return; // Skip — no open tasks, conserves email quota
       totalTasks += tasks.total;
       _allDeptEmails[dept] = {
         body: buildReminderEmailBody(_reminderProject, dept, tasks),
@@ -3345,18 +3405,25 @@ function generateReminderEmail() {
           : (MAILING_LIST[_reminderProject][dept] || [])
       };
     });
+    _allDeptEmailKeys = Object.keys(_allDeptEmails);
+    if (_allDeptEmailKeys.length === 0) {
+      statusEl.textContent = 'No departments have open tasks — no emails needed.';
+      btn.innerHTML = '↺ Recompose';
+      btn.disabled = false;
+      return;
+    }
     // Show the first dept email as preview
-    const firstDept = depts[0];
+    const firstDept = _allDeptEmailKeys[0];
     _generatedEmailBody = _allDeptEmails[firstDept].body;
     _generatedEmailSubject = _allDeptEmails[firstDept].subject;
     document.getElementById('reminder-email-preview').textContent =
       '=== Preview: ' + firstDept + ' ===\n\n' + _allDeptEmails[firstDept].body +
-      '\n\n' + (depts.length - 1) + ' more department email(s) queued. "Open in Mail App" will open each one in sequence.';
+      '\n\n' + (_allDeptEmailKeys.length - 1) + ' more department email(s) queued. "Open in Mail App" will open each one in sequence.';
     document.getElementById('reminder-send-btn').style.display = 'inline-flex';
     document.getElementById('reminder-copy-btn').style.display = 'inline-flex';
-    statusEl.textContent = depts.length + ' emails composed — ' + totalTasks + ' tasks across all departments';
+    const _skippedCount = depts.length - _allDeptEmailKeys.length;
+    statusEl.textContent = _allDeptEmailKeys.length + ' dept email(s) composed' + (_skippedCount > 0 ? ' (' + _skippedCount + ' skipped — no open tasks)' : '') + ' — ' + totalTasks + ' tasks total';
     _allDeptEmailIndex = 0;
-    _allDeptEmailKeys = depts;
   } else {
     // Single department
     const tasks = getDeptReminderTasks(_reminderProject, _reminderDept, latest, overrides);
