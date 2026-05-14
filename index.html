@@ -314,8 +314,10 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
 .mobile-dept-pill:not(.active-cx):not(.active-annex) .pill-count { background: var(--brand-grey-light); color: var(--text-muted); }
 .diag-panel { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000; width: 380px; max-width: 96vw; background: #1a1a2e; color: #e0e0e0; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: 'DM Mono', monospace; font-size: 11px; overflow: hidden; }
 .diag-panel.open { display: block; animation: fadeInScale 0.2s ease; }
-.diag-panel.minimized .diag-body { display: none !important; }
-.diag-panel.minimized .diag-minimize-icon { transform: rotate(180deg); }
+.diag-panel.open.minimized .diag-body { display: none; }
+.diag-panel.open.minimized { border-radius: 8px; }
+.diag-minimize-btn svg { transition: transform 0.25s; }
+.diag-panel.minimized .diag-minimize-btn svg { transform: rotate(180deg); }
 @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 .diag-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: #16213e; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #90caf9; }
 .diag-header-close { cursor: pointer; padding: 4px; opacity: 0.7; transition: opacity 0.2s; }
@@ -786,24 +788,34 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
 }
 .task-card.no-permission .task-status-controls { opacity: 0.3; pointer-events: none; }
 /* ── AI CHATBOT PANEL ── */
-.chatbot-panel { display:none; position:fixed; bottom:20px; right:20px; z-index:2000; width:400px; max-width:96vw; height:520px; max-height:80vh; background:#fff; border-radius:var(--radius); box-shadow:0 12px 40px rgba(0,0,0,0.18); display:none; flex-direction:column; overflow:hidden; border:1px solid var(--border); }
-.chatbot-panel.open { display:flex; animation:fadeInScale 0.2s ease; }
-.chatbot-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:var(--text-primary); color:#fff; flex-shrink:0; }
-.chatbot-header-left { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; }
-.chatbot-header-right { display:flex; gap:6px; }
-.chatbot-close-btn { background:rgba(255,255,255,0.15); border:none; border-radius:var(--radius-sm); color:#fff; width:26px; height:26px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
-.chatbot-close-btn:hover { background:rgba(255,255,255,0.28); }
-.chatbot-messages { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
-.chat-msg { max-width:88%; font-size:13px; line-height:1.55; padding:10px 13px; border-radius:var(--radius); word-break:break-word; }
-.chat-msg.user { align-self:flex-end; background:var(--text-primary); color:#fff; border-bottom-right-radius:3px; }
-.chat-msg.bot { align-self:flex-start; background:var(--brand-grey-light); color:var(--text-primary); border-bottom-left-radius:3px; }
-.chat-msg.bot.thinking { color:var(--text-muted); font-style:italic; }
-.chatbot-input-row { display:flex; gap:8px; padding:12px 14px; border-top:1px solid var(--border); flex-shrink:0; background:var(--bg); }
-.chatbot-input { flex:1; padding:9px 12px; border:1px solid var(--border-md); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; resize:none; min-height:38px; max-height:100px; }
-.chatbot-input:focus { outline:none; border-color:var(--text-primary); }
-.chatbot-send-btn { padding:9px 14px; background:var(--text-primary); color:#fff; border:none; border-radius:var(--radius-sm); font-weight:700; cursor:pointer; font-family:inherit; font-size:12px; transition:opacity 0.2s; flex-shrink:0; }
-.chatbot-send-btn:hover { opacity:0.85; }
-.chatbot-send-btn:disabled { opacity:0.4; cursor:default; }
+.chatbot-panel{display:none;position:fixed;bottom:80px;right:20px;z-index:2000;width:420px;max-width:96vw;height:560px;max-height:calc(100vh - 100px);background:#fff;border-radius:var(--radius);box-shadow:0 16px 48px rgba(0,0,0,0.2);flex-direction:column;overflow:hidden;border:1px solid var(--border);}
+.chatbot-panel.open{display:flex;animation:fadeInScale 0.2s ease;}
+.chatbot-header{display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:60px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;flex-shrink:0;}
+.chatbot-header-left{display:flex;align-items:center;gap:10px;}
+.chatbot-header-icon{width:36px;height:36px;background:rgba(255,255,255,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chatbot-title{font-size:13px;font-weight:800;color:#fff;line-height:1.2;}
+.chatbot-subtitle{font-size:10px;color:rgba(255,255,255,0.55);font-weight:500;}
+.chatbot-close-btn{background:rgba(255,255,255,0.12);border:none;border-radius:50%;color:#fff;width:30px;height:30px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;flex-shrink:0;}
+.chatbot-close-btn:hover{background:rgba(255,255,255,0.25);}
+.chatbot-welcome{padding:20px 18px 14px;text-align:center;border-bottom:1px solid var(--border);background:linear-gradient(to bottom,#f8f9ff,#fff);flex-shrink:0;}
+.chatbot-welcome-emoji{font-size:28px;margin-bottom:8px;}
+.chatbot-welcome h3{font-size:15px;font-weight:800;color:var(--text-primary);margin-bottom:4px;letter-spacing:-0.02em;}
+.chatbot-welcome p{font-size:12px;color:var(--text-muted);line-height:1.5;}
+.chatbot-suggestions{display:flex;flex-wrap:wrap;gap:6px;padding:10px 18px;border-bottom:1px solid var(--border);background:#fafafa;flex-shrink:0;}
+.chatbot-suggestion{font-size:11px;padding:5px 11px;border-radius:var(--radius-pill);border:1px solid var(--border-md);background:#fff;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.chatbot-suggestion:hover{background:var(--text-primary);color:#fff;border-color:var(--text-primary);}
+.chatbot-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+.chat-msg{max-width:86%;font-size:13px;line-height:1.6;padding:10px 14px;border-radius:var(--radius);word-break:break-word;}
+.chat-msg.user{align-self:flex-end;background:var(--text-primary);color:#fff;border-bottom-right-radius:3px;}
+.chat-msg.bot{align-self:flex-start;background:#f1f3f5;color:var(--text-primary);border-bottom-left-radius:3px;}
+.chat-msg.thinking{color:var(--text-muted);font-style:italic;background:#f8f8f8;}
+.chat-msg.bot strong{color:var(--text-primary);}
+.chatbot-input-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0;background:#fff;}
+.chatbot-input{flex:1;padding:9px 12px;border:1.5px solid var(--border-md);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;resize:none;min-height:38px;max-height:90px;transition:border-color 0.2s;}
+.chatbot-input:focus{outline:none;border-color:var(--text-primary);}
+.chatbot-send-btn{padding:9px 16px;background:var(--text-primary);color:#fff;border:none;border-radius:var(--radius-sm);font-weight:700;cursor:pointer;font-family:inherit;font-size:12px;transition:opacity 0.2s;flex-shrink:0;}
+.chatbot-send-btn:hover{opacity:0.85;}
+.chatbot-send-btn:disabled{opacity:0.35;cursor:default;}
 
 
 </style>
@@ -834,7 +846,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
   </div>
   <div class="nav-right">
     <span class="nav-date" id="last-updated-text">Last updated: Waiting for Sync</span>
-    <select id="dashboard-session-picker" onchange="onSessionPickerChange(this.value)" title="View a specific session" style="display:none;font-size:11px;font-weight:700;color:var(--text-primary);background:var(--brand-grey-light);border:1px solid var(--border-md);border-radius:var(--radius-sm);padding:4px 8px;cursor:pointer;font-family:inherit;max-width:170px;">
+    <select id="dashboard-session-picker" onchange="onSessionPickerChange(this.value)" title="View a specific meeting date" style="display:none;font-size:11px;font-weight:700;color:var(--text-primary);background:var(--brand-grey-light);border:1px solid var(--border-md);border-radius:var(--radius-sm);padding:4px 8px;cursor:pointer;font-family:inherit;max-width:170px;">
       <option value="latest">📅 Latest</option>
     </select>
     <span class="nav-badge badge-cx nav-project-btn" id="btn-nav-cx" onclick="selectProject('Crossings')">Crossings</span>
@@ -843,10 +855,6 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
     <button class="admin-btn" onclick="openDiagAuth()" title="Admin Panel">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
       <span class="diag-badge-count" id="admin-badge">0</span>
-    </button>
-    <button class="admin-btn" onclick="openChatbot()" title="Ask AI about the projects" style="gap:5px;">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span style="font-size:10px;font-weight:800">Ask AI</span>
     </button>
     <!-- Auth controls -->
     <span id="auth-user-badge" class="auth-user-badge" style="display:none;"></span>
@@ -865,7 +873,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
   <div class="bottom-nav-inner">
     <button class="bottom-nav-btn active" id="bnav-dashboard" onclick="mobileNavClick('dashboard',this)"><span class="bnav-dot"></span><span class="bnav-icon"><svg width="1em" height="1em" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='2' ry='2'/><line x1='7' y1='7' x2='17' y2='7'/><line x1='7' y1='11' x2='13' y2='11'/><rect x='17' y='10' width='1' height='1'/><line x1='7' y1='15' x2='10' y2='15'/><rect x='17' y='14' width='1' height='1'/><line x1='7' y1='19' x2='14' y2='19'/><rect x='17' y='18' width='1' height='1'/></svg></span><span class="bnav-label">Overview</span></button>
     <button class="bottom-nav-btn" id="bnav-departments" onclick="mobileNavClick('departments',this)"><span class="bnav-dot"></span><span class="bnav-icon"><svg width="1em" height="1em" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'><path d='M4 3h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm4 2v2h10V5H8zM4 10h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2zm12 2v2h2v-2h-2zM4 17h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2zm7 2v2h7v-2h-7z'/></svg></span><span class="bnav-label">Tasks</span></button>
-    <button class="bottom-nav-btn" id="bnav-sync" onclick="syncWithGoogleSheet()"><span class="bnav-icon"><svg class="sync-icon" width="1em" height="1em" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg></span><span class="bnav-label">Sync</span></button>
+    <button class="bottom-nav-btn" id="bnav-ask-ai" onclick="openChatbot()"><span class="bnav-icon"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="bnav-label">Ask AI</span></button>
   </div>
 </div>
 
@@ -1555,7 +1563,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
         <span class="tool-nav-label">Report</span>
       </button>
       <button class="diag-minimize-btn" onclick="minimizeDiagPanel()" title="Minimize" style="padding:8px 12px; font-size:12px; background:none; border:none; color:inherit; cursor:pointer;">
-        <svg class="diag-minimize-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform 0.2s"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
       </button>
       <div class="diag-header-close" onclick="closeDiagPanel()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
     </div>
@@ -1752,22 +1760,18 @@ function initFirebase() {
       if (currentDept) renderCurrentDept();
     });
 
-    // Realtime listener for department updates — syncs across all users instantly
+    // Realtime dept updates — syncs across all tabs/users instantly
     _fbDb.ref('dept_updates').on('value', snap => {
-      const allUpdates = snap.val() || {};
-      // Cache all project/dept update arrays to localStorage for offline use
-      Object.entries(allUpdates).forEach(([proj, depts]) => {
-        Object.entries(depts).forEach(([dept, updatesObj]) => {
-          const arr = Object.values(updatesObj).sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
+      const all = snap.val() || {};
+      Object.entries(all).forEach(([proj, depts]) => {
+        Object.entries(depts).forEach(([dept, obj]) => {
+          const arr = Object.values(obj).sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
           if (arr.length > 30) arr.splice(0, arr.length - 30);
-          const cacheKey = 'fb_deptupdate:' + proj + ':' + dept;
-          try { localStorage.setItem(cacheKey, JSON.stringify(arr)); } catch(e) {}
+          try { localStorage.setItem('fb_dept:' + proj + ':' + dept, JSON.stringify(arr)); } catch(e){}
         });
       });
-      // Re-render if current dept panel is open
       if (currentDept) renderUpdatesList();
     });
-
     console.log('[Firebase] Initialized ✓');
   } catch(err) {
     console.error('[Firebase] Init error:', err);
@@ -1947,6 +1951,7 @@ function saveStatusMulti(id, newStatus, taskObj) {
 let taskDatabase = [];
 let availableSessions = { Crossings: [], Annexe: [] };
 let sheetDiag = {};
+let sessionTargets = {}; // keyed by 'proj:session' → array of HTML strings
 
 // ── TOP-LEVEL DEPT NORMALIZATION MAP (referenced by both processSheet and loadSeedData) ──
 const DEPT_NORMALIZE_MAP = {
@@ -1999,29 +2004,24 @@ function loadSeedData() {
   availableSessions.Annexe = SEED_ANNEXE_SESSIONS;
   availableSessions.Crossings = SEED_CX_SESSIONS;
 
-  // Extract key metrics from seed Operations rows
-  (function extractSeedMetrics() {
+  // Extract metrics immediately from seed Operations rows
+  (function() {
     ['Crossings','Annexe'].forEach(proj => {
-      const latest = availableSessions[proj] && availableSessions[proj][0];
-      if (!latest) return;
-      const pfx = proj === 'Crossings';
-      let offerFound = false;
-      taskDatabase.filter(t => t.project === proj && t.session === latest && /operations|fincon/i.test(t.dept)).forEach(t => {
-        const txt = (t.action||'') + ' ' + (t.explanation||'');
+      const latest = availableSessions[proj]?.[0]; if (!latest) return;
+      const pfx = proj==='Crossings'; let offerFound=false;
+      taskDatabase.filter(t=>t.project===proj&&t.session===latest&&/operations|fincon/i.test(t.dept)).forEach(t=>{
+        const txt=(t.action||'')+' '+(t.explanation||'');
         if (!/[₦N][\d,]+|sales[-:\s]+\d|\d+\s*units|offer letter/i.test(txt)) return;
         let m;
-        m = txt.match(/inflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
-        if (m) { let v=m[1].trim().toUpperCase().replace(/MN$/,'M').replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent=v; }
-        m = txt.match(/value of sales[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-        if (m) { let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent=v; }
-        m = txt.match(/account balance[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-        if (m) { let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent=v; }
-        m = txt.match(/sales[:\s\-]+(\d{1,4})/i) || txt.match(/(\d{1,4})\s+units/i);
-        if (m) document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent=m[1];
-        if (!offerFound) {
-          m = txt.match(/offer letters?[:\s\-]+(\d{1,4})/i) || txt.match(/active offer[:\s\-]+(\d{1,4})/i);
-          if (m) { document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent=m[1]; offerFound=true; }
-        }
+        m=txt.match(/inflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
+        if(m){let v=m[1].trim().toUpperCase().replace(/MN$/,'M').replace(/^N(?=\d)/,'₦');if(!v.startsWith('₦'))v='₦'+v;document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent=v;}
+        m=txt.match(/value of sales[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
+        if(m){let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦');if(!v.startsWith('₦'))v='₦'+v;document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent=v;}
+        m=txt.match(/account balance[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
+        if(m){let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦');if(!v.startsWith('₦'))v='₦'+v;document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent=v;}
+        m=txt.match(/sales[:\s\-]+(\d{1,4})/i)||txt.match(/(\d{1,4})\s+units/i);
+        if(m)document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent=m[1];
+        if(!offerFound){m=txt.match(/offer letters?[:\s\-]+(\d{1,4})/i)||txt.match(/active offer[:\s\-]+(\d{1,4})/i);if(m){document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent=m[1];offerFound=true;}}
       });
     });
   })();
@@ -2116,10 +2116,7 @@ function openDiagAuth() {
 }
 function closeDiagPanel() { document.getElementById('diag-panel').classList.remove('open'); }
 function minimizeDiagPanel() {
-  const panel = document.getElementById('diag-panel');
-  panel.classList.toggle('minimized');
-  const icon = panel.querySelector('.diag-minimize-icon');
-  if (icon) icon.style.transform = panel.classList.contains('minimized') ? 'rotate(180deg)' : '';
+  document.getElementById('diag-panel').classList.toggle('minimized');
 }
 function closeAdminModal() { document.getElementById('admin-modal').style.display = 'none'; }
 function toggleForgotPassword() { 
@@ -2162,31 +2159,28 @@ function submitTeamUpdate() {
   const author = document.getElementById('new-update-author').value.trim() || 'Anonymous';
   if (!text) return;
   const update = { text, author, timestamp: new Date().toISOString() };
-  const fbKey = 'dept_updates/' + currentProject + '/' + currentDept;
   if (_fbReady && _fbDb) {
-    // Write to Firebase — the listener will pick it up and sync everywhere
-    _fbDb.ref(fbKey).push(update).catch(e => console.warn('[Firebase] Update write failed:', e));
-  } else {
-    // Offline fallback: localStorage only
-    const key = 'deptupdate:' + currentProject + ':' + currentDept;
-    let updates = JSON.parse(localStorage.getItem(key) || '[]');
-    updates.push(update);
-    if (updates.length > 30) updates.shift();
-    localStorage.setItem(key, JSON.stringify(updates));
-    renderUpdatesList();
+    _fbDb.ref('dept_updates/' + currentProject + '/' + currentDept).push(update)
+      .catch(e => console.warn('[Firebase] dept update failed:', e));
   }
+  // Also write locally so it's instant in this tab
+  const key = 'deptupdate:' + currentProject + ':' + currentDept;
+  let updates = JSON.parse(localStorage.getItem(key) || '[]');
+  updates.push(update);
+  if (updates.length > 30) updates.shift();
+  localStorage.setItem(key, JSON.stringify(updates));
   document.getElementById('new-update-text').value = '';
+  renderUpdatesList();
 }
 function renderUpdatesList() {
   if (!currentProject || !currentDept) return;
   const list = document.getElementById('updates-list'); if(!list) return;
-  // Prefer Firebase cache (localStorage key 'fb_deptupdate:proj:dept'), fallback to old key
-  const fbCacheKey = 'fb_deptupdate:' + currentProject + ':' + currentDept;
-  const oldKey = 'deptupdate:' + currentProject + ':' + currentDept;
-  let updates = JSON.parse(localStorage.getItem(fbCacheKey) || localStorage.getItem(oldKey) || '[]');
-  if (updates.length === 0) { list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No pre-meeting updates recorded yet.</div>'; return; }
-  list.innerHTML = updates.slice().reverse().map(u =>
-    `<div class="update-item"><div class="update-meta"><strong>${u.author || 'Anonymous'}</strong> \u2014 ${new Date(u.timestamp).toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</div><div style="white-space:pre-wrap;word-break:break-word;">${u.text}</div></div>`
+  const fbKey = 'fb_dept:' + currentProject + ':' + currentDept;
+  const localKey = 'deptupdate:' + currentProject + ':' + currentDept;
+  let updates = JSON.parse(localStorage.getItem(fbKey) || localStorage.getItem(localKey) || '[]');
+  if (!updates.length) { list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No pre-meeting updates recorded yet.</div>'; return; }
+  list.innerHTML = [...updates].reverse().map(u =>
+    `<div class="update-item"><div class="update-meta"><strong>${u.author||'Anonymous'}</strong> \u2014 ${new Date(u.timestamp).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div><div style="white-space:pre-wrap;word-break:break-word;">${u.text}</div></div>`
   ).join('');
 }
 
@@ -2198,7 +2192,7 @@ async function syncWithGoogleSheet() {
     if (SHEET_ANNEXE) fetches.push(fetch(SHEET_ANNEXE).then(r => r.arrayBuffer()).then(b => ({data: b, proj: 'Annexe'})));
     if (fetches.length === 0) return;
     const results = await Promise.all(fetches);
-    taskDatabase = []; availableSessions = { Crossings: [], Annexe: [] }; sheetDiag = {};
+    taskDatabase = []; availableSessions = { Crossings: [], Annexe: [] }; sheetDiag = {}; sessionTargets = {};
     document.getElementById('targets-crossings').innerHTML = ''; document.getElementById('targets-annexe').innerHTML = '';
     results.forEach(res => {
       const wb = XLSX.read(res.data, {type: 'array', cellDates: true});
@@ -2467,16 +2461,10 @@ function processSheet(rows, proj, sheetName, isLatest) {
 
     // Exit target section only on a genuine numbered task row
     if (inTargetSection) {
-      const deptCellRaw = String(c[colMap.dept] || '').trim();
-      const actionCellRaw = String(c[colMap.action] || '').trim();
-      const dueCellRaw = String(c[colMap.due] || '').trim();
-      const hasKnownDept = deptCellRaw.length > 1 &&
-        !/^(target|targets|end of target)$/i.test(deptCellRaw) &&
-        fuzzyMatchDept(deptCellRaw) !== null;
-      const hasAction = actionCellRaw.length > 4 &&
-        !/^(target|end of|done|achieved|complete|ongoing|at risk|not started)/i.test(actionCellRaw);
-      const hasDue = dueCellRaw.length > 0 && !/^(target|end of)/i.test(dueCellRaw);
-      if (hasKnownDept && hasAction && hasDue) {
+      const _drc = String(c[colMap.dept]||'').trim(), _arc = String(c[colMap.action]||'').trim(), _duc = String(c[colMap.due]||'').trim();
+      if (_drc.length>1 && !/^(target|targets|end of target)$/i.test(_drc) && fuzzyMatchDept(_drc)!==null &&
+          _arc.length>4 && !/^(target|end of|done|achieved|complete|ongoing|at risk)/i.test(_arc) &&
+          _duc.length>0 && !/^(target|end of)/i.test(_duc)) {
         inTargetSection = false;
       }
     }
@@ -2554,13 +2542,10 @@ function processSheet(rows, proj, sheetName, isLatest) {
           if (balance) setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', balance);
 
           if (!operationsOfferFound) {
-            const explanationCol = String(c[colMap.explanation] || '');
-            const offerText = actionText + ' ' + explanationCol;
-            const offers = extractLabeledCount(offerText, ['offer letters?', 'active offer', 'offer letter']);
-            if (offers !== null) {
-              setMetric(proj === 'Crossings' ? 'val-cx-offers' : 'val-annex-offers', offers);
-              operationsOfferFound = true;
-            }
+            const _expCol = String(c[colMap.explanation]||'');
+            const _ofTxt = actionText + ' ' + _expCol;
+            const offers = extractLabeledCount(_ofTxt, ['offer letters?', 'active offer', 'offer letter']);
+            if (offers !== null) { setMetric(proj==='Crossings'?'val-cx-offers':'val-annex-offers', offers); operationsOfferFound = true; }
           }
         }
       }
@@ -2647,9 +2632,13 @@ function processSheet(rows, proj, sheetName, isLatest) {
     tasksAdded++;
   }
 
-  if (isLatest && targets.length > 0) { 
-    const el = document.getElementById(proj === 'Crossings' ? 'targets-crossings' : 'targets-annexe'); 
-    if (el) el.innerHTML += targets.join(''); 
+  // Store targets for every session so the calendar can display them
+  if (targets.length > 0) {
+    sessionTargets[proj + ':' + sheetName] = targets;
+    if (isLatest) {
+      const el = document.getElementById(proj === 'Crossings' ? 'targets-crossings' : 'targets-annexe');
+      if (el) el.innerHTML = targets.join('');
+    }
   }
 
   sheetDiag[sheetName] = sheetDiag[sheetName] || {};
@@ -2678,17 +2667,17 @@ function renderAlertStrips() {
   ['Crossings','Annexe'].forEach(proj => {
     const el = document.getElementById('alert-' + proj.toLowerCase());
     if (!el) return;
-    const latest = availableSessions[proj] && availableSessions[proj][0];
+    const latest = availableSessions[proj]?.[0];
     if (!latest) { el.style.display='none'; return; }
     const overrides = getStatusOverrides();
-    const tasks = taskDatabase.filter(t => t.project===proj && t.session===latest).map(t=>({...t,status:overrides[taskId(t)]||t.status}));
+    const tasks = taskDatabase.filter(t=>t.project===proj&&t.session===latest).map(t=>({...t,status:overrides[taskId(t)]||t.status}));
     if (!tasks.length) { el.style.display='none'; return; }
-    const delayed = tasks.filter(t=>t.status==='delayed'||(t.status==='ontrack'&&isOverdue(t)));
-    const onhold  = tasks.filter(t=>t.status==='onhold');
-    const achieved= tasks.filter(t=>t.status==='achieved');
-    const open    = tasks.filter(t=>t.status!=='achieved').length;
+    const delayed=tasks.filter(t=>t.status==='delayed'||(t.status==='ontrack'&&isOverdue(t)));
+    const onhold=tasks.filter(t=>t.status==='onhold');
+    const achieved=tasks.filter(t=>t.status==='achieved');
+    const open=tasks.filter(t=>t.status!=='achieved').length;
     const ds={};
-    tasks.forEach(t=>{if(!ds[t.dept])ds[t.dept]={d:0,h:0}; if(t.status==='delayed'||(t.status==='ontrack'&&isOverdue(t)))ds[t.dept].d++; if(t.status==='onhold')ds[t.dept].h++;});
+    tasks.forEach(t=>{if(!ds[t.dept])ds[t.dept]={d:0,h:0};if(t.status==='delayed'||(t.status==='ontrack'&&isOverdue(t)))ds[t.dept].d++;if(t.status==='onhold')ds[t.dept].h++;});
     const dd=Object.entries(ds).filter(([,v])=>v.d>0).sort((a,b)=>b[1].d-a[1].d).slice(0,3).map(([d,v])=>d+' ('+v.d+')');
     const hd=Object.entries(ds).filter(([,v])=>v.h>0).map(([d])=>d);
     const isRed=delayed.length>0;
@@ -2698,9 +2687,7 @@ function renderAlertStrips() {
     if(onhold.length)parts.push('<strong>'+onhold.length+' on hold</strong>'+(hd.length<=3?' ('+hd.join(', ')+')':''));
     if(achieved.length)parts.push('<strong>'+achieved.length+' achieved</strong> this session');
     if(!parts.length)parts.push('<strong>'+open+' open task'+(open!==1?'s':'')+'</strong> — all on track');
-    const icon=isRed
-      ?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
-      :'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+    const icon=isRed?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
     el.innerHTML=icon+'<span>'+parts.join(' · ')+' — <em>'+latest+' snapshot</em></span>';
     el.style.display='flex';
   });
@@ -2916,7 +2903,7 @@ function selectProject(proj) {
   document.getElementById('nav-tabs-group').style.display = 'flex'; document.getElementById('bottom-nav').style.display = 'block';
   const dashTab = document.querySelector('.nav-tab'); showPage('dashboard', dashTab);
   document.getElementById('panel-placeholder').style.display = ''; document.getElementById('dynamic-dept-container').style.display = 'none'; document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-  updateTargetHeaders(); updateSidebarCounts(); applyPriorityColors(); renderOverduePanels(); rebuildMobilePills(); _dashboardSession='latest'; populateSessionPicker(); refreshDashboardForSession();
+  updateTargetHeaders(); updateSidebarCounts(); applyPriorityColors(); renderAlertStrips(); renderOverduePanels(); rebuildMobilePills(); _dashboardSession='latest'; populateSessionPicker(); refreshDashboardForSession(); _dashboardSession='latest'; populateSessionPicker(); refreshDashboardForSession();
   piAutoExpand(proj);
 }
 function updateDashboardDates() {
@@ -2957,7 +2944,7 @@ function renderDiagPanel() {
   html += renderAdminUpdatesFeed();
 
   body.innerHTML = html; badge.textContent = totalIssues;
-  if (totalIssues > 0 && diagUnlocked) { badge.classList.add('has-issues'); const dp=document.getElementById('diag-panel'); if(!dp.classList.contains('minimized'))dp.classList.add('open'); }
+  if (totalIssues > 0 && diagUnlocked) { badge.classList.add('has-issues'); const _dp=document.getElementById('diag-panel'); if(!_dp.classList.contains('minimized')) _dp.classList.add('open'); }
   else if (totalIssues > 0) badge.classList.add('has-issues');
   else badge.classList.remove('has-issues');
 }
@@ -4029,24 +4016,36 @@ ${body}
 </div>
 
 
-<!-- ══════════════════════════════════════════════════
-     AI PROJECT CHATBOT PANEL
-     ══════════════════════════════════════════════ -->
+<!-- ══ AI PROJECT CHATBOT ══ -->
 <div class="chatbot-panel" id="chatbot-panel">
   <div class="chatbot-header">
     <div class="chatbot-header-left">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Ask AI — Project Assistant
+      <div class="chatbot-header-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.63 1.17 5 3.06 6.68L4 22l4.5-2.25C9.6 20.23 10.77 20.5 12 20.5c5.52 0 10-4.03 10-9s-4.48-9-10-9z"/></svg>
+      </div>
+      <div>
+        <div class="chatbot-title">Project AI Assistant</div>
+        <div class="chatbot-subtitle">Lakowe Crossings &amp; Annexe · All Sessions</div>
+      </div>
     </div>
-    <div class="chatbot-header-right">
-      <button class="chatbot-close-btn" onclick="closeChatbot()" title="Close">✕</button>
-    </div>
+    <button class="chatbot-close-btn" onclick="closeChatbot()" aria-label="Close">✕</button>
   </div>
-  <div class="chatbot-messages" id="chatbot-messages">
-    <div class="chat-msg bot">Hi! I have access to all your project data across every session in both Lakowe Crossings and Lakowe Annexe. Ask me anything — tasks, deadlines, departments, financial figures, progress, risks, or patterns across dates.</div>
+  <div class="chatbot-welcome" id="chatbot-welcome">
+    <div class="chatbot-welcome-emoji">🏗️</div>
+    <h3>Welcome! How may I assist you today?</h3>
+    <p>I have full access to all tasks, deadlines, financial data,<br>and meeting notes across every session in both projects.</p>
   </div>
+  <div class="chatbot-suggestions" id="chatbot-suggestions">
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">What's overdue in Crossings?</button>
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">Annexe account balance history</button>
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">IPD tasks this session</button>
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">Delayed tasks across all depts</button>
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">How many offer letters active?</button>
+  </div>
+  <div class="chatbot-messages" id="chatbot-messages"></div>
   <div class="chatbot-input-row">
-    <textarea class="chatbot-input" id="chatbot-input" placeholder="Ask about any task, date, department, figure..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+    <textarea class="chatbot-input" id="chatbot-input" placeholder="Ask anything about the projects…" rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
     <button class="chatbot-send-btn" id="chatbot-send-btn" onclick="sendChatMessage()">Send</button>
   </div>
 </div>
@@ -4074,11 +4073,111 @@ document.addEventListener('click', function(e) {
 
 
 
+// ═══════════════════════════════════════════════════════
+// SESSION PICKER — drives all dashboard tiles per date
+// ═══════════════════════════════════════════════════════
+let _dashboardSession = 'latest';
+
+function populateSessionPicker() {
+  const picker = document.getElementById('dashboard-session-picker');
+  if (!picker || !currentProject) return;
+  const sessions = availableSessions[currentProject] || [];
+  picker.innerHTML = '<option value="latest">\uD83D\uDCC5 Latest</option>';
+  sessions.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = formatSheetName(s);
+    picker.appendChild(opt);
+  });
+  picker.value = _dashboardSession === 'latest' ? 'latest' : (_dashboardSession || 'latest');
+  picker.style.display = sessions.length > 1 ? 'inline-block' : 'none';
+}
+
+function onSessionPickerChange(val) {
+  _dashboardSession = val;
+  refreshDashboardForSession();
+}
+
+function getActiveSession() {
+  const sessions = availableSessions[currentProject] || [];
+  if (!sessions.length) return null;
+  return _dashboardSession === 'latest' ? sessions[0] : _dashboardSession;
+}
+
+function refreshDashboardForSession() {
+  if (!currentProject) return;
+  const session = getActiveSession();
+  if (!session) return;
+  const proj = currentProject;
+  const pfx = proj === 'Crossings';
+
+  // ── Re-extract metrics from Operations/Fincon rows for this session ──
+  const dflt = { inflow: pfx?'₦1.72B':'₦6.27B', units: pfx?'6':'78', sales: pfx?'₦2.07B':'₦6.89B', balance: pfx?'₦40M':'₦61.9M', offers:'0' };
+  document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent = dflt.inflow;
+  document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent = dflt.units;
+  document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent = dflt.sales;
+  document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent = dflt.balance;
+  document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent = dflt.offers;
+
+  let offerFound = false;
+  taskDatabase.filter(t => t.project === proj && t.session === session && /operations|fincon/i.test(t.dept)).forEach(t => {
+    const txt = (t.action||'') + ' ' + (t.explanation||'');
+    if (!/[₦N][\d,]+|\bsales[-:\s]+\d|\d+\s*units|offer letter/i.test(txt)) return;
+    let m;
+    m = txt.match(/\binflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
+    if (m) { let v=m[1].trim().toUpperCase().replace(/MN$/,'M').replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent=v; }
+    m = txt.match(/value of sales[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
+    if (m) { let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent=v; }
+    m = txt.match(/account balance[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
+    if (m) { let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent=v; }
+    m = txt.match(/\bsales[:\s\-]+(\d{1,4})\b/i) || txt.match(/\b(\d{1,4})\s+units/i);
+    if (m) document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent = m[1];
+    if (!offerFound) {
+      m = txt.match(/offer letters?[:\s\-]+(\d{1,4})\b/i) || txt.match(/active offer[:\s\-]+(\d{1,4})\b/i);
+      if (m) { document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent = m[1]; offerFound = true; }
+    }
+  });
+
+  applyPriorityColors();
+
+  // ── Targets for selected session ──
+  const targetEl = document.getElementById(pfx ? 'targets-crossings' : 'targets-annexe');
+  if (targetEl) {
+    const key = proj + ':' + session;
+    const stored = sessionTargets[key];
+    targetEl.innerHTML = stored && stored.length ? stored.join('') : '<div class="t-note" style="padding:12px;color:var(--text-muted)">No targets recorded for this session.</div>';
+  }
+
+  // ── Overdue panel ──
+  const realFirst = availableSessions[proj][0];
+  if (availableSessions[proj][0] !== session) availableSessions[proj].unshift(session);
+  renderOverduePanels();
+  // restore
+  if (availableSessions[proj][0] === session && session !== realFirst) availableSessions[proj].shift();
+
+  // ── Date header label ──
+  const m2 = session.match(/^([a-z]{3})\s*(\d+)/i);
+  if (m2) {
+    const mn = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
+    const mon = mn[m2[1].toLowerCase()] || m2[1];
+    const el = document.getElementById(pfx ? 'ph-date-cx' : 'ph-date-annex');
+    if (el) el.textContent = 'Jan 5 \u2013 ' + mon + ' ' + parseInt(m2[2]) + ', 2026';
+  }
+
+  // ── Targets title ──
+  const m3 = session.match(/^([a-z]+)/i);
+  if (m3) {
+    const mon = m3[1].charAt(0).toUpperCase() + m3[1].slice(1).toLowerCase();
+    const el = document.getElementById(pfx ? 'targets-cx-title' : 'targets-annex-title');
+    if (el) el.textContent = 'End of ' + mon + ' Targets';
+  }
+}
 
 // ═══════════════════════════════════════════════════════
 // AI PROJECT CHATBOT
 // ═══════════════════════════════════════════════════════
 let _chatHistory = [];
+let _chatbotFirstOpen = true;
 
 function openChatbot() {
   document.getElementById('chatbot-panel').classList.add('open');
@@ -4089,25 +4188,28 @@ function closeChatbot() {
   document.getElementById('chatbot-panel').classList.remove('open');
 }
 
+function useSuggestion(btn) {
+  document.getElementById('chatbot-input').value = btn.textContent;
+  document.getElementById('chatbot-suggestions').style.display = 'none';
+  document.getElementById('chatbot-welcome').style.display = 'none';
+  sendChatMessage();
+}
+
 function buildFullProjectContext() {
-  // Build a rich text snapshot of ALL data in taskDatabase across ALL sessions
   const overrides = getStatusOverrides();
-  let ctx = '';
-
-  ['Crossings', 'Annexe'].forEach(proj => {
+  let ctx = 'TODAY: ' + new Date().toLocaleDateString('en-GB', {weekday:'long',day:'2-digit',month:'long',year:'numeric'}) + '\n\n';
+  ['Crossings','Annexe'].forEach(proj => {
     const sessions = availableSessions[proj] || [];
-    ctx += `\n${'='.repeat(60)}\nPROJECT: Lakowe ${proj}\nSESSIONS AVAILABLE: ${sessions.join(', ')}\n${'='.repeat(60)}\n`;
-
-    // Commercial metrics from latest session
     const pfx = proj === 'Crossings';
-    ctx += `\nCOMMERCIAL METRICS (latest):\n`;
-    ctx += `  Total Inflow: ${document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent}\n`;
-    ctx += `  Units Sold: ${document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent}\n`;
-    ctx += `  Value of Sales: ${document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent}\n`;
-    ctx += `  Account Balance: ${document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent}\n`;
-    ctx += `  Active Offer Letters: ${document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent}\n`;
+    ctx += '='.repeat(55) + '\nPROJECT: Lakowe ' + proj + '\n';
+    ctx += 'SESSIONS IN SHEET: ' + sessions.join(', ') + '\n';
+    ctx += 'LATEST COMMERCIAL METRICS:\n';
+    ctx += '  Inflow: ' + document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent + '\n';
+    ctx += '  Units Sold: ' + document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent + '\n';
+    ctx += '  Value of Sales: ' + document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent + '\n';
+    ctx += '  Account Balance: ' + document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent + '\n';
+    ctx += '  Active Offer Letters: ' + document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent + '\n\n';
 
-    // All tasks across all sessions, grouped by session then dept
     const tasks = taskDatabase.filter(t => t.project === proj);
     const bySession = {};
     tasks.forEach(t => {
@@ -4118,272 +4220,93 @@ function buildFullProjectContext() {
 
     sessions.forEach(s => {
       if (!bySession[s]) return;
-      ctx += `\n--- SESSION: ${s} ---\n`;
+      ctx += '--- SESSION: ' + s + ' ---\n';
       Object.entries(bySession[s]).forEach(([dept, dTasks]) => {
-        ctx += `  [${dept}]\n`;
+        ctx += '  [' + dept + ']\n';
         dTasks.forEach(t => {
-          const status = overrides[taskId(t)] || t.status;
-          ctx += `    • ${t.action}`;
-          if (t.due && t.due !== 'TBD') ctx += ` | Due: ${t.due}`;
-          ctx += ` | Status: ${status}`;
-          if (t.explanation) ctx += ` | Note: ${t.explanation}`;
+          const st = overrides[taskId(t)] || t.status;
+          ctx += '    \u2022 ' + t.action;
+          if (t.due && t.due !== 'TBD') ctx += ' | Due: ' + t.due;
+          ctx += ' | Status: ' + st;
+          if (t.explanation) ctx += ' | Note: ' + t.explanation;
           ctx += '\n';
         });
       });
     });
+    ctx += '\n';
   });
-
   return ctx;
 }
 
 async function sendChatMessage() {
   const input = document.getElementById('chatbot-input');
   const btn = document.getElementById('chatbot-send-btn');
-  const question = input.value.trim();
-  if (!question) return;
-
+  const q = input.value.trim();
+  if (!q) return;
   input.value = '';
   btn.disabled = true;
-  addChatMessage('user', question);
-  const thinkingId = addChatMessage('bot', 'Searching through all project data…', true);
 
-  // Build context
-  const projectData = buildFullProjectContext();
+  // Hide welcome + suggestions after first message
+  document.getElementById('chatbot-welcome').style.display = 'none';
+  document.getElementById('chatbot-suggestions').style.display = 'none';
 
-  // Compose messages for the API
-  const systemPrompt = `You are an AI assistant embedded in the Mixta Africa Projects Dashboard.
-You have access to ALL task data from every meeting session across Lakowe Crossings and Lakowe Annexe.
-The data below contains every task, department, deadline, status, financial figure, and note from the project sheets.
+  addChatMsg('user', q);
+  const thinkId = addChatMsg('bot', 'Searching project data\u2026', true);
 
-Answer questions precisely and specifically. Reference exact task text, dates, departments, and figures.
-When asked about overdue items, compare due dates to today's date (${new Date().toLocaleDateString('en-GB')}).
-Format numbers clearly. If a question spans multiple sessions, compare them.
-Be concise but complete. Use bullet points for lists.
+  const systemPrompt = 'You are an AI assistant embedded in the Mixta Africa Projects Dashboard for Lakowe Crossings and Lakowe Annexe real estate projects in Lagos, Nigeria.\n\nYou have complete access to ALL task data across every meeting session. Answer precisely, referencing exact task text, departments, dates, and financial figures.\n\nWhen asked about overdue items, compare due dates to today (' + new Date().toLocaleDateString('en-GB') + ').\nFormat currency clearly (e.g. ₦40M, ₦1.72B). Use bullet points for lists. Be concise but thorough.\n\nFULL PROJECT DATA:\n' + buildFullProjectContext();
 
-PROJECT DATA (full extract):
-${projectData}`;
+  const messages = [..._chatHistory.slice(-8), { role:'user', content:q }];
 
-  // Build conversation history for multi-turn context
-  const messages = [
-    ..._chatHistory.slice(-6), // keep last 3 exchanges for context
-    { role: 'user', content: question }
-  ];
-
+  let answer = '';
   try {
-    // Try Anthropic API first (available in this environment)
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: messages
-      })
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1200, system:systemPrompt, messages })
     });
-
-    let answer = '';
-    if (response.ok) {
-      const data = await response.json();
-      answer = data.content && data.content[0] ? data.content[0].text : 'No response received.';
-    } else {
-      // Fallback to Groq if Anthropic fails
-      const groqKey = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
-      if (!groqKey) throw new Error('No AI API key configured. Set GROQ_API_KEY in localStorage.');
-      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          max_tokens: 1000,
-          messages: [{ role: 'system', content: systemPrompt }, ...messages]
-        })
-      });
-      if (!groqRes.ok) throw new Error('API error: ' + groqRes.status);
-      const groqData = await groqRes.json();
-      answer = groqData.choices?.[0]?.message?.content || 'No response received.';
-    }
-
-    removeChatMessage(thinkingId);
-    addChatMessage('bot', answer);
-    _chatHistory.push({ role: 'user', content: question });
-    _chatHistory.push({ role: 'assistant', content: answer });
-    if (_chatHistory.length > 20) _chatHistory.splice(0, 2);
-
+    if (r.ok) {
+      const d = await r.json();
+      answer = d.content?.[0]?.text || 'No response.';
+    } else { throw new Error('API ' + r.status); }
   } catch(e) {
-    removeChatMessage(thinkingId);
-    addChatMessage('bot', 'Error: ' + e.message + '. Check your API configuration.');
+    // Groq fallback
+    try {
+      const groqKey = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
+      if (!groqKey) throw new Error('No API key. Set GROQ_API_KEY in localStorage to enable the chatbot.');
+      const gr = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+        body: JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:1200,
+          messages:[{role:'system',content:systemPrompt},...messages] })
+      });
+      if (!gr.ok) throw new Error('Groq ' + gr.status);
+      const gd = await gr.json();
+      answer = gd.choices?.[0]?.message?.content || 'No response.';
+    } catch(e2) { answer = '\u26a0\ufe0f ' + e2.message; }
   }
 
+  removeChatMsg(thinkId);
+  addChatMsg('bot', answer);
+  _chatHistory.push({role:'user',content:q},{role:'assistant',content:answer});
+  if (_chatHistory.length > 16) _chatHistory.splice(0,2);
   btn.disabled = false;
   input.focus();
 }
 
-let _chatMsgId = 0;
-function addChatMessage(role, text, isThinking = false) {
-  const id = 'cmsg-' + (++_chatMsgId);
+let _msgId = 0;
+function addChatMsg(role, text, thinking=false) {
+  const id = 'cm' + (++_msgId);
   const div = document.createElement('div');
-  div.className = 'chat-msg ' + role + (isThinking ? ' thinking' : '');
   div.id = id;
-  div.textContent = text;
-  const container = document.getElementById('chatbot-messages');
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
+  div.className = 'chat-msg ' + role + (thinking ? ' thinking' : '');
+  // Simple markdown: **bold**
+  div.innerHTML = text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  const box = document.getElementById('chatbot-messages');
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
   return id;
 }
-
-function removeChatMessage(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
-}
-
-// ═══════════════════════════════════════════════════════
-// CALENDAR / SESSION PICKER — drives all dashboard tiles
-// ═══════════════════════════════════════════════════════
-let _dashboardSession = 'latest'; // 'latest' or a sheet name e.g. 'May 7'
-
-function populateSessionPicker() {
-  const picker = document.getElementById('dashboard-session-picker');
-  if (!picker || !currentProject) return;
-  const sessions = availableSessions[currentProject] || [];
-  picker.innerHTML = '<option value="latest">📅 Latest</option>';
-  sessions.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s;
-    opt.textContent = formatSheetName(s);
-    picker.appendChild(opt);
-  });
-  picker.value = _dashboardSession === 'latest' ? 'latest' : _dashboardSession;
-  picker.style.display = sessions.length > 1 ? 'inline-block' : 'none';
-}
-
-function onSessionPickerChange(val) {
-  _dashboardSession = val;
-  refreshDashboardForSession();
-}
-
-function getActiveSession(proj) {
-  const sessions = availableSessions[proj || currentProject] || [];
-  if (!sessions.length) return null;
-  if (_dashboardSession === 'latest' || !proj || proj === currentProject) {
-    return _dashboardSession === 'latest' ? sessions[0] : _dashboardSession;
-  }
-  return sessions[0];
-}
-
-function refreshDashboardForSession() {
-  if (!currentProject) return;
-  const session = getActiveSession(currentProject);
-  if (!session) return;
-
-  const proj = currentProject;
-  const pfx = proj === 'Crossings';
-
-  // ── Reset metrics to defaults before re-extraction ──
-  const defaults = {
-    inflow: pfx ? '₦1.72B' : '₦6.27B',
-    units:  pfx ? '6' : '78',
-    sales:  pfx ? '₦2.07B' : '₦6.89B',
-    balance:pfx ? '₦40M' : '₦61.9M',
-    offers: '0'
-  };
-  document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent = defaults.inflow;
-  document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent = defaults.units;
-  document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent = defaults.sales;
-  document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent = defaults.balance;
-  document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent = defaults.offers;
-
-  // ── Re-extract metrics from Operations/Fincon rows for this session ──
-  const sessionTasks = taskDatabase.filter(t => t.project === proj && t.session === session);
-  let offerFound = false;
-  sessionTasks.filter(t => /operations|fincon/i.test(t.dept)).forEach(t => {
-    const txt = (t.action || '') + ' ' + (t.explanation || '');
-    if (!/[₦N][\d,]+|\bsales[-:\s]+\d|\d+\s*units|offer letter/i.test(txt)) return;
-    let m;
-    m = txt.match(/\binflow[:\s\-]+([\₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
-    if (m) { let v=m[1].trim().toUpperCase().replace(/MN$/,'M').replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent=v; }
-    m = txt.match(/value of sales[:\s\-]+([\₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-    if (m) { let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent=v; }
-    m = txt.match(/account balance[:\s\-]+([\₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-    if (m) { let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent=v; }
-    m = txt.match(/\bsales[:\s\-]+(\d{1,4})\b/i) || txt.match(/\b(\d{1,4})\s+units/i);
-    if (m) document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent=m[1];
-    if (!offerFound) {
-      m = txt.match(/offer letters?[:\s\-]+(\d{1,4})\b/i) || txt.match(/active offer[:\s\-]+(\d{1,4})\b/i);
-      if (m) { document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent=m[1]; offerFound=true; }
-    }
-  });
-
-  // ── Update priority card colours ──
-  applyPriorityColors();
-
-  // ── Overdue panel — use selected session as "latest" ──
-  const realLatest = availableSessions[proj][0];
-  availableSessions[proj].unshift(session);
-  // deduplicate
-  availableSessions[proj] = [...new Set(availableSessions[proj])];
-  availableSessions[proj].sort((a,b) => {
-    const si = availableSessions[proj].indexOf(a), sj = availableSessions[proj].indexOf(b);
-    return 0; // keep as-is
-  });
-  // restore order: put selected session first for rendering
-  availableSessions[proj] = [session, ...availableSessions[proj].filter(s=>s!==session)];
-  renderOverduePanels();
-  // restore
-  availableSessions[proj] = [realLatest, ...availableSessions[proj].filter(s=>s!==realLatest)];
-
-  // ── Update date header ──
-  const m2 = session.match(/^([a-z]{3})\s*(\d+)/i);
-  if (m2) {
-    const mn = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
-    const mon = mn[m2[1].toLowerCase()] || m2[1];
-    const el = document.getElementById(pfx ? 'ph-date-cx' : 'ph-date-annex');
-    if (el) el.textContent = 'Jan 5 \u2013 ' + mon + ' ' + parseInt(m2[2]) + ', 2026';
-  }
-
-  // ── Target title ──
-  const m3 = session.match(/^([a-z]+)/i);
-  if (m3) {
-    const mon = m3[1].charAt(0).toUpperCase() + m3[1].slice(1).toLowerCase();
-    const el = document.getElementById(pfx?'targets-cx-title':'targets-annex-title');
-    if (el) el.textContent = 'End of ' + mon + ' Targets';
-  }
-
-  // ── Update chart to mark selected session ──
-  updateChartSessionMarker(session, proj);
-}
-
-function updateChartSessionMarker(session, proj) {
-  const canvasId = proj === 'Annexe' ? 'c1' : 'c3';
-  const chart = typeof Chart !== 'undefined' ? Chart.getChart(canvasId) : null;
-  if (!chart) return;
-  const labels = chart.data.labels;
-  if (!labels || !labels.length) return;
-  // Format the session name to match the chart label format
-  const formatted = session.replace(/^([a-z]{3})\s*(\d+)/i, (_, m, d) =>
-    m.charAt(0).toUpperCase() + m.slice(1).toLowerCase() + ' ' + parseInt(d));
-  // Find the label index
-  const idx = labels.findIndex(l => l === formatted || l.replace(/\s+/,' ').trim() === formatted);
-  // Remove any existing selection annotation
-  chart.data.datasets.forEach(ds => { if (ds._sessionMarker) { chart.data.datasets.splice(chart.data.datasets.indexOf(ds),1); } });
-  if (idx >= 0) {
-    // Add a vertical annotation dataset (single-point vertical line)
-    const markerData = labels.map((_, i) => i === idx ? chart.data.datasets[0].data[idx] : null);
-    chart.data.datasets.push({
-      _sessionMarker: true,
-      label: 'Selected',
-      data: markerData,
-      borderColor: 'rgba(100,100,255,0.7)',
-      backgroundColor: 'rgba(100,100,255,0.2)',
-      pointRadius: labels.map((_,i) => i===idx ? 8 : 0),
-      pointHoverRadius: labels.map((_,i) => i===idx ? 10 : 0),
-      showLine: false,
-      type: 'scatter'
-    });
-    chart.update('none');
-  }
-}
-
+function removeChatMsg(id) { const el=document.getElementById(id); if(el) el.remove(); }
 
 window.onload = function () {
   // ── Load Groq API key from environment or GitHub secrets ──
