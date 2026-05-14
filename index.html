@@ -1954,6 +1954,39 @@ function loadSeedData() {
   availableSessions.Annexe = SEED_ANNEXE_SESSIONS;
   availableSessions.Crossings = SEED_CX_SESSIONS;
 
+  // Extract key metrics from seed Operations rows (mirrors processSheet logic)
+  (function extractSeedMetrics() {
+    const metricProjs = ['Crossings', 'Annexe'];
+    metricProjs.forEach(proj => {
+      const latest = availableSessions[proj] && availableSessions[proj][0];
+      if (!latest) return;
+      const opsTasks = taskDatabase.filter(t => t.project === proj && t.session === latest &&
+        /operations|fincon/i.test(t.dept));
+      let offerFound = false;
+      opsTasks.forEach(t => {
+        const txt = t.action || '';
+        if (!/[₦N][\d,]+|sales[-:\s]+\d|\d+\s*units|\d+\s*offer/i.test(txt)) return;
+        const pfx = proj === 'Crossings';
+        // Inflow
+        let m = txt.match(/inflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
+        if (m) { let v = m[1].trim().toUpperCase().replace(/MN$/,'M').replace(/^N(?=\d)/,'₦'); if (!v.startsWith('₦')) v='₦'+v; document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent = v; }
+        // Value of sales
+        m = txt.match(/value of sales[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
+        if (m) { let v = m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if (!v.startsWith('₦')) v='₦'+v; document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent = v; }
+        // Account balance
+        m = txt.match(/account balance[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
+        if (m) { let v = m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if (!v.startsWith('₦')) v='₦'+v; document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent = v; }
+        // Sales / units
+        m = txt.match(/sales[:\s\-]+(\d{1,4})/i) || txt.match(/(\d{1,4})\s+units/i);
+        if (m) document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent = m[1];
+        // Offer letters
+        if (!offerFound) {
+          m = txt.match(/offer letters?[:\s\-]+(\d{1,4})/i) || txt.match(/active offer[:\s\-]+(\d{1,4})/i);
+          if (m) { document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent = m[1]; offerFound = true; }
+        }
+      });
+    });
+  })();
   // Update UI
   const now = new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'});
   document.getElementById('last-updated-text').textContent = 'Seed Data: ' + now + ' (syncing...)';
@@ -2383,8 +2416,7 @@ function processSheet(rows, proj, sheetName, isLatest) {
       continue; 
     }
 
-    // Exit target section only on a genuine numbered task row:
-    // requires a recognised dept + meaningful action + due date
+    // Exit target section only on a genuine numbered task row
     if (inTargetSection) {
       const deptCellRaw = String(c[colMap.dept] || '').trim();
       const actionCellRaw = String(c[colMap.action] || '').trim();
@@ -2495,7 +2527,7 @@ function processSheet(rows, proj, sheetName, isLatest) {
           if (/^\d{5}$/.test(s)) return '';
           if (/GMT[+-]\d{4}/.test(s)) return '';
           return s;
-        }).filter(v => v.length > 0 && !v.toLowerCase().includes('target'));
+        }).filter(v => v.length > 0 && !/^target$/i.test(v.trim()));
 
         if (textCells.length > 0) {
           let tContent = textCells
@@ -2644,6 +2676,7 @@ function renderAlertStrips() {
     el.style.display = 'flex';
   });
 }
+
 function renderOverduePanels() {
   ['Crossings','Annexe'].forEach(proj => {
     const el = document.getElementById('overdue-' + proj.toLowerCase()); if (!el) return;
