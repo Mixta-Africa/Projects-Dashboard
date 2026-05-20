@@ -321,20 +321,35 @@
     document.body.classList.remove('auth-pending');
     const overlay = document.getElementById('auth-gate-overlay');
     if (overlay) overlay.style.display = 'none';
+    // Tell the dashboard it can now load data and sync sheets
+    if (typeof window.onAuthGateReady === 'function') {
+      window.onAuthGateReady();
+      window.onAuthGateReady = null; // run once only
+    }
   }
 
-  // ── Wait for Firebase to initialise (it's loaded async in the parent page) ──
+  // ── Initialize Firebase and attach auth listener ────────────────────────────
+  // dashboard-auth.js is the sole owner of Firebase Auth.
+  // It initializes the Firebase app if not already done, then attaches the gate.
   function waitForFirebase(attempts = 0) {
-    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
-      _fbAuth = firebase.auth();
-      _fbAuth.onAuthStateChanged(onAuthStateChanged);
-      _authReady = true;
-    } else if (attempts < 40) {
-      // Retry every 250ms for up to 10 seconds
-      setTimeout(() => waitForFirebase(attempts + 1), 250);
-    } else {
-      setMsg('Firebase failed to load. Please refresh the page.', false);
+    if (typeof firebase === 'undefined') {
+      if (attempts < 40) { setTimeout(() => waitForFirebase(attempts + 1), 250); }
+      else { setMsg('Firebase SDK failed to load. Please refresh.', false); }
+      return;
     }
+    // Initialize app if not already done
+    if (!firebase.apps || firebase.apps.length === 0) {
+      // Read config from the page's FIREBASE_CONFIG global (set in index.html)
+      const cfg = window.FIREBASE_CONFIG;
+      if (!cfg || !cfg.apiKey || cfg.apiKey === 'YOUR_API_KEY') {
+        setMsg('Firebase not configured. Contact admin.', false);
+        return;
+      }
+      try { firebase.initializeApp(cfg); } catch(e) { /* already initialized */ }
+    }
+    _fbAuth = firebase.auth();
+    _fbAuth.onAuthStateChanged(onAuthStateChanged);
+    _authReady = true;
   }
 
   // ── Auth state handler ───────────────────────────────────────────────────────
@@ -364,6 +379,10 @@
     updateNavBadge(user, access);
     applyProjectRestriction(access);
     syncLegacyAuthUI(user, access);
+    // Notify the dashboard so it can set currentUser/currentUserRole
+    if (typeof window.onAuthGateSignedIn === 'function') {
+      window.onAuthGateSignedIn(user, access);
+    }
   }
 
   // ── Google sign-in (popup) ───────────────────────────────────────────────────
