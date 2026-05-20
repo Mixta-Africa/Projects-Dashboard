@@ -67,6 +67,17 @@
   let _ready       = false;
   let _access      = null; // "Both"|"Crossings"|"Annexe"|null
 
+  // ── IDLE TIMEOUT CONFIG ───────────────────────────────────────────────────
+  const IDLE_MINUTES        = 30;           // sign out after this many minutes of inactivity
+  const WARNING_BEFORE_SECS = 60;           // show warning this many seconds before sign-out
+  const IDLE_MS             = IDLE_MINUTES * 60 * 1000;
+  const WARNING_MS          = IDLE_MS - (WARNING_BEFORE_SECS * 1000);
+
+  let _idleTimer   = null;  // fires → sign out
+  let _warnTimer   = null;  // fires → show warning countdown
+  let _warnEl      = null;  // the warning banner element
+  let _countdownId = null;  // setInterval for the countdown seconds
+
   // ── CSS — injected before anything else renders ───────────────────────────
   // This runs synchronously so the page is already hidden before Firebase loads.
   (function injectCSS() {
@@ -157,6 +168,58 @@
       }
       @keyframes agSpin { to { transform: rotate(360deg); } }
 
+      /* Idle timeout warning banner */
+      #ag-idle-warning {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2147483646;
+        background: #1a1a1a;
+        color: #fff;
+        border-radius: 12px;
+        padding: 14px 22px;
+        font-family: 'DM Sans', -apple-system, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        white-space: nowrap;
+        animation: agWarnSlide 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        max-width: calc(100vw - 40px);
+      }
+      @keyframes agWarnSlide {
+        from { opacity:0; transform: translateX(-50%) translateY(12px); }
+        to   { opacity:1; transform: translateX(-50%) translateY(0); }
+      }
+      #ag-idle-warning .ag-warn-icon { font-size: 16px; flex-shrink: 0; }
+      #ag-idle-warning .ag-warn-text { flex: 1; }
+      #ag-idle-warning .ag-warn-secs {
+        background: rgba(255,255,255,0.15);
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: 12px;
+        min-width: 36px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      #ag-idle-warning .ag-warn-stay {
+        background: #2e7d32;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        flex-shrink: 0;
+        transition: background 0.15s;
+      }
+      #ag-idle-warning .ag-warn-stay:hover { background: #1b5e20; }
+
       /* Nav badge after sign-in */
       .ag-nav-badge {
         display: inline-flex; align-items: center; gap: 6px;
@@ -215,6 +278,9 @@
 
     injectNavBadge(user, access);
     restrictProjects(access);
+
+    // Start 30-minute idle timeout tracking
+    startIdleTracking();
 
     // Notify the dashboard it can now load data
     if (typeof window.onAuthGateReady === 'function') {
@@ -304,7 +370,8 @@
   }
 
   // ── SIGN OUT ──────────────────────────────────────────────────────────────
-  function signOut() {
+  function signOut(reason) {
+    stopIdleTracking(); // stop timers before anything else
     if (_auth) _auth.signOut().catch(() => {});
     _access = null;
     document.body.classList.add('auth-locked');
@@ -314,7 +381,12 @@
     const denied = document.getElementById('ag-denied-block');
     if (denied) denied.remove();
     setBtnReady();
-    setMsg('', true);
+    // Show specific message if timed out
+    if (reason === 'idle') {
+      setMsg('You were signed out after ' + IDLE_MINUTES + ' minutes of inactivity.', true);
+    } else {
+      setMsg('', true);
+    }
     // Remove nav badge
     const badge = document.getElementById('ag-nav-badge');
     if (badge) badge.remove();
@@ -416,10 +488,94 @@
     return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  // ── IDLE TIMEOUT LOGIC ───────────────────────────────────────────────────
+
+  // Activity events that reset the timer
+  const ACTIVITY_EVENTS = [
+    'mousemove', 'mousedown', 'keydown', 'touchstart',
+    'touchmove', 'click', 'scroll', 'wheel'
+  ];
+
+  function resetIdleTimer() {
+    // Only run if user is signed in
+    if (!_access) return;
+
+    clearTimeout(_idleTimer);
+    clearTimeout(_warnTimer);
+    clearInterval(_countdownId);
+    hideIdleWarning();
+
+    // Warning fires WARNING_BEFORE_SECS seconds before logout
+    _warnTimer = setTimeout(showIdleWarning, WARNING_MS);
+
+    // Hard logout fires after full IDLE_MS of inactivity
+    _idleTimer = setTimeout(() => {
+      hideIdleWarning();
+      signOut('idle');
+    }, IDLE_MS);
+  }
+
+  function startIdleTracking() {
+    resetIdleTimer(); // start the clock
+    ACTIVITY_EVENTS.forEach(ev =>
+      document.addEventListener(ev, resetIdleTimer, { passive: true })
+    );
+  }
+
+  function stopIdleTracking() {
+    clearTimeout(_idleTimer);
+    clearTimeout(_warnTimer);
+    clearInterval(_countdownId);
+    hideIdleWarning();
+    ACTIVITY_EVENTS.forEach(ev =>
+      document.removeEventListener(ev, resetIdleTimer)
+    );
+  }
+
+  function showIdleWarning() {
+    if (_warnEl) return; // already showing
+    let secsLeft = WARNING_BEFORE_SECS;
+
+    _warnEl = document.createElement('div');
+    _warnEl.id = 'ag-idle-warning';
+    _warnEl.innerHTML = `
+      <span class="ag-warn-icon">⏱</span>
+      <span class="ag-warn-text">You'll be signed out due to inactivity in</span>
+      <span class="ag-warn-secs" id="ag-warn-secs">${secsLeft}s</span>
+      <button class="ag-warn-stay" onclick="_authGate.staySignedIn()">Stay signed in</button>
+    `;
+    document.body.appendChild(_warnEl);
+
+    // Count down every second
+    _countdownId = setInterval(() => {
+      secsLeft--;
+      const el = document.getElementById('ag-warn-secs');
+      if (el) el.textContent = secsLeft + 's';
+      if (secsLeft <= 0) {
+        clearInterval(_countdownId);
+      }
+    }, 1000);
+  }
+
+  function hideIdleWarning() {
+    clearInterval(_countdownId);
+    if (_warnEl) {
+      _warnEl.remove();
+      _warnEl = null;
+    }
+  }
+
+  function staySignedIn() {
+    resetIdleTimer(); // user clicked — reset the full timer
+  }
+
   // ── PUBLIC API ────────────────────────────────────────────────────────────
-  window._authGate = { signIn, signOut, getAccess: () => _access };
+  window._authGate = { signIn, signOut, getAccess: () => _access, staySignedIn };
   // backward compat
   window.authGate  = window._authGate;
+
+  // Also expose staySignedIn at top level for the onclick in the warning banner
+  window.staySignedIn = staySignedIn;
 
   // ── BOOT ─────────────────────────────────────────────────────────────────
   function boot() {
