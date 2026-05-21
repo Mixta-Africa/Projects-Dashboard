@@ -2480,23 +2480,31 @@ function processSheet(rows, proj, sheetName, isLatest) {
       continue;
     }
 
-    // ── LAYER 4: STRICT TARGET SECTION BOUNDING ──
-    const isTargetHeader = /end of .+ target/i.test(rowStr) || /^target$/i.test(String(c[colMap.dept] || '').trim());
+   // ── LAYER 4: STRICT TARGET SECTION BOUNDING ──
+    const deptTextForTarget = String(c[colMap.dept] || '').trim();
+    const actionTextForTarget = String(c[colMap.action] || '').trim();
+    
+    // Check if the row contains "target" or "targets" in a way that suggests a header
+    const isTargetHeader = 
+      /end of .+ targets?/i.test(rowStr) || 
+      /^(targets?|.*? targets?)$/i.test(deptTextForTarget) ||
+      /^targets?$/i.test(actionTextForTarget) ||
+      (rowStr.includes('target') && c.filter(v => String(v).trim().length > 0).length <= 2);
+
     if (isTargetHeader) { 
       inTargetSection = true;
       continue; 
     }
 
-    // Exit target section only on a genuine numbered task row
+    // Exit target section only on a genuine numbered task row (that isn't a target)
     if (inTargetSection) {
-      const _drc = String(c[colMap.dept]||'').trim(), _arc = String(c[colMap.action]||'').trim(), _duc = String(c[colMap.due]||'').trim();
-      if (_drc.length>1 && !/^(target|targets|end of target)$/i.test(_drc) && fuzzyMatchDept(_drc)!==null &&
+      const _drc = deptTextForTarget, _arc = actionTextForTarget, _duc = String(c[colMap.due]||'').trim();
+      if (_drc.length>1 && !/target/i.test(_drc) && fuzzyMatchDept(_drc)!==null &&
           _arc.length>4 && !/^(target|end of|done|achieved|complete|ongoing|at risk)/i.test(_arc) &&
           _duc.length>0 && !/^(target|end of)/i.test(_duc)) {
         inTargetSection = false;
       }
     }
-
     // ── LAYER 3: FUZZY MATCH DEPARTMENT ──
     // Try colMap.dept first; if blank, try the adjacent column as fallback
     // (handles sheets where dept is one column off due to blank col A)
