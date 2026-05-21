@@ -3269,6 +3269,11 @@ function reminderProjectChanged() {
   allOpt.value = '__ALL__'; allOpt.textContent = '📨 All Departments';
   deptSel.appendChild(allOpt);
 
+  // NEW: "Active Departments Only" option
+  const activeOpt = document.createElement('option');
+  activeOpt.value = '__ACTIVE__'; activeOpt.textContent = '🔥 Active Departments Only';
+  deptSel.appendChild(activeOpt);
+
   Object.keys(MAILING_LIST[_reminderProject]).forEach(dept => {
     const opt = document.createElement('option');
     opt.value = dept; opt.textContent = dept;
@@ -3285,17 +3290,26 @@ function reminderDeptChanged() {
   document.getElementById('reminder-dept-preview').style.display = 'none';
   if (!_reminderDept || !_reminderProject) return;
 
-  if (_reminderDept === '__ALL__') {
-    // Show summary of all depts
-    const latest = availableSessions[_reminderProject] && availableSessions[_reminderProject][0];
-    const overrides = getStatusOverrides();
+  const latest = availableSessions[_reminderProject] && availableSessions[_reminderProject][0];
+  const overrides = getStatusOverrides();
+
+  // Combine logic for ALL and ACTIVE
+  if (_reminderDept === '__ALL__' || _reminderDept === '__ACTIVE__') {
     const depts = Object.keys(MAILING_LIST[_reminderProject]);
     let html = '';
+    let activeDeptsCount = 0;
+
     depts.forEach(dept => {
       const tasks = getDeptReminderTasks(_reminderProject, dept, latest, overrides);
+      
+      // Filter out empty departments if "Active Departments Only" is selected
+      if (_reminderDept === '__ACTIVE__' && tasks.total === 0) return;
+
+      activeDeptsCount++;
       const recipients = document.getElementById('reminder-mode').value === 'test'
         ? [TEST_EMAIL]
         : (MAILING_LIST[_reminderProject][dept] || []);
+        
       html += `<div class="dept-reminder-card">
         <div class="dept-reminder-card-header">
           <span class="dept-reminder-name">${dept}</span>
@@ -3309,6 +3323,11 @@ function reminderDeptChanged() {
           .filter(Boolean).join(' · ')}</div>
       </div>`;
     });
+
+    if (activeDeptsCount === 0 && _reminderDept === '__ACTIVE__') {
+       html = '<div style="padding:12px; color:var(--text-muted); font-style:italic;">No departments currently have active tasks. Everyone is up to date!</div>';
+    }
+
     document.getElementById('reminder-task-list').innerHTML = html;
     document.getElementById('reminder-recipients').innerHTML = `
       <div class="email-meta-row"><span class="email-meta-key">Mode:</span>
@@ -3316,21 +3335,20 @@ function reminderDeptChanged() {
         ? '🧪 TEST — all emails go to ' + TEST_EMAIL
         : '🚀 LIVE — each dept gets its own email to its mailing list'}</span></div>
       <div class="email-meta-row"><span class="email-meta-key">Depts:</span>
-      <span class="email-meta-val">${depts.length} departments will receive reminders</span></div>`;
-    document.getElementById('reminder-email-preview').textContent = 'Click "Compose Reminders" to preview the email for each department.';
+      <span class="email-meta-val">${activeDeptsCount} department(s) will receive reminders</span></div>`;
+    document.getElementById('reminder-email-preview').textContent = activeDeptsCount > 0 ? 'Click "Compose Reminders" to preview the email for each department.' : 'Nothing to compose.';
     document.getElementById('reminder-dept-preview').style.display = 'block';
-    document.getElementById('reminder-generate-btn').style.display = 'inline-flex';
+    
+    // Only show the generate button if there are actually emails to send
+    document.getElementById('reminder-generate-btn').style.display = activeDeptsCount > 0 ? 'inline-flex' : 'none';
     return;
   }
 
-  // Single department
-  const latest = availableSessions[_reminderProject] && availableSessions[_reminderProject][0];
-  const overrides = getStatusOverrides();
+  // Single department logic
   const tasks = getDeptReminderTasks(_reminderProject, _reminderDept, latest, overrides);
   const mode = document.getElementById('reminder-mode').value;
   const recipients = mode === 'test' ? [TEST_EMAIL] : (MAILING_LIST[_reminderProject][_reminderDept] || []);
 
-  // Render task list
   const taskListEl = document.getElementById('reminder-task-list');
   if (tasks.total === 0) {
     taskListEl.innerHTML = '<em style="color:var(--text-muted)">No open tasks found for this department. All tasks are either achieved or the sheet has not been synced.</em>';
@@ -3353,7 +3371,6 @@ function reminderDeptChanged() {
     taskListEl.innerHTML = html;
   }
 
-  // Recipients
   document.getElementById('reminder-recipients').innerHTML = `
     <div class="email-meta-row"><span class="email-meta-key">To:</span><span class="email-meta-val">${recipients.join(', ')}</span></div>
     <div class="email-meta-row"><span class="email-meta-key">Mode:</span><span class="email-meta-val">${mode === 'test'
@@ -3465,14 +3482,21 @@ function generateReminderEmail() {
   const latest = availableSessions[_reminderProject] && availableSessions[_reminderProject][0];
   const overrides = getStatusOverrides();
 
-  if (_reminderDept === '__ALL__') {
-    // Generate and store ALL dept emails
+  if (_reminderDept === '__ALL__' || _reminderDept === '__ACTIVE__') {
     const depts = Object.keys(MAILING_LIST[_reminderProject]);
     _allDeptEmails = {};
     let totalTasks = 0;
+    let activeDeptsList = [];
+
     depts.forEach(dept => {
       const tasks = getDeptReminderTasks(_reminderProject, dept, latest, overrides);
+      
+      // Skip generation for empty departments if __ACTIVE__ is selected
+      if (_reminderDept === '__ACTIVE__' && tasks.total === 0) return;
+
       totalTasks += tasks.total;
+      activeDeptsList.push(dept);
+      
       _allDeptEmails[dept] = {
         body: buildReminderEmailBody(_reminderProject, dept, tasks),
         subject: 'Lakowe ' + _reminderProject + ' — Task Reminder: ' + dept + ' Department (' + new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ')',
@@ -3481,18 +3505,26 @@ function generateReminderEmail() {
           : (MAILING_LIST[_reminderProject][dept] || [])
       };
     });
-    // Show the first dept email as preview
-    const firstDept = depts[0];
+    
+    if (activeDeptsList.length === 0) {
+      btn.disabled = false;
+      statusEl.textContent = 'No active tasks to send.';
+      return;
+    }
+
+    // Show the first active dept email as a preview
+    const firstDept = activeDeptsList[0];
     _generatedEmailBody = _allDeptEmails[firstDept].body;
     _generatedEmailSubject = _allDeptEmails[firstDept].subject;
     document.getElementById('reminder-email-preview').textContent =
       '=== Preview: ' + firstDept + ' ===\n\n' + _allDeptEmails[firstDept].body +
-      '\n\n' + (depts.length - 1) + ' more department email(s) queued. "Open in Mail App" will open each one in sequence.';
+      '\n\n' + (activeDeptsList.length - 1) + ' more department email(s) queued. "Send Email" will send them all sequentially.';
     document.getElementById('reminder-send-btn').style.display = 'inline-flex';
     document.getElementById('reminder-copy-btn').style.display = 'inline-flex';
-    statusEl.textContent = depts.length + ' emails composed — ' + totalTasks + ' tasks across all departments';
+    statusEl.textContent = activeDeptsList.length + ' emails composed — ' + totalTasks + ' tasks across ' + activeDeptsList.length + ' department(s)';
     _allDeptEmailIndex = 0;
-    _allDeptEmailKeys = depts;
+    _allDeptEmailKeys = activeDeptsList;
+    
   } else {
     // Single department
     const tasks = getDeptReminderTasks(_reminderProject, _reminderDept, latest, overrides);
