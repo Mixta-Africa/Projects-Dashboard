@@ -393,27 +393,44 @@
   }
 
   // ── FIREBASE INIT ─────────────────────────────────────────────────────────
+  // Firebase config — hardcoded here so this file never depends on index.html
+  // having executed first (fixes race condition on fast refresh).
+  const FIREBASE_CFG = {
+    apiKey:            "AIzaSyC7SI9u4iRLVl3BMSX3WTDt1QCRnwwA5lk",
+    authDomain:        "mixta-projects-dashboard.firebaseapp.com",
+    databaseURL:       "https://mixta-projects-dashboard-default-rtdb.firebaseio.com",
+    projectId:         "mixta-projects-dashboard",
+    storageBucket:     "mixta-projects-dashboard.firebasestorage.app",
+    messagingSenderId: "386861034797",
+    appId:             "1:386861034797:web:04f7cbcc6ee2154c52b7a4"
+  };
+
   function initAuth(attempts) {
     if (typeof firebase === 'undefined') {
       if (attempts < 50) setTimeout(() => initAuth(attempts + 1), 200);
-      else setMsg('Firebase SDK failed to load.', false);
+      else setMsg('Firebase SDK failed to load. Check your internet connection and refresh.', false);
       return;
     }
 
-    // Initialize Firebase app if not already done
+    // Initialize Firebase app if not already done.
+    // Uses the config hardcoded above — never reads window.FIREBASE_CONFIG
+    // so there is no race condition with index.html's inline scripts.
     if (!firebase.apps || firebase.apps.length === 0) {
-      const cfg = window.FIREBASE_CONFIG;
-      if (!cfg || !cfg.apiKey) {
-        setMsg('Firebase not configured. Contact admin.', false);
-        return;
+      try {
+        firebase.initializeApp(FIREBASE_CFG);
+      } catch (e) {
+        // "already initialized" is fine — another script got there first
+        if (!e.message || !e.message.includes('already')) {
+          setMsg('Firebase init failed: ' + e.message, false);
+          return;
+        }
       }
-      try { firebase.initializeApp(cfg); } catch (e) { /* already init */ }
     }
 
     _auth  = firebase.auth();
     _ready = true;
 
-    // onAuthStateChanged is the only gate — fires on page load if session persists
+    // onAuthStateChanged is the only gate — fires immediately if a session persists
     _auth.onAuthStateChanged(onAuthState);
   }
 
