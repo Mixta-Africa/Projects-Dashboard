@@ -3554,8 +3554,8 @@ function sendReminderEmail() {
 
   // Check EmailJS library is loaded and keys are set
   const ejsConfigured = typeof emailjs !== 'undefined'
-    && EMAILJS_SERVICE_ID !== 'YOUR_SERVICE_ID'
-    && EMAILJS_TEMPLATE_ID !== 'YOUR_TEMPLATE_ID';
+    && EMAILJS_SERVICE_ID !== 'service_inb2uaf'
+    && EMAILJS_TEMPLATE_ID !== 'template_ipcax5i';
 
   if (!ejsConfigured) {
     statusEl.textContent = '⚠ EmailJS not ready — opening mail app as fallback.';
@@ -3570,18 +3570,49 @@ function sendReminderEmail() {
 
   // Build the list of emails to send
   var emailsToSend = [];
+  var mode = document.getElementById('reminder-mode').value;
+
+  // Helper to construct email payloads (handles AMC personalization)
+  function pushEmail(dept, rawRecipients, subject, baseBody) {
+    if (!rawRecipients || rawRecipients.length === 0) return;
+    
+    if (dept.toUpperCase() === 'AMC') {
+      // AMC gets individualized emails to apply personal greetings
+      rawRecipients.forEach(function(realEmail) {
+        var greeting = 'Dear AMC Team,';
+        var e = realEmail.toLowerCase();
+        
+        if (e.includes('d.alli') || e.includes('deji.alli')) {
+          greeting = 'Dear DA,';
+        } else if (e.includes('s.hughes')) {
+          greeting = 'Dear Mrs H,';
+        } else if (e.includes('b.ajayi')) {
+          greeting = 'Dear BA,';
+        }
+
+        // Swap out the generic greeting
+        var customBody = baseBody.replace('Dear ' + dept + ' Team,', greeting);
+        var toAddress = mode === 'test' ? TEST_EMAIL : realEmail;
+        
+        emailsToSend.push({ to: [toAddress], subject: subject, body: customBody, dept: dept });
+      });
+    } else {
+      // Standard departments get one email sent to all their recipients
+      var finalRecipients = mode === 'test' ? [TEST_EMAIL] : rawRecipients;
+      emailsToSend.push({ to: finalRecipients, subject: subject, body: baseBody, dept: dept });
+    }
+  }
+
+  // Route All vs Single generation into the builder
   if (_allDeptEmails && _allDeptEmailKeys.length > 0) {
     _allDeptEmailKeys.forEach(function(dept) {
       var info = _allDeptEmails[dept];
-      if (info && info.recipients && info.recipients.length > 0) {
-        emailsToSend.push({ to: info.recipients, subject: info.subject, body: info.body, dept: dept });
-      }
+      var originalList = MAILING_LIST[_reminderProject][dept] || [];
+      pushEmail(dept, originalList, info.subject, info.body);
     });
   } else if (_generatedEmailBody) {
-    var mode = document.getElementById('reminder-mode').value;
-    var emails = _reminderDept && MAILING_LIST[_reminderProject] ? (MAILING_LIST[_reminderProject][_reminderDept] || []) : [];
-    var to = mode === 'test' ? [TEST_EMAIL] : emails;
-    emailsToSend.push({ to: to, subject: _generatedEmailSubject, body: _generatedEmailBody, dept: _reminderDept });
+    var originalList = _reminderDept && MAILING_LIST[_reminderProject] ? (MAILING_LIST[_reminderProject][_reminderDept] || []) : [];
+    pushEmail(_reminderDept, originalList, _generatedEmailSubject, _generatedEmailBody);
   }
 
   if (emailsToSend.length === 0) { statusEl.textContent = 'No emails to send.'; return; }
