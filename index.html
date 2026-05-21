@@ -3269,11 +3269,6 @@ function reminderProjectChanged() {
   allOpt.value = '__ALL__'; allOpt.textContent = '📨 All Departments';
   deptSel.appendChild(allOpt);
 
-  // "Active Departments" option — only emails depts with 1+ open tasks
-  const activeOpt = document.createElement('option');
-  activeOpt.value = '__ACTIVE__'; activeOpt.textContent = '⚡ Active Departments (tasks only)';
-  deptSel.appendChild(activeOpt);
-
   Object.keys(MAILING_LIST[_reminderProject]).forEach(dept => {
     const opt = document.createElement('option');
     opt.value = dept; opt.textContent = dept;
@@ -3325,76 +3320,6 @@ function reminderDeptChanged() {
     document.getElementById('reminder-email-preview').textContent = 'Click "Compose Reminders" to preview the email for each department.';
     document.getElementById('reminder-dept-preview').style.display = 'block';
     document.getElementById('reminder-generate-btn').style.display = 'inline-flex';
-    return;
-  }
-
-  if (_reminderDept === '__ACTIVE__') {
-    // Show only departments that have 1+ open tasks in the latest session
-    const latest = availableSessions[_reminderProject] && availableSessions[_reminderProject][0];
-    const overrides = getStatusOverrides();
-    const allDepts = Object.keys(MAILING_LIST[_reminderProject]);
-
-    // Filter to only depts with at least one open (non-achieved) task
-    const activeDepts = allDepts.filter(dept => {
-      const tasks = getDeptReminderTasks(_reminderProject, dept, latest, overrides);
-      return tasks.total > 0;
-    });
-    const emptyDepts = allDepts.filter(dept => {
-      const tasks = getDeptReminderTasks(_reminderProject, dept, latest, overrides);
-      return tasks.total === 0;
-    });
-
-    let html = '';
-    // Active depts — will receive emails
-    if (activeDepts.length > 0) {
-      html += `<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--metric-green);padding:6px 0 4px;">⚡ Will receive reminders (${activeDepts.length})</div>`;
-      activeDepts.forEach(dept => {
-        const tasks = getDeptReminderTasks(_reminderProject, dept, latest, overrides);
-        const recipients = document.getElementById('reminder-mode').value === 'test'
-          ? [TEST_EMAIL]
-          : (MAILING_LIST[_reminderProject][dept] || []);
-        html += `<div class="dept-reminder-card">
-          <div class="dept-reminder-card-header">
-            <span class="dept-reminder-name">${dept}</span>
-            <span class="dept-reminder-count">${tasks.total} task${tasks.total !== 1 ? 's' : ''}</span>
-          </div>
-          <div class="dept-reminder-emails">${recipients.join(', ')}</div>
-          <div class="dept-reminder-tasks">${
-            [tasks.delayed.length ? tasks.delayed.length + ' delayed' : '',
-             tasks.ontrack.length ? tasks.ontrack.length + ' on track' : '',
-             tasks.onhold.length ? tasks.onhold.length + ' on hold (due within 7 days)' : '']
-            .filter(Boolean).join(' · ')}</div>
-        </div>`;
-      });
-    }
-
-    // Empty depts — skipped, shown greyed out for transparency
-    if (emptyDepts.length > 0) {
-      html += `<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);padding:10px 0 4px;">⬛ Skipped — no open tasks (${emptyDepts.length})</div>`;
-      html += `<div style="font-size:11px;color:var(--text-muted);padding:4px 0 2px;">${emptyDepts.join(' · ')}</div>`;
-    }
-
-    if (activeDepts.length === 0) {
-      html = '<em style="color:var(--text-muted)">No departments have open tasks in the latest session. Sync the sheet first, or all tasks may be marked as achieved.</em>';
-    }
-
-    document.getElementById('reminder-task-list').innerHTML = html;
-    document.getElementById('reminder-recipients').innerHTML = `
-      <div class="email-meta-row"><span class="email-meta-key">Mode:</span>
-      <span class="email-meta-val">${document.getElementById('reminder-mode').value === 'test'
-        ? '🧪 TEST — all emails go to ' + TEST_EMAIL
-        : '🚀 LIVE — only active departments receive emails'}</span></div>
-      <div class="email-meta-row"><span class="email-meta-key">Active:</span>
-      <span class="email-meta-val">${activeDepts.length} of ${allDepts.length} departments have open tasks</span></div>
-      <div class="email-meta-row"><span class="email-meta-key">Skipped:</span>
-      <span class="email-meta-val" style="color:var(--text-muted)">${emptyDepts.length > 0 ? emptyDepts.join(', ') + ' — no tasks' : 'None'}</span></div>`;
-    document.getElementById('reminder-email-preview').textContent = activeDepts.length > 0
-      ? 'Click "Compose Reminders" to preview emails for the ' + activeDepts.length + ' active department(s).'
-      : 'No active departments found.';
-    document.getElementById('reminder-dept-preview').style.display = 'block';
-    if (activeDepts.length > 0) {
-      document.getElementById('reminder-generate-btn').style.display = 'inline-flex';
-    }
     return;
   }
 
@@ -3540,25 +3465,9 @@ function generateReminderEmail() {
   const latest = availableSessions[_reminderProject] && availableSessions[_reminderProject][0];
   const overrides = getStatusOverrides();
 
-  if (_reminderDept === '__ALL__' || _reminderDept === '__ACTIVE__') {
-    const isActiveOnly = _reminderDept === '__ACTIVE__';
-    const allDepts = Object.keys(MAILING_LIST[_reminderProject]);
-
-    // For __ACTIVE__: filter to only depts with open tasks; for __ALL__: use all
-    const depts = isActiveOnly
-      ? allDepts.filter(dept => {
-          const t = getDeptReminderTasks(_reminderProject, dept, latest, overrides);
-          return t.total > 0;
-        })
-      : allDepts;
-
-    if (depts.length === 0) {
-      statusEl.textContent = 'No active departments found — nothing to send.';
-      btn.innerHTML = '↺ Recompose';
-      btn.disabled = false;
-      return;
-    }
-
+  if (_reminderDept === '__ALL__') {
+    // Generate and store ALL dept emails
+    const depts = Object.keys(MAILING_LIST[_reminderProject]);
     _allDeptEmails = {};
     let totalTasks = 0;
     depts.forEach(dept => {
@@ -3576,19 +3485,12 @@ function generateReminderEmail() {
     const firstDept = depts[0];
     _generatedEmailBody = _allDeptEmails[firstDept].body;
     _generatedEmailSubject = _allDeptEmails[firstDept].subject;
-    const modeLabel = isActiveOnly
-      ? '(' + depts.length + ' active dept' + (depts.length !== 1 ? 's' : '') + ' only)'
-      : '(all departments)';
     document.getElementById('reminder-email-preview').textContent =
-      '=== Preview: ' + firstDept + ' ===
-
-' + _allDeptEmails[firstDept].body +
-      '
-
-' + (depts.length - 1) + ' more department email(s) queued ' + modeLabel + '.';
+      '=== Preview: ' + firstDept + ' ===\n\n' + _allDeptEmails[firstDept].body +
+      '\n\n' + (depts.length - 1) + ' more department email(s) queued. "Open in Mail App" will open each one in sequence.';
     document.getElementById('reminder-send-btn').style.display = 'inline-flex';
     document.getElementById('reminder-copy-btn').style.display = 'inline-flex';
-    statusEl.textContent = depts.length + ' emails composed ' + modeLabel + ' — ' + totalTasks + ' total tasks';
+    statusEl.textContent = depts.length + ' emails composed — ' + totalTasks + ' tasks across all departments';
     _allDeptEmailIndex = 0;
     _allDeptEmailKeys = depts;
   } else {
@@ -4449,12 +4351,16 @@ window.onload = function () {
   // ── DATA LOAD IS GATED ON AUTH ────────────────────────────────────────
   // dashboard-auth.js calls window.onAuthGateReady() after a valid sign-in.
   // Until that fires, no sheet data loads and no content is shown.
-  window.onAuthGateReady = function () {
-    loadSeedData();
-    applyPriorityColors();
-    syncWithGoogleSheet();
-    setInterval(syncWithGoogleSheet, AUTO_SYNC_MINUTES * 60 * 1000);
-  };
+  // onAuthGateReady is defined BEFORE window.onload in the script flow below.
+  // This line is kept as a safety no-op so nothing breaks if the order changes.
+  if (!window.onAuthGateReady) {
+    window.onAuthGateReady = function () {
+      loadSeedData();
+      applyPriorityColors();
+      syncWithGoogleSheet();
+      setInterval(syncWithGoogleSheet, AUTO_SYNC_MINUTES * 60 * 1000);
+    };
+  }
 
   // ── Initialise charts inside onload so Chart.js is guaranteed loaded ──
   try {
@@ -4651,7 +4557,31 @@ window.onload = function () {
      AUTH MODAL — Firebase email/password sign-in
      ════════════════════════════════════════════════════════════════ -->
 <!-- Auth handled by dashboard-auth.js (Google Sign-In) -->
+<script>
+// ── AUTH GATE CALLBACK — defined here so it exists BEFORE dashboard-auth.js runs ──
+// dashboard-auth.js calls this immediately after a valid sign-in.
+// If it were only defined inside window.onload, it would be undefined when
+// a persisted Firebase session fires onAuthStateChanged synchronously.
+window.onAuthGateReady = window.onAuthGateReady || function () {
+  loadSeedData();
+  applyPriorityColors();
+  syncWithGoogleSheet();
+  setInterval(syncWithGoogleSheet, AUTO_SYNC_MINUTES * 60 * 1000);
+};
+
+window.onAuthGateSignedIn = window.onAuthGateSignedIn || function(user, access) {
+  currentUser = user;
+  const role = (typeof USER_ROLES !== 'undefined') ? USER_ROLES[(user.email || '').toLowerCase()] : null;
+  currentUserRole = role;
+  if (typeof _drainWriteQueue === 'function') _drainWriteQueue();
+  if (role && role.project !== 'Both') {
+    if (currentProject !== role.project && typeof selectProject === 'function') {
+      selectProject(role.project);
+    }
+  }
+};
+</script>
 <script src="dashboard-auth.js"></script>
-  <script src="dashboard-pi-engine.js"></script>
+<script src="dashboard-pi-engine.js"></script>
 </body>
 </html>
