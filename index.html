@@ -3416,13 +3416,13 @@ function buildReminderEmailBody(proj, dept, tasks) {
   const dateStr = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
   const total = tasks.delayed.length + tasks.ontrack.length + tasks.onhold.length;
 
-  // Opening urgency line — grammatically correct singular/plural
+  // Opening urgency line — fixed subject/verb agreement so "department" always uses "has"
   let urgencyLine = '';
   if (total === 0) {
     urgencyLine = 'Our records show no outstanding tasks for your department at this time. Please log into the Projects Dashboard to verify and update your task statuses.';
   } else if (tasks.delayed.length > 0) {
     const n = tasks.delayed.length;
-    urgencyLine = `Your department currently ${n === 1 ? 'has' : 'have'} ${n} ${n === 1 ? 'task' : 'tasks'} that ${n === 1 ? 'is' : 'are'} delayed or overdue. ${n === 1 ? 'This requires' : 'These require'} immediate attention before our next project meeting.`;
+    urgencyLine = `Your department currently has ${n} ${n === 1 ? 'task' : 'tasks'} that ${n === 1 ? 'is' : 'are'} delayed or overdue. ${n === 1 ? 'This requires' : 'These require'} immediate attention before our next project meeting.`;
   } else {
     urgencyLine = `Your department has ${total} open ${total === 1 ? 'task' : 'tasks'} in the tracker. Kindly review and ensure ${total === 1 ? 'it is' : 'they are'} progressing ahead of our next review session.`;
   }
