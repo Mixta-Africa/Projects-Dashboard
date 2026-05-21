@@ -3554,8 +3554,8 @@ function sendReminderEmail() {
 
   // Check EmailJS library is loaded and keys are set
   const ejsConfigured = typeof emailjs !== 'undefined'
-    && EMAILJS_SERVICE_ID !== 'service_inb2uaf'
-    && EMAILJS_TEMPLATE_ID !== 'template_ipcax5i';
+    && EMAILJS_SERVICE_ID !== '' 
+    && EMAILJS_TEMPLATE_ID !== '';
 
   if (!ejsConfigured) {
     statusEl.textContent = '⚠ EmailJS not ready — opening mail app as fallback.';
