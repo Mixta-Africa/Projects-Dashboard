@@ -2327,7 +2327,219 @@ function extractMetricValue(rowArray, isCurrency, dept, actionColIdx) {
   return '';
 }
 
-if (d.headerRow && d.colMap) { const actionHeader = d.headerRow[d.colMap.action] || '(empty)'; const dueHeader = d.headerRow[d.colMap.due] || '(empty)'; d.info = `action col ${d.colMap.action} → "${actionHeader}" | due col ${d.colMap.due} → "${dueHeader}"`; }
+function processSheet(rows, proj, sheetName, isLatest) {
+  // ── LAYER 3: Department whitelist + fuzzy matching ──
+  const KNOWN_DEPTS = [
+    'Design', 'Costing', 'IPD', 'Landscape', 'Operations',
+    'Fincon', 'Sales', 'MCC', 'Legal', 'Telemarketing', 'General', 'AMC',
+    'DA', 'Mrs H', 'Risk', 'Financial Planning'
+  ];
+  
+  const fuzzyMatchDept = (val) => {
+    if (!val) return null;
+    const clean = String(val).trim();
+    const lower = clean.toLowerCase();
+
+    if (DEPT_NORMALIZE_MAP[lower]) return DEPT_NORMALIZE_MAP[lower];
+    for (const key of Object.keys(DEPT_NORMALIZE_MAP)) {
+      if (lower.startsWith(key)) return DEPT_NORMALIZE_MAP[key];
+    }
+    for (const dept of KNOWN_DEPTS) {
+      const regex = new RegExp(`\\b${dept.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\b`, 'i');
+      if (regex.test(clean)) return dept;
+    }
+    if (clean.length > 1 && !/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline|target|note)$/i.test(clean) && !/^\\d{5,}$/.test(clean)) {
+      return clean; 
+    }
+    return null;
+  };
+  
+  const targets = []; 
+  let lastDept = 'General'; 
+  let tasksAdded = 0; 
+  let targetsAdded = 0; 
+  let rowsScanned = rows.length;
+  
+  // ── EXACT COLUMN MAPPING AS SPECIFIED ──
+  // B(1)=S/N, C(2)=Dept, D(3)=Action, E(4)=Due, F(5)=Result, G(6)=Explanation, H(7)=Project, I(8)=Status
+  let colMap = { sn: 1, dept: 2, action: 3, due: 4, result: 5, explanation: 6, project: 7, status: 8 };
+  
+  // Identify the header row to ensure flawless parsing
+  let headerRowIdx = -1;
+  for (let r = 0; r < Math.min(15, rows.length); r++) {
+    if (!rows[r]) continue;
+    const rowStr = rows[r].join(' ').toLowerCase();
+    
+    // Look for the row containing S/N and Department
+    if ((rowStr.includes('s/n') || rowStr.includes('no.')) && (rowStr.includes('department') || rowStr.includes('dept'))) {
+      headerRowIdx = r;
+      // Dynamically verify column indices based on this header row, defaulting to the structure above
+      for (let ci = 0; ci < rows[r].length; ci++) {
+        const h = String(rows[r][ci]).toLowerCase().trim();
+        if (h === 's/n' || h === 'no.' || h === '#') colMap.sn = ci;
+        else if (h === 'department' || h === 'dept') colMap.dept = ci;
+        else if (h === 'next steps' || h === 'next step' || h === 'action point' || h === 'action') colMap.action = ci;
+        else if (h === 'next steps timeline' || h === 'timeline' || h === 'due date' || h === 'due') colMap.due = ci;
+        else if (h === 'result' || h === 'result/context') colMap.result = ci;
+        else if (h === 'explanation notes' || h === 'explanation' || h === 'remarks') colMap.explanation = ci;
+        else if (h === 'project') colMap.project = ci;
+        else if (h === 'status') colMap.status = ci;
+      }
+      
+      sheetDiag[sheetName] = sheetDiag[sheetName] || {};
+      sheetDiag[sheetName].colMap = {...colMap};
+      sheetDiag[sheetName].headerRow = rows[r].map(String);
+      sheetDiag[sheetName].headerRowIdx = r;
+      break;
+    }
+  }
+
+  const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
+  let operationsOfferFound = false;
+
+  for (let i = startRow; i < rows.length; i++) {
+    const c = rows[i];
+    if (!c || c.length < 2 || c.join('').trim() === '') continue;
+    
+    const rowStr = c.join(' ').toLowerCase();
+    if (rowStr.includes('calendar') && rowStr.includes('>>')) continue;
+
+    let deptCellValue = String(c[colMap.dept] || '').trim();
+    let action = String(c[colMap.action] || '').trim();
+    let explanationText = String(c[colMap.explanation] || '').trim();
+    
+    // ── STRICT TARGET EXTRACTION ──
+    // If department contains "target", extract the target from Explanation Notes
+    if (/^targets?$/i.test(deptCellValue)) {
+        let tContent = explanationText;
+        
+        // Edge case: if explanation is completely blank but action has the text
+        if (!tContent && action.length > 5) {
+            tContent = action;
+        }
+
+        if (tContent && tContent.length > 3 && !/^(target|targets|end of.*target)$/i.test(tContent.trim())) {
+            let tCls = 't-atrisk';
+            if (tContent.toLowerCase().includes('done') || tContent.toLowerCase().includes('achieved') || tContent.toLowerCase().includes('complete') || tContent.includes('✓')) {
+                tCls = 't-done';
+            } else if (tContent.toLowerCase().includes('ongoing') || tContent.toLowerCase().includes('progress')) {
+                tCls = 't-ongoing';
+            }
+            
+            targets.push(
+                `<div class="target-item ${tCls}">` +
+                `<div class="t-status-bar"></div>` +
+                `<div class="t-body"><div class="t-note">${tContent}</div></div>` +
+                `</div>`
+            ); 
+            targetsAdded++; 
+        }
+        continue; // Targets handled, move to next row
+    }
+    
+    // ── TASK DEPARTMENT MATCHING ──
+    if (deptCellValue) {
+      const matched = fuzzyMatchDept(deptCellValue);
+      if (matched) lastDept = matched; // Update department header
+    }
+
+    // ── METRIC EXTRACTION FROM OPERATIONS ──
+    if (isLatest && /operations|fincon/i.test(lastDept)) {
+        const actionText = action + ' ' + explanationText;
+        
+        function extractLabeled(text, labelPatterns) {
+          for (const pat of labelPatterns) {
+            const rx = new RegExp(pat + '[:\\s\\-]+([₦N]?\\s*[\\d,]+\\.?\\d*\\s*[BMKbmk]?(?:mn|MN|Mn)?)', 'i');
+            const m = text.match(rx);
+            if (m) {
+              let raw = m[1].trim().replace(/,/g,'').toUpperCase().replace(/MN$/,'M');
+              if (!raw.startsWith('₦')) raw = raw.replace(/^N(?=\d)/, '₦');
+              if (!raw.startsWith('₦')) raw = '₦' + raw;
+              return raw;
+            }
+          }
+          return null;
+        }
+
+        function extractLabeledCount(text, labelPatterns) {
+          for (const pat of labelPatterns) {
+            let m = text.match(new RegExp(pat + '[:\\s\\-]+(\\d{1,4})\\b', 'i'));
+            if (m) return m[1];
+            m = text.match(new RegExp('(\\d{1,4})\\s+' + pat, 'i'));
+            if (m) return m[1];
+          }
+          return null;
+        }
+
+        const hasMetricData = /[₦N][\d,]+|\bsales[-:\s]+\d|\d+\s*units|\d+\s*offer/i.test(actionText);
+
+        if (hasMetricData) {
+          const inflow = extractLabeled(actionText, ['inflow', 'total inflow']);
+          if (inflow) setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', inflow);
+
+          const units = extractLabeledCount(actionText, ['sales', 'units sold', 'no\\.?\\s*of\\s*sales']);
+          if (units) setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', units);
+
+          const salesVal = extractLabeled(actionText, ['value of sales', 'tvs']);
+          if (salesVal) setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', salesVal);
+
+          const balance = extractLabeled(actionText, ['account balance', 'account bal', 'bal(?!lard|lot|c)']);
+          if (balance) setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', balance);
+
+          if (!operationsOfferFound) {
+            const offers = extractLabeledCount(actionText, ['offer letters?', 'active offer', 'offer letter']);
+            if (offers !== null) { setMetric(proj==='Crossings'?'val-cx-offers':'val-annex-offers', offers); operationsOfferFound = true; }
+          }
+        }
+    }
+    
+    // ── TASK VERIFICATION ──
+    if (!action || action.length < 4) continue;
+    if (/^(department|next step|action point|s\/n|status|result|explanation|due|timeline|target|note)$/i.test(action)) continue;
+    if (/^\d{5,}$/.test(action) || /gmt\+/i.test(action) || /west africa standard time/i.test(action)) continue;
+    if (/^(inflow|account balance|value of sales|no of sales|no\. of sales|units sold|budget spent|total inflow)\s*[-–:]/i.test(action)) continue;
+    if (/^(sales[-–:]\s*\d|bal[-–:])/i.test(action)) continue;
+
+    let rawStat = String(c[colMap.status] || 'ontrack').toLowerCase();
+    let statusRaw = rawStat.replace(/[^a-z]/g, '');
+    if (rowStr.includes('on hold') || rowStr.includes('on-hold') || statusRaw.includes('onhold')) statusRaw = 'onhold';
+    else if (statusRaw.includes('delay') || statusRaw.includes('offtrack')) statusRaw = 'delayed';
+    else if (statusRaw.includes('achieve') || statusRaw.includes('done') || statusRaw.includes('complete')) statusRaw = 'achieved';
+    else if (statusRaw.includes('update')) statusRaw = 'update';
+    else statusRaw = 'ontrack';
+
+    taskDatabase.push({ 
+      project: proj, 
+      session: sheetName, 
+      dept: lastDept,
+      action: action, 
+      due: formatExcelDate(c[colMap.due]), 
+      resultToAchieve: String(c[colMap.result] || '').trim(), 
+      explanation: explanationText, 
+      status: statusRaw,
+      _sheetRowIndex: i + 1  
+    });
+    tasksAdded++;
+  }
+
+  // Inject targets into UI
+  if (targets.length > 0) {
+    sessionTargets[proj + ':' + sheetName] = targets;
+    if (isLatest) {
+      const el = document.getElementById(proj === 'Crossings' ? 'targets-crossings' : 'targets-annexe');
+      if (el) el.innerHTML = targets.join('');
+    }
+  }
+
+  sheetDiag[sheetName] = sheetDiag[sheetName] || {};
+  Object.assign(sheetDiag[sheetName], { proj, isLatest, rowsScanned, tasksAdded, targetsAdded, colMap, headerRow: sheetDiag[sheetName].headerRow || [], warnings: [] });
+  const d = sheetDiag[sheetName];
+  
+  // Adjust admin pane diagnostics warnings
+  if (tasksAdded === 0 && rowsScanned > 20) d.warnings.push('⚠ Zero tasks extracted — check that action column mapped correctly (current: col ' + colMap.action + ')');
+  if (isLatest && targetsAdded === 0 && rowsScanned > 30) d.warnings.push('⚠ No targets extracted — ensure targets are placed in Explanation Notes with "Target" as Dept');
+  
+  if (d.headerRow && d.colMap) { const actionHeader = d.headerRow[d.colMap.action] || '(empty)'; const dueHeader = d.headerRow[d.colMap.due] || '(empty)'; d.info = `action col ${d.colMap.action} → "${actionHeader}" | due col ${d.colMap.due} → "${dueHeader}"`; }
   
   renderDiagPanel();
 }
