@@ -1609,8 +1609,9 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
 </div>
 
 <div class="admin-modal-overlay" id="admin-modal">
-  <div class="admin-modal">
-    <!-- LOGIN FORM -->
+  <div class="admin-modal" style="position: relative;">
+    <button class="auth-modal-close" onclick="closeAdminModal()">✕</button>
+
     <div id="admin-login-form">
       <h3>Admin Authentication</h3>
       <p>Enter the admin password to access project controls.</p>
@@ -1623,6 +1624,18 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
         <a href="#" onclick="toggleForgotPassword(); return false;" style="color: var(--active-theme-color); text-decoration: none; cursor: pointer;">Forgot password?</a>
       </p>
     </div>
+    
+    <div id="admin-forgot-form" style="display: none;">
+      <h3>Reset Password</h3>
+      <p>Enter your email to receive a password reset link.</p>
+      <input type="email" id="admin-recovery-email" placeholder="Enter email address" onkeydown="if(event.key === 'Enter') submitForgotPassword()">
+      <div class="admin-modal-actions">
+        <button class="btn-cancel" onclick="toggleForgotPassword()">Back</button>
+        <button class="btn-login" onclick="submitForgotPassword()">Send Reset Link</button>
+      </div>
+    </div>
+  </div>
+</div>
     
     <!-- FORGOT PASSWORD FORM -->
     <div id="admin-forgot-form" style="display: none;">
@@ -4168,6 +4181,7 @@ ${body}
 document.addEventListener('click', function(e) {
   if (e.target.id === 'reminder-modal') closeReminderModal();
   if (e.target.id === 'report-modal') closeReportModal();
+  if (e.target.id === 'admin-modal') closeAdminModal(); // <-- Added Admin Modal
 });
 
 
