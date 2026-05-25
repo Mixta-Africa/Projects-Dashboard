@@ -51,7 +51,8 @@
     "t.banjo@mixtafrica.com":                 "Both",
     "t.ibidokun@mixtafrica.com":              "Both",
     "u.ojembe@mixtafrica.com":                "Both",
-    "w.salami@mixtafrica.com":                "Both",.
+    "w.salami@mixtafrica.com":                "Both",
+    "m.apuh@mixtafrica.com":                  "Both",
     // Lakowe Crossings only
     "b.ajayi@mixtafrica.com":                 "Crossings",
     "o.isabu@mixtafrica.com":                 "Crossings",
