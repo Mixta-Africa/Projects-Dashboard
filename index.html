@@ -214,8 +214,8 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: var(--na
 }
 /* Push page content down when bar is visible */
 body.users-bar-visible .page {
-  margin-top: calc(var(--nav-h) + 32px);
-  min-height: calc(100vh - var(--nav-h) - 32px);
+  margin-top: var(--nav-h);
+  min-height: calc(100vh - var(--nav-h));
 }
 body.users-bar-visible .dept-sidebar {
   top: calc(var(--nav-h) + 32px + 20px);
@@ -3047,236 +3047,175 @@ async function fetchAndRenderMilestones() {
 }
 
 function renderMilestonesPanel(rows, job) {
-  // ── Debug: log raw sheet to console so structure can be verified ──
-  console.log(`[Milestones] ${job.proj} raw rows (first 15):`, rows.slice(0, 15));
+  // ── Column mapping (0-indexed, based on actual sheet structure) ──
+  // Annexe KD:      B(1)=name, E(4)=completion date, G(6)=projected, H(7)=actual
+  // Crossings KD P: B(1)=name, C(2)=status, D(3)=progress(projected only)
+  const isCrossings = !job.hasActual;
 
-  // ── Step 1: Find header row by scanning for % or common keywords ──
-  let hdr = -1;
-  let colMilestone = 0, colDate = -1, colProjected = -1, colActual = -1;
+  // We scan rows for the section header and data
+  // Both sheets have col index 1 = name, but we also accept col 0 as fallback
+  let colName = 1, colDate = -1, colProj = -1, colAct = -1;
 
-  // First pass: look for an explicit header row
-  for (let r = 0; r < Math.min(15, rows.length); r++) {
-    const rowStr = rows[r].map(c => String(c).toLowerCase().trim()).join('|');
-    if (rowStr.includes('milestone') || rowStr.includes('activity') || rowStr.includes('deliverable') ||
-        rowStr.includes('description') || rowStr.includes('item') || rowStr.includes('work package')) {
-      hdr = r;
-      rows[r].forEach((cell, ci) => {
-        const h = String(cell).toLowerCase().trim();
-        if (/milestone|activity|description|deliverable|item|work package|task/.test(h) && colMilestone === 0) colMilestone = ci;
-        else if (/target|date|timeline|deadline|due/.test(h) && colDate === -1) colDate = ci;
-        else if (/project(ed)?|plan(ned)?|schedul/.test(h) && colProjected === -1) colProjected = ci;
-        else if (/actual|achiev|progress|complet/.test(h) && colActual === -1) colActual = ci;
-      });
-      console.log(`[Milestones] ${job.proj} header row ${r}:`, { colMilestone, colDate, colProjected, colActual });
-      break;
-    }
+  if (isCrossings) {
+    // KD P: name=B(1), progress=D(3)
+    colName = 1; colDate = -1; colProj = 3; colAct = -1;
+  } else {
+    // KD: name=B(1), completion=E(4), projected=G(6), actual=H(7)
+    colName = 1; colDate = 4; colProj = 6; colAct = 7;
   }
 
-  // ── Step 2: If no header found OR cols still -1, auto-detect by scanning data rows for % values ──
-  if (hdr === -1 || (colProjected === -1 && colActual === -1)) {
-    // Scan first 20 data rows to find which columns contain % values
-    const pctColCounts = {};
-    const startScan = hdr >= 0 ? hdr + 1 : 1;
-    for (let r = startScan; r < Math.min(startScan + 20, rows.length); r++) {
-      if (!rows[r]) continue;
-      rows[r].forEach((cell, ci) => {
-        const s = String(cell).trim();
-        // Detect: "45%", "0.45", ".45", "45.0", or numeric 0-100
-        if (/^\d{1,3}%$/.test(s) || /^0?\.\d+$/.test(s) || (/^\d{1,3}(\.\d+)?$/.test(s) && parseFloat(s) <= 100)) {
-          if (ci > 0) { // skip col 0 (likely name)
-            pctColCounts[ci] = (pctColCounts[ci] || 0) + 1;
-          }
-        }
-      });
-    }
-    console.log(`[Milestones] ${job.proj} % column frequency:`, pctColCounts);
-
-    // Sort by frequency — most common % columns are projected and actual
-    const pctCols = Object.entries(pctColCounts)
-      .sort((a,b) => b[1]-a[1])
-      .map(e => parseInt(e[0]));
-
-    if (pctCols.length >= 1 && colProjected === -1) colProjected = pctCols[0];
-    if (pctCols.length >= 2 && colActual === -1 && job.hasActual) colActual = pctCols[1];
-
-    // Date column: look for column with most date-like values
-    if (colDate === -1) {
-      const dateColCounts = {};
-      for (let r = startScan; r < Math.min(startScan + 20, rows.length); r++) {
-        if (!rows[r]) continue;
-        rows[r].forEach((cell, ci) => {
-          if (ci === colMilestone || ci === colProjected || ci === colActual) return;
-          const s = String(cell).trim();
-          if (cell instanceof Date || /\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}/.test(s) ||
-              /\d{4}/.test(s) || /jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i.test(s) ||
-              /q[1-4]\s*\d{4}/i.test(s)) {
-            dateColCounts[ci] = (dateColCounts[ci] || 0) + 1;
-          }
-        });
-      }
-      const dateCols = Object.entries(dateColCounts).sort((a,b)=>b[1]-a[1]).map(e=>parseInt(e[0]));
-      if (dateCols.length > 0) colDate = dateCols[0];
-    }
-
-    if (hdr === -1) hdr = 0;
-    console.log(`[Milestones] ${job.proj} auto-detected columns:`, { colMilestone, colDate, colProjected, colActual });
-  }
-
-  // ── Step 3: Parse data rows ──
+  // ── Parse rows: skip blanks, headers, and section titles ──
   const milestones = [];
-  for (let r = hdr + 1; r < rows.length; r++) {
+  const sectionHeaders = new Set();
+
+  for (let r = 0; r < rows.length; r++) {
     const row = rows[r];
-    if (!row || row.every(c => c === '' || c === null || c === undefined)) continue;
-    const name = String(row[colMilestone] || '').trim();
-    if (!name || /^(milestone|activity|s\/n|no\.|#|item|description)$/i.test(name)) continue;
-    if (name.length < 3) continue;
+    if (!row || row.every(c => c === null || c === undefined || c === '')) continue;
 
-    const dateRaw = colDate >= 0 ? row[colDate] : '';
-    // For projected/actual: try the detected column first, then scan whole row for % value
-    let projRaw = colProjected >= 0 ? row[colProjected] : '';
-    let actRaw  = colActual >= 0 ? row[colActual] : '';
+    const nameRaw = row[colName];
+    if (nameRaw === null || nameRaw === undefined || nameRaw === '') continue;
+    const name = String(nameRaw).trim();
+    if (!name || name.length < 3) continue;
 
-    // Fallback: scan the row for any cell that looks like a percentage
-    if (!projRaw && !actRaw) {
-      const pctCells = [];
-      row.forEach((cell, ci) => {
-        if (ci === colMilestone || ci === colDate) return;
-        const s = String(cell || '').trim();
-        if (/^\d{1,3}%$/.test(s) || (/^\d{1,3}(\.\d+)?$/.test(s) && parseFloat(s) <= 100 && parseFloat(s) >= 0 && s !== '')) {
-          pctCells.push({ ci, val: cell });
-        }
-      });
-      if (pctCells.length >= 1) projRaw = pctCells[0].val;
-      if (pctCells.length >= 2 && job.hasActual) actRaw = pctCells[1].val;
+    // Skip pure header/label rows
+    if (/^(action|status|last update|construction|progress|lakowe|overall|actual|target|legend|road progress)$/i.test(name)) continue;
+    if (/^(park works|preconstruction|lakowe annex (internal|external)|lakowe crossings)/i.test(name)) {
+      sectionHeaders.add(r);
+      continue;
     }
+
+    const projRaw = colProj >= 0 ? row[colProj] : null;
+    const actRaw  = colAct  >= 0 ? row[colAct]  : null;
+    const dateRaw = colDate >= 0 ? row[colDate]  : null;
 
     const projPct = parsePct(projRaw);
-    const actPct  = job.hasActual ? parsePct(actRaw) : null;
+    const actPct  = (job.hasActual && actRaw !== null && actRaw !== undefined) ? parsePct(actRaw) : null;
     const dateStr = formatMilestoneDate(dateRaw);
 
-    milestones.push({ name, dateStr, projPct, actPct });
-  }
+    // Get status if available (col 2 for both sheets)
+    const status = row[2] ? String(row[2]).trim() : '';
 
-  console.log(`[Milestones] ${job.proj} parsed ${milestones.length} milestones:`, milestones.slice(0,5));
+    // Only include rows that have at least a name + some progress data
+    if (projPct === null && actPct === null && !status) continue;
+
+    milestones.push({ name, dateStr, projPct, actPct, status });
+  }
 
   if (milestones.length === 0) {
-    document.getElementById(job.loadEl).innerHTML = `<span style="color:var(--status-orange)">⚠ No milestone rows found in "${job.proj === 'Crossings' ? 'KD P' : 'KD'}" tab. Check browser console (F12) for raw sheet data. Available sheets searched.</span>`;
-    return;
-  }
+    document.getElementById(job.loadEl).innerHTML =
+      '<span style="color:var(--status-orange)">&#9888; No milestone rows found. Check browser console (F12) for raw data.</span>';
     return;
   }
 
-  // ── Gap analysis summary ──
+  // ── Gap summary counts ──
   let behind = 0, ahead = 0, ontrack = 0;
-  milestones.forEach(m => {
-    if (m.actPct === null || m.projPct === null) return;
-    const gap = m.actPct - m.projPct;
-    if (gap < -3) behind++;
-    else if (gap > 3) ahead++;
-    else ontrack++;
-  });
-
-  // For Crossings (no actual), count how many are projected ≥80% as near-complete
   let projComplete = 0, projInProgress = 0, projNotStarted = 0;
-  if (!job.hasActual) {
-    milestones.forEach(m => {
-      if (m.projPct === null) return;
+
+  milestones.forEach(m => {
+    if (job.hasActual && m.actPct !== null && m.projPct !== null) {
+      const gap = m.actPct - m.projPct;
+      if (gap < -5) behind++;
+      else if (gap > 5) ahead++;
+      else ontrack++;
+    } else if (!job.hasActual && m.projPct !== null) {
       if (m.projPct >= 90) projComplete++;
       else if (m.projPct > 0) projInProgress++;
       else projNotStarted++;
-    });
-  }
+    }
+  });
 
   // ── Build HTML ──
-  let html = '';
-
-  // Summary chips
-  html += '<div class="milestone-gap-summary">';
+  let html = '<div class="milestone-gap-summary">';
   if (job.hasActual) {
-    if (behind > 0)  html += `<div class="gap-chip behind"><div class="gap-chip-dot"></div>${behind} Behind Plan</div>`;
-    if (ahead > 0)   html += `<div class="gap-chip ahead"><div class="gap-chip-dot"></div>${ahead} Ahead of Plan</div>`;
-    if (ontrack > 0) html += `<div class="gap-chip ontrack"><div class="gap-chip-dot"></div>${ontrack} On Track</div>`;
+    if (behind  > 0) html += '<div class="gap-chip behind"><div class="gap-chip-dot"></div>' + behind  + ' Behind Plan</div>';
+    if (ahead   > 0) html += '<div class="gap-chip ahead"><div class="gap-chip-dot"></div>'  + ahead   + ' Ahead of Plan</div>';
+    if (ontrack > 0) html += '<div class="gap-chip ontrack"><div class="gap-chip-dot"></div>'+ ontrack + ' On Track</div>';
   } else {
-    if (projComplete > 0)    html += `<div class="gap-chip ahead"><div class="gap-chip-dot"></div>${projComplete} Near Complete (≥90%)</div>`;
-    if (projInProgress > 0)  html += `<div class="gap-chip ontrack"><div class="gap-chip-dot"></div>${projInProgress} In Progress</div>`;
-    if (projNotStarted > 0)  html += `<div class="gap-chip behind"><div class="gap-chip-dot"></div>${projNotStarted} Not Yet Started</div>`;
+    if (projComplete   > 0) html += '<div class="gap-chip ahead"><div class="gap-chip-dot"></div>'   + projComplete   + ' Complete (&#x2265;90%)</div>';
+    if (projInProgress > 0) html += '<div class="gap-chip ontrack"><div class="gap-chip-dot"></div>' + projInProgress + ' In Progress</div>';
+    if (projNotStarted > 0) html += '<div class="gap-chip behind"><div class="gap-chip-dot"></div>'  + projNotStarted + ' Not Started</div>';
   }
   html += '</div>';
 
-  // Table
   html += '<div class="milestone-table-wrap"><table class="milestone-table"><thead><tr>';
-  html += '<th>Milestone</th><th>Target Date</th>';
-  if (job.hasActual) {
-    html += '<th style="min-width:120px">Projected</th><th style="min-width:120px">Actual</th><th>Gap</th>';
-  } else {
-    html += '<th style="min-width:140px">Projected Progress</th>';
-  }
+  html += '<th>Milestone / Activity</th>';
+  if (job.hasActual) html += '<th>Target Date</th><th style="min-width:110px">Projected</th><th style="min-width:110px">Actual</th><th>Gap</th>';
+  else               html += '<th>Status</th><th style="min-width:150px">Progress to Date</th>';
   html += '</tr></thead><tbody>';
 
   milestones.forEach(m => {
-    const gap        = (m.actPct !== null && m.projPct !== null) ? m.actPct - m.projPct : null;
-    const gapClass   = gap === null ? 'nodata' : (gap < -3 ? 'behind' : gap > 3 ? 'ahead' : 'ontrack');
-    const gapLabel   = gap === null ? '—' : (gap > 0 ? `+${gap.toFixed(1)}pp` : `${gap.toFixed(1)}pp`);
-    const barClass   = !job.hasActual
-      ? (m.projPct >= 90 ? 'ahead' : m.projPct >= 50 ? 'ontrack' : 'behind')
-      : (gap === null ? 'ontrack' : gapClass);
+    const gap      = (job.hasActual && m.actPct !== null && m.projPct !== null) ? (m.actPct - m.projPct) : null;
+    const gapClass = gap === null ? 'nodata' : (gap < -5 ? 'behind' : gap > 5 ? 'ahead' : 'ontrack');
+    const gapLabel = gap === null ? '&#8212;' : (gap >= 0 ? '+' + gap.toFixed(1) + 'pp' : gap.toFixed(1) + 'pp');
 
-    html += `<tr>
-      <td class="ms-name">${escHtml(m.name)}</td>
-      <td class="ms-date" style="color:var(--text-muted);white-space:nowrap">${m.dateStr || '—'}</td>`;
+    // Bar colour for actual bar
+    const barClass = job.hasActual
+      ? gapClass
+      : (m.projPct === null ? 'ontrack' : m.projPct >= 90 ? 'ahead' : m.projPct >= 40 ? 'ontrack' : 'behind');
+
+    // Status badge colour
+    const statusLower = m.status.toLowerCase();
+    const statusColor = /complet|done/i.test(m.status)  ? 'var(--status-green)'
+                      : /ongoing|in.?progress/i.test(m.status) ? 'var(--status-blue)'
+                      : /delayed|off.?track|behind/i.test(m.status) ? 'var(--status-red)'
+                      : /pending|not.?start/i.test(m.status) ? 'var(--text-muted)'
+                      : 'var(--text-secondary)';
+
+    html += '<tr><td class="ms-name">' + escHtml(m.name) + '</td>';
 
     if (job.hasActual) {
+      // Date
+      html += '<td class="ms-date" style="color:var(--text-muted);white-space:nowrap">' + (m.dateStr || '&#8212;') + '</td>';
       // Projected bar
-      html += `<td>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="ms-bar-wrap"><div class="ms-bar-track">
-            <div class="ms-bar-proj" style="width:${m.projPct !== null ? m.projPct : 0}%"></div>
-          </div></div>
-          <span class="ms-pct" style="color:var(--text-muted);flex-shrink:0">${m.projPct !== null ? m.projPct+'%' : '—'}</span>
-        </div>
-      </td>`;
+      const pw = m.projPct !== null ? m.projPct : 0;
+      html += '<td><div style="display:flex;align-items:center;gap:8px">'
+            + '<div class="ms-bar-wrap"><div class="ms-bar-track">'
+            + '<div class="ms-bar-proj" style="width:' + pw + '%"></div>'
+            + '</div></div>'
+            + '<span class="ms-pct" style="color:var(--text-muted);flex-shrink:0">' + (m.projPct !== null ? m.projPct + '%' : '&#8212;') + '</span>'
+            + '</div></td>';
       // Actual bar
-      html += `<td>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="ms-bar-wrap"><div class="ms-bar-track">
-            <div class="ms-bar-actual ${barClass}" style="width:${m.actPct !== null ? m.actPct : 0}%"></div>
-          </div></div>
-          <span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0">${m.actPct !== null ? m.actPct+'%' : '—'}</span>
-        </div>
-      </td>`;
+      const aw = m.actPct !== null ? m.actPct : 0;
+      html += '<td><div style="display:flex;align-items:center;gap:8px">'
+            + '<div class="ms-bar-wrap"><div class="ms-bar-track">'
+            + '<div class="ms-bar-actual ' + barClass + '" style="width:' + aw + '%"></div>'
+            + '</div></div>'
+            + '<span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0">' + (m.actPct !== null ? m.actPct + '%' : '&#8212;') + '</span>'
+            + '</div></td>';
       // Gap badge
-      html += `<td><span class="ms-gap ${gapClass}">${gapLabel}</span></td>`;
+      html += '<td><span class="ms-gap ' + gapClass + '">' + gapLabel + '</span></td>';
     } else {
-      // Crossings: single projected bar only
-      html += `<td>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="ms-bar-wrap" style="flex:1"><div class="ms-bar-track">
-            <div class="ms-bar-actual ${barClass}" style="width:${m.projPct !== null ? m.projPct : 0}%"></div>
-          </div></div>
-          <span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0;min-width:32px;text-align:right">${m.projPct !== null ? m.projPct+'%' : '—'}</span>
-        </div>
-      </td>`;
+      // Crossings: status + single progress bar
+      html += '<td style="font-size:11px;font-weight:600;color:' + statusColor + '">' + escHtml(m.status) + '</td>';
+      const pw = m.projPct !== null ? m.projPct : 0;
+      html += '<td><div style="display:flex;align-items:center;gap:8px">'
+            + '<div class="ms-bar-wrap" style="flex:1"><div class="ms-bar-track">'
+            + '<div class="ms-bar-actual ' + barClass + '" style="width:' + pw + '%"></div>'
+            + '</div></div>'
+            + '<span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0;min-width:32px;text-align:right">' + (m.projPct !== null ? m.projPct + '%' : '&#8212;') + '</span>'
+            + '</div></td>';
     }
     html += '</tr>';
   });
 
   html += '</tbody></table></div>';
 
+  // Footer note
+  const sheetName = job.proj === 'Crossings' ? 'KD P' : 'KD';
   if (job.hasActual) {
-    const totalBehindPp = milestones.reduce((sum, m) => {
-      const g = (m.actPct !== null && m.projPct !== null) ? m.actPct - m.projPct : 0;
-      return sum + (g < 0 ? Math.abs(g) : 0);
+    const totalShortfall = milestones.reduce((s, m) => {
+      const g = (m.actPct !== null && m.projPct !== null) ? (m.actPct - m.projPct) : 0;
+      return s + (g < 0 ? Math.abs(g) : 0);
     }, 0).toFixed(1);
-    html += `<div style="margin-top:12px;font-size:11px;color:var(--text-muted);padding:10px 0;border-top:1px solid var(--border)">
-      <strong style="color:var(--text-secondary)">Overall gap:</strong> ${behind} of ${milestones.filter(m=>m.actPct!==null).length} milestones are tracking behind plan. 
-      Total shortfall across all items: <strong style="color:${behind>0?'var(--status-red)':'var(--status-green)'}">${totalBehindPp}pp</strong>.
-      Source: <em>${job.proj === 'Crossings' ? 'KD P' : 'KD'}</em> sheet · Refreshed on sync.
-    </div>`;
+    html += '<div style="margin-top:12px;font-size:11px;color:var(--text-muted);padding:10px 0;border-top:1px solid var(--border)">'
+          + '<strong style="color:var(--text-secondary)">Overall gap:</strong> '
+          + behind + ' of ' + milestones.filter(m => m.actPct !== null).length
+          + ' milestones tracking behind plan. Total shortfall: '
+          + '<strong style="color:' + (behind > 0 ? 'var(--status-red)' : 'var(--status-green)') + '">' + totalShortfall + 'pp</strong>.'
+          + ' Source: <em>' + sheetName + '</em> sheet &middot; Refreshed on sync.</div>';
   } else {
-    html += `<div style="margin-top:12px;font-size:11px;color:var(--text-muted);padding:10px 0;border-top:1px solid var(--border)">
-      Crossings milestone tracker shows projected-only percentages — no actual reported in KD P sheet.
-      Source: <em>KD P</em> sheet · Refreshed on sync.
-    </div>`;
+    html += '<div style="margin-top:12px;font-size:11px;color:var(--text-muted);padding:10px 0;border-top:1px solid var(--border)">'
+          + 'Projected-only progress from the <em>' + sheetName + '</em> sheet. Actual figures not tracked in this tab. &middot; Refreshed on sync.</div>';
   }
 
   document.getElementById(job.loadEl).style.display = 'none';
@@ -3285,7 +3224,6 @@ function renderMilestonesPanel(rows, job) {
   contentEl.style.display = 'block';
   _milestonesLoaded[job.proj] = true;
 }
-
 function parsePct(val) {
   if (val === '' || val === null || val === undefined) return null;
   const s = String(val).replace('%','').trim();
@@ -3559,7 +3497,7 @@ function renderPICharts_REMOVED_STATIC() {
 
 // Auto-expand panels, generate dynamic PI, and load milestones when project switches
 function piAutoExpand(proj) {
-  setTimeout(async () => {
+  setTimeout(function() {
     const annexPanel = document.getElementById('pi-annexe');
     const cxPanel    = document.getElementById('pi-crossings');
     if (proj === 'Annexe' && annexPanel && !annexPanel.classList.contains('pi-expanded')) {
@@ -3569,21 +3507,23 @@ function piAutoExpand(proj) {
       cxPanel.classList.add('pi-expanded');
     }
 
-    // ── Generate dynamic PI (always re-generates on new sync so data is live) ──
-    generateDynamicPI(proj);
-
-    // ── Fetch milestones if not yet loaded ──
-    if (!_milestonesLoaded.Crossings && !_milestonesLoaded.Annexe) {
-      fetchAndRenderMilestones();
-    } else if (!_milestonesLoaded[proj]) {
-      fetchAndRenderMilestones();
-    }
-
     // ── Auto-expand the milestones panel ──
     const msPanel = document.getElementById(proj === 'Crossings' ? 'milestones-crossings' : 'milestones-annexe');
     if (msPanel && !msPanel.classList.contains('expanded')) {
       msPanel.classList.add('expanded');
     }
+
+    // ── Generate dynamic PI (deferred so UI renders first) ──
+    setTimeout(function() {
+      try { generateDynamicPI(proj); } catch(e) { console.warn('PI generation error:', e); }
+    }, 400);
+
+    // ── Fetch milestones (deferred) ──
+    setTimeout(function() {
+      try {
+        if (!_milestonesLoaded[proj]) fetchAndRenderMilestones();
+      } catch(e) { console.warn('Milestones error:', e); }
+    }, 600);
   }, 200);
 }
 
