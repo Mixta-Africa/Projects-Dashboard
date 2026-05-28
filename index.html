@@ -3047,57 +3047,122 @@ async function fetchAndRenderMilestones() {
 }
 
 function renderMilestonesPanel(rows, job) {
-  // ── Column detection ──
-  // Expected structure:  Milestone | Target Date | Projected% | Actual% (Annexe only)
-  // We search the first 8 rows for a header row, then parse below it.
+  // ── Debug: log raw sheet to console so structure can be verified ──
+  console.log(`[Milestones] ${job.proj} raw rows (first 15):`, rows.slice(0, 15));
+
+  // ── Step 1: Find header row by scanning for % or common keywords ──
   let hdr = -1;
   let colMilestone = 0, colDate = -1, colProjected = -1, colActual = -1;
 
-  for (let r = 0; r < Math.min(10, rows.length); r++) {
-    const rowStr = rows[r].map(c => String(c).toLowerCase().trim()).join(' ');
-    if (rowStr.includes('milestone') || rowStr.includes('activity') || rowStr.includes('deliverable') || rowStr.includes('description')) {
+  // First pass: look for an explicit header row
+  for (let r = 0; r < Math.min(15, rows.length); r++) {
+    const rowStr = rows[r].map(c => String(c).toLowerCase().trim()).join('|');
+    if (rowStr.includes('milestone') || rowStr.includes('activity') || rowStr.includes('deliverable') ||
+        rowStr.includes('description') || rowStr.includes('item') || rowStr.includes('work package')) {
       hdr = r;
       rows[r].forEach((cell, ci) => {
         const h = String(cell).toLowerCase().trim();
-        if (/milestone|activity|description|deliverable/.test(h)) colMilestone = ci;
-        else if (/target|date|timeline|deadline/.test(h)) colDate = ci;
-        else if (/projected|plan|scheduled/.test(h)) colProjected = ci;
-        else if (/actual|achieved|progress/.test(h)) colActual = ci;
+        if (/milestone|activity|description|deliverable|item|work package|task/.test(h) && colMilestone === 0) colMilestone = ci;
+        else if (/target|date|timeline|deadline|due/.test(h) && colDate === -1) colDate = ci;
+        else if (/project(ed)?|plan(ned)?|schedul/.test(h) && colProjected === -1) colProjected = ci;
+        else if (/actual|achiev|progress|complet/.test(h) && colActual === -1) colActual = ci;
       });
+      console.log(`[Milestones] ${job.proj} header row ${r}:`, { colMilestone, colDate, colProjected, colActual });
       break;
     }
   }
 
-  // Fallback: if no header found, guess common layouts (col 0 = name, col 1 = date, col 2 = projected, col 3 = actual)
-  if (hdr === -1) {
-    hdr = 0;
-    colMilestone = 0;
-    colDate = 1;
-    colProjected = 2;
-    colActual = job.hasActual ? 3 : -1;
+  // ── Step 2: If no header found OR cols still -1, auto-detect by scanning data rows for % values ──
+  if (hdr === -1 || (colProjected === -1 && colActual === -1)) {
+    // Scan first 20 data rows to find which columns contain % values
+    const pctColCounts = {};
+    const startScan = hdr >= 0 ? hdr + 1 : 1;
+    for (let r = startScan; r < Math.min(startScan + 20, rows.length); r++) {
+      if (!rows[r]) continue;
+      rows[r].forEach((cell, ci) => {
+        const s = String(cell).trim();
+        // Detect: "45%", "0.45", ".45", "45.0", or numeric 0-100
+        if (/^\d{1,3}%$/.test(s) || /^0?\.\d+$/.test(s) || (/^\d{1,3}(\.\d+)?$/.test(s) && parseFloat(s) <= 100)) {
+          if (ci > 0) { // skip col 0 (likely name)
+            pctColCounts[ci] = (pctColCounts[ci] || 0) + 1;
+          }
+        }
+      });
+    }
+    console.log(`[Milestones] ${job.proj} % column frequency:`, pctColCounts);
+
+    // Sort by frequency — most common % columns are projected and actual
+    const pctCols = Object.entries(pctColCounts)
+      .sort((a,b) => b[1]-a[1])
+      .map(e => parseInt(e[0]));
+
+    if (pctCols.length >= 1 && colProjected === -1) colProjected = pctCols[0];
+    if (pctCols.length >= 2 && colActual === -1 && job.hasActual) colActual = pctCols[1];
+
+    // Date column: look for column with most date-like values
+    if (colDate === -1) {
+      const dateColCounts = {};
+      for (let r = startScan; r < Math.min(startScan + 20, rows.length); r++) {
+        if (!rows[r]) continue;
+        rows[r].forEach((cell, ci) => {
+          if (ci === colMilestone || ci === colProjected || ci === colActual) return;
+          const s = String(cell).trim();
+          if (cell instanceof Date || /\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}/.test(s) ||
+              /\d{4}/.test(s) || /jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i.test(s) ||
+              /q[1-4]\s*\d{4}/i.test(s)) {
+            dateColCounts[ci] = (dateColCounts[ci] || 0) + 1;
+          }
+        });
+      }
+      const dateCols = Object.entries(dateColCounts).sort((a,b)=>b[1]-a[1]).map(e=>parseInt(e[0]));
+      if (dateCols.length > 0) colDate = dateCols[0];
+    }
+
+    if (hdr === -1) hdr = 0;
+    console.log(`[Milestones] ${job.proj} auto-detected columns:`, { colMilestone, colDate, colProjected, colActual });
   }
 
-  // ── Parse data rows ──
+  // ── Step 3: Parse data rows ──
   const milestones = [];
   for (let r = hdr + 1; r < rows.length; r++) {
     const row = rows[r];
-    if (!row || row.every(c => !c && c !== 0)) continue;
+    if (!row || row.every(c => c === '' || c === null || c === undefined)) continue;
     const name = String(row[colMilestone] || '').trim();
-    if (!name || /^(milestone|activity|s\/n|no\.|#)$/i.test(name)) continue;
+    if (!name || /^(milestone|activity|s\/n|no\.|#|item|description)$/i.test(name)) continue;
+    if (name.length < 3) continue;
 
-    const dateRaw  = colDate >= 0 ? row[colDate] : '';
-    const projRaw  = colProjected >= 0 ? row[colProjected] : '';
-    const actRaw   = colActual >= 0 ? row[colActual] : '';
+    const dateRaw = colDate >= 0 ? row[colDate] : '';
+    // For projected/actual: try the detected column first, then scan whole row for % value
+    let projRaw = colProjected >= 0 ? row[colProjected] : '';
+    let actRaw  = colActual >= 0 ? row[colActual] : '';
 
-    const projPct  = parsePct(projRaw);
-    const actPct   = job.hasActual ? parsePct(actRaw) : null;
-    const dateStr  = formatMilestoneDate(dateRaw);
+    // Fallback: scan the row for any cell that looks like a percentage
+    if (!projRaw && !actRaw) {
+      const pctCells = [];
+      row.forEach((cell, ci) => {
+        if (ci === colMilestone || ci === colDate) return;
+        const s = String(cell || '').trim();
+        if (/^\d{1,3}%$/.test(s) || (/^\d{1,3}(\.\d+)?$/.test(s) && parseFloat(s) <= 100 && parseFloat(s) >= 0 && s !== '')) {
+          pctCells.push({ ci, val: cell });
+        }
+      });
+      if (pctCells.length >= 1) projRaw = pctCells[0].val;
+      if (pctCells.length >= 2 && job.hasActual) actRaw = pctCells[1].val;
+    }
+
+    const projPct = parsePct(projRaw);
+    const actPct  = job.hasActual ? parsePct(actRaw) : null;
+    const dateStr = formatMilestoneDate(dateRaw);
 
     milestones.push({ name, dateStr, projPct, actPct });
   }
 
+  console.log(`[Milestones] ${job.proj} parsed ${milestones.length} milestones:`, milestones.slice(0,5));
+
   if (milestones.length === 0) {
-    document.getElementById(job.loadEl).innerHTML = `<span style="color:var(--status-orange)">⚠ No milestone rows found in "${job.proj === 'Crossings' ? 'KD P' : 'KD'}" tab. Check sheet structure.</span>`;
+    document.getElementById(job.loadEl).innerHTML = `<span style="color:var(--status-orange)">⚠ No milestone rows found in "${job.proj === 'Crossings' ? 'KD P' : 'KD'}" tab. Check browser console (F12) for raw sheet data. Available sheets searched.</span>`;
+    return;
+  }
     return;
   }
 
@@ -3392,19 +3457,30 @@ TONE RULES:
 - No bullet points — flow as narrative within the insight blocks
 - Output ONLY the HTML, nothing else before or after it`;
 
+  // ── Use Groq (CORS-friendly, fast) ──
+  const GROQ_KEY = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
+  if (!GROQ_KEY) {
+    if (loadEl) loadEl.innerHTML = '<span style="color:var(--status-orange);font-size:12px">⚠ GROQ_API_KEY not configured as environment secret.</span>';
+    return;
+  }
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 1400,
+        temperature: 0.3,
+        messages: [
+          { role: 'system', content: 'You are a sharp business strategy associate at a real estate development firm. Write punchy, direct executive intelligence. Output only valid HTML using the exact class names given. No markdown, no preamble.' },
+          { role: 'user', content: prompt }
+        ]
       })
     });
     const data = await res.json();
-    const text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text.trim() : '';
-    if (!text) throw new Error('Empty response');
+    const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+      ? data.choices[0].message.content.trim() : '';
+    if (!text) throw new Error('Empty response from Groq');
 
     // Strip any accidental markdown fences
     const clean = text.replace(/^```html?\n?/i,'').replace(/\n?```$/,'').trim();
@@ -4726,10 +4802,7 @@ function addChatMsg(role, text, thinking=false) {
 function removeChatMsg(id) { const el=document.getElementById(id); if(el) el.remove(); }
 
 window.onload = function () {
-  // ── Load Groq API key from environment or GitHub secrets ──
-  // If deployed on GitHub Pages, you can set GROQ_API_KEY as an environment variable
-  // For local testing, set it in localStorage: localStorage.setItem('GROQ_API_KEY', 'gsk_xxx')
-  // For production, configure it as a GitHub Actions secret and pass it to the build
+  // ── Groq API key (hardcoded for this deployment) ──
   if (!window.GROQ_API_KEY && typeof process !== 'undefined' && process.env && process.env.GROQ_API_KEY) {
     window.GROQ_API_KEY = process.env.GROQ_API_KEY;
   }
