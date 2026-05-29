@@ -1940,19 +1940,24 @@ const SEED_TASKS = [
 ];
 
 // Unified, highly resilient metric extraction
+// Unified, highly resilient metric extraction
 function extractAndApplyMetrics(txt, proj) {
   if (!txt || !/\d/.test(txt)) return;
   const isCx = proj === 'Crossings';
 
   const findCurrency = (patterns) => {
     for (const pat of patterns) {
-      // Matches natural language spacers (like "is", "=", "-") before the currency
-      const rx = new RegExp(pat + '.*?([₦N]\\s*[\\d,]+\\.?\\d*\\s*[BMKbmk]?(?:mn|MN|Mn)?)', 'i');
+      // Allows up to 35 characters of conversational text between the label and the number
+      const rx = new RegExp(pat + '.{0,35}?([₦N]?\\s*[\\d,]+\\.?\\d*\\s*(?:B|M|K|mn|MN|Mn|billion|million)?)\\b', 'i');
       const m = txt.match(rx);
       if (m) {
-        let raw = m[1].trim().replace(/,/g,'').toUpperCase().replace(/MN$/,'M');
-        if (!raw.startsWith('₦')) raw = raw.replace(/^N(?=\d)/i, '₦');
-        if (!raw.startsWith('₦')) raw = '₦' + raw;
+        let raw = m[1].trim().replace(/,/g,'').toUpperCase()
+          .replace(/MN|MILLION/g,'M').replace(/BILLION/g,'B');
+        if (!raw.startsWith('₦') && !raw.startsWith('N')) {
+          raw = '₦' + raw;
+        } else {
+          raw = raw.replace(/^N(?=\d)/i, '₦');
+        }
         return raw;
       }
     }
@@ -1961,29 +1966,31 @@ function extractAndApplyMetrics(txt, proj) {
 
   const findCount = (patterns) => {
     for (const pat of patterns) {
-      // Matches "Label: 5"
-      let m = txt.match(new RegExp(pat + '.*?(\\d{1,4})\\b', 'i'));
+      // Look forward (e.g., "Active Offers: 2")
+      let rx = new RegExp(pat + '.{0,25}?(\\d{1,4})\\b', 'i');
+      let m = txt.match(rx);
       if (m) return m[1];
-      // Matches natural sentence "5 active labels"
-      m = txt.match(new RegExp('(\\d{1,4})\\s*(?:active\\s*)?' + pat, 'i'));
+      // Look backward (e.g., "2 active offer letters")
+      rx = new RegExp('(\\d{1,4})\\s*(?:active\\s*)?' + pat, 'i');
+      m = txt.match(rx);
       if (m) return m[1];
     }
     return null;
   };
 
-  const inflow = findCurrency(['inflow', 'total inflow']);
+  const inflow = findCurrency(['inflow', 'total inflow', 'collections']);
   if (inflow) setMetric(isCx ? 'val-cx-inflow' : 'val-annex-inflow', inflow);
 
-  const salesVal = findCurrency(['value of sales', 'tvs']);
+  const salesVal = findCurrency(['value of sales', 'tvs', 'sales value']);
   if (salesVal) setMetric(isCx ? 'val-cx-sales' : 'val-annex-sales', salesVal);
 
-  const balance = findCurrency(['account bal', 'account balance', 'bal(?!lard|lot|c)']);
+  const balance = findCurrency(['account bal', 'balance', 'bal\\b']);
   if (balance) setMetric(isCx ? 'val-cx-balance' : 'val-annex-balance', balance);
 
-  const units = findCount(['sales', 'units sold', 'units']);
+  const units = findCount(['units sold', 'units', 'sales\\b']);
   if (units) setMetric(isCx ? 'val-cx-units' : 'val-annex-units', units);
 
-  const offers = findCount(['offer letters?', 'active offer', 'offer letter', 'offers']);
+  const offers = findCount(['offer letter', 'active offer', 'offers']);
   if (offers !== null) setMetric(isCx ? 'val-cx-offers' : 'val-annex-offers', offers);
 }
   
@@ -3007,10 +3014,9 @@ function toggleMilestones(id) {
 let _milestonesLoaded = { Crossings: false, Annexe: false };
 
 async function fetchAndRenderMilestones() {
-  // Check both KD and Milestones tabs based on the project
   const jobs = [
-    { proj: 'Crossings', url: SHEET_CROSSINGS, tabPattern: /^KD$|^Milestones?$|^KD\s*P$/i, hasActual: false, contentEl: 'ms-cx-content', loadEl: 'ms-cx-loading', accentVar: '--cx-color' },
-    { proj: 'Annexe',    url: SHEET_ANNEXE,    tabPattern: /^KD$/i,      hasActual: true,  contentEl: 'ms-annex-content', loadEl: 'ms-annex-loading', accentVar: '--annex-color' }
+    { proj: 'Crossings', url: SHEET_CROSSINGS, tabPattern: /KD\s*P/i, hasActual: false, contentEl: 'ms-cx-content', loadEl: 'ms-cx-loading', accentVar: '--cx-color' },
+    { proj: 'Annexe',    url: SHEET_ANNEXE,    tabPattern: /^KD$/i,   hasActual: true,  contentEl: 'ms-annex-content', loadEl: 'ms-annex-loading', accentVar: '--annex-color' }
   ];
 
   await Promise.all(jobs.map(async job => {
@@ -3039,67 +3045,72 @@ function renderMilestonesPanel(rows, job) {
   let actual = 0;
   let overallFound = false;
 
-  // 1. Locate the Milestone Table Header
-  let headerIdx = rows.findIndex(r => r && r.some && r.some(c => /Activity|Milestone|Deliverable/i.test(String(c))));
-  if (headerIdx === -1) headerIdx = 0;
-
-  const hr = rows[headerIdx] || [];
-  let colName = hr.findIndex(c => /Activity|Milestone|Description|Deliverable/i.test(String(c)));
-  let colProj = hr.findIndex(c => /Projected|Plan/i.test(String(c)));
-  let colAct = hr.findIndex(c => /Actual|Progress/i.test(String(c)));
-  let colDate = hr.findIndex(c => /Date|Target|Timeline|Due/i.test(String(c)));
-  let colStatus = hr.findIndex(c => /Status/i.test(String(c)));
-
-  if (colName === -1) colName = 1; // Fallback to column B
+  // Hardcoded Columns based on your exact layout
+  // Annex (B-I): B=1, C=2, D=3, E=4, F=5
+  // Crossings (B-E): B=1, C=2, D=3, E=4
+  const colName = 1;
+  const colStatus = 2;
+  const colDate = 3;
+  const colProj = 4;
+  const colAct = job.proj === 'Annexe' ? 5 : -1;
 
   const milestones = [];
+  
+  // Locate the start of the table (skip empty top rows)
+  let startRow = 0;
+  for (let i = 0; i < Math.min(20, rows.length); i++) {
+     if (rows[i] && rows[i][colName] && /Activity|Milestone|Description|Deliverable/i.test(String(rows[i][colName]))) {
+         startRow = i + 1;
+         break;
+     }
+  }
 
-  // 2. Parse only the top section and STOP when we hit the Master Task List
-  for (let r = headerIdx + 1; r < rows.length; r++) {
+  // Parse only the first table
+  for (let r = startRow; r < rows.length; r++) {
     const row = rows[r];
-    if (!row || row.every(c => !c)) continue; // skip blanks
-
+    if (!row || row.length === 0) continue; 
+    
     const rowStr = row.join(' ').toLowerCase();
     
-    // BREAK CONDITION: Stop if we bleed into the master task list headers
-    if (rowStr.includes('s/n') && (rowStr.includes('department') || rowStr.includes('action'))) break;
+    // EMERGENCY BRAKE: Stop parsing the moment we hit the chronological task list
+    if (rowStr.includes('s/n') || (rowStr.includes('department') && rowStr.includes('action'))) break;
     
     const name = String(row[colName] || '').trim();
     if (!name || name.length < 3) continue;
 
-    // BREAK CONDITION: Stop if the name is just a date log (e.g., "Sept 29") bleeding in
+    // EMERGENCY BRAKE 2: Stop if we hit date headers like "Sept 29" bleeding in
     if (/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*\d{1,2}/i.test(name) && !rowStr.includes('%')) break;
 
-    // Skip irrelevant headers
-    if (/^(action|status|last update|construction|progress|lakowe|overall|actual|target|legend)/i.test(name) && !/overall construction/i.test(name)) continue;
+    // Skip irrelevant headers in the table
+    if (/^(activity|milestone|description|deliverable|action|status|last update|construction|progress|lakowe|target|legend)/i.test(name) && !/overall/i.test(name)) continue;
 
-    const projPct = parsePct(colProj >= 0 ? row[colProj] : null);
-    const actPct  = (job.hasActual && colAct >= 0) ? parsePct(row[colAct]) : null;
-    const dateStr = formatMilestoneDate(colDate >= 0 ? row[colDate] : null);
-    const status  = String(colStatus >= 0 ? row[colStatus] : '').trim();
+    const projPct = parsePct(row[colProj]);
+    const actPct  = (colAct >= 0) ? parsePct(row[colAct]) : null;
+    const dateStr = formatMilestoneDate(row[colDate]);
+    const status  = String(row[colStatus] || '').trim();
 
-    // Intercept the "Overall Construction Progress" row for the top Dashboard bars
-    if (/overall construction/i.test(name)) {
-      projected = projPct || 0;
-      actual = actPct || 0;
+    // Intercept Overall Construction row for the top Dashboard cards
+    if (/overall/i.test(name) || /construction progress/i.test(name)) {
+      projected = projPct !== null ? projPct : 0;
+      actual = actPct !== null ? actPct : 0;
       overallFound = true;
     }
 
     if (projPct === null && actPct === null && !status) continue;
+    
     milestones.push({ name, dateStr, projPct, actPct, status });
   }
 
-  // Fallback for the top bars if "Overall Construction" wasn't explicitly named
+  // Fallback if "Overall" wasn't explicitly listed in column B
   if (!overallFound) {
-    const updateRow = rows.find(r => r && r.some && r.some(cell => /Last Update|Overall/i.test(String(cell))));
+    const updateRow = rows.find(r => r && r.some && r.some(cell => /Last Update|Overall|Progress/i.test(String(cell))));
     if (updateRow) {
-      const percentages = updateRow.map(String).filter(c => c.includes('%')).map(c => parseFloat(c.replace(/[^0-9.-]+/g, ''))).filter(n => !isNaN(n));
-      projected = percentages[0] || 0;
-      if (job.proj === 'Annexe') actual = percentages[1] || 0;
+      const percentages = updateRow.map(String).filter(c => c.includes('%') || !isNaN(parseFloat(c))).map(c => parsePct(c)).filter(n => n !== null);
+      if (percentages.length > 0) projected = percentages[0] || 0;
+      if (job.proj === 'Annexe' && percentages.length > 1) actual = percentages[1] || 0;
     }
   }
 
-  // 3. Render Top Progress Bars
   const panel = document.getElementById(job.contentEl);
   if (!panel) return;
 
@@ -3113,7 +3124,6 @@ function renderMilestonesPanel(rows, job) {
       const gap = projected - actual;
       const gapColor = gap > 0 ? 'var(--status-red)' : 'var(--status-green)';
       const gapBg = gap > 0 ? 'var(--status-red-bg)' : 'var(--status-green-bg)';
-      
       html += `
           <div class="gap-analysis-card" style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
               <div style="display: flex; justify-content: space-between; margin-bottom: 16px; align-items: center;">
@@ -3138,8 +3148,7 @@ function renderMilestonesPanel(rows, job) {
                       <div style="background: var(--status-green); width: ${actual}%; height: 100%; border-radius: 4px;"></div>
                   </div>
               </div>
-          </div>
-      `;
+          </div>`;
   } else {
       html += `
           <div class="gap-analysis-card" style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
@@ -3156,13 +3165,10 @@ function renderMilestonesPanel(rows, job) {
                       <div style="background: var(--status-orange); width: ${projected}%; height: 100%; border-radius: 4px;"></div>
                   </div>
               </div>
-          </div>
-      `;
+          </div>`;
   }
-
   html += `</div>`;
 
-  // 4. Render the Data Table
   if (milestones.length > 0) {
     html += '<div class="milestone-table-wrap" style="margin-top:20px;"><table class="milestone-table"><thead><tr>';
     html += '<th>Milestone / Activity</th>';
@@ -3204,6 +3210,18 @@ function renderMilestonesPanel(rows, job) {
   panel.innerHTML = html;
   panel.style.display = 'block';
   _milestonesLoaded[job.proj] = true;
+}
+
+function parsePct(val) {
+  if (val === '' || val === null || val === undefined) return null;
+  const s = String(val).replace(/[%]/g,'').trim();
+  if (s === '-' || s.toLowerCase() === 'tba' || s.toLowerCase() === 'tbd') return null;
+  const n = parseFloat(s);
+  if (isNaN(n)) return null;
+  if (n > 1) return n; // E.g., 45
+  if (n === 1) return 100; // 1.0 = 100%
+  if (n === 0) return 0;   // 0.0 = 0%
+  return n * 100; // E.g., 0.45 -> 45
 }
   
 function parsePct(val) {
