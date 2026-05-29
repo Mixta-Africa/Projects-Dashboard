@@ -3007,11 +3007,9 @@ function toggleMilestones(id) {
 let _milestonesLoaded = { Crossings: false, Annexe: false };
 
 async function fetchAndRenderMilestones() {
-  // Fetch both workbooks in parallel — they're already in memory from syncWithGoogleSheet
-  // but we need specific tabs (KD P for Crossings, KD for Annexe) that aren't in the
-  // date-session filter, so we re-fetch the same workbook URLs and pull those tabs.
+  // Check both KD and Milestones tabs based on the project
   const jobs = [
-    { proj: 'Crossings', url: SHEET_CROSSINGS, tabPattern: /^KD$/i, hasActual: false, contentEl: 'ms-cx-content', loadEl: 'ms-cx-loading', accentVar: '--cx-color' },
+    { proj: 'Crossings', url: SHEET_CROSSINGS, tabPattern: /^KD$|^Milestones?$|^KD\s*P$/i, hasActual: false, contentEl: 'ms-cx-content', loadEl: 'ms-cx-loading', accentVar: '--cx-color' },
     { proj: 'Annexe',    url: SHEET_ANNEXE,    tabPattern: /^KD$/i,      hasActual: true,  contentEl: 'ms-annex-content', loadEl: 'ms-annex-loading', accentVar: '--annex-color' }
   ];
 
@@ -3020,14 +3018,9 @@ async function fetchAndRenderMilestones() {
       const buf = await fetch(job.url).then(r => r.arrayBuffer());
       const wb  = XLSX.read(buf, { type: 'array', cellDates: true });
 
-      // Find the right tab — try exact then fallback to partial
       let sheetName = wb.SheetNames.find(n => job.tabPattern.test(n.trim()));
       if (!sheetName) {
-        // Try broader match
-        sheetName = wb.SheetNames.find(n => /KD/i.test(n.trim()) && (job.hasActual ? !/P$/i.test(n) : /P$/i.test(n)));
-      }
-      if (!sheetName) {
-        document.getElementById(job.loadEl).innerHTML = `<span style="color:var(--status-orange)">⚠ "${job.proj === 'Crossings' ? 'KD P' : 'KD'}" tab not found in sheet. Available tabs: ${wb.SheetNames.join(', ')}</span>`;
+        document.getElementById(job.loadEl).innerHTML = `<span style="color:var(--status-orange)">⚠ Milestone tab not found. Available tabs: ${wb.SheetNames.join(', ')}</span>`;
         return;
       }
 
@@ -3042,30 +3035,71 @@ async function fetchAndRenderMilestones() {
 }
 
 function renderMilestonesPanel(rows, job) {
-  // 1. ROBUST EXTRACTION LOGIC
   let projected = 0;
   let actual = 0;
+  let overallFound = false;
 
-  // Use Regex to find "Last Update" even if there are colons or weird casing
-  const updateRow = rows.find(r => r && r.some && r.some(cell => /Last Update|Overall/i.test(String(cell))));
+  // 1. Locate the Milestone Table Header
+  let headerIdx = rows.findIndex(r => r && r.some && r.some(c => /Activity|Milestone|Deliverable/i.test(String(c))));
+  if (headerIdx === -1) headerIdx = 0;
 
-  if (updateRow) {
-      // Extract all cells containing '%' and parse them into clean numbers
-      const percentages = updateRow
-          .map(cell => String(cell))
-          .filter(cell => cell.includes('%'))
-          .map(cell => parseFloat(cell.replace(/[^0-9.-]+/g, '')))
-          .filter(n => !isNaN(n));
+  const hr = rows[headerIdx] || [];
+  let colName = hr.findIndex(c => /Activity|Milestone|Description|Deliverable/i.test(String(c)));
+  let colProj = hr.findIndex(c => /Projected|Plan/i.test(String(c)));
+  let colAct = hr.findIndex(c => /Actual|Progress/i.test(String(c)));
+  let colDate = hr.findIndex(c => /Date|Target|Timeline|Due/i.test(String(c)));
+  let colStatus = hr.findIndex(c => /Status/i.test(String(c)));
 
-      if (job.proj === 'Annexe') {
-          projected = percentages[0] || 0;
-          actual = percentages[1] || 0;
-      } else {
-          projected = percentages[0] || 0;
-      }
+  if (colName === -1) colName = 1; // Fallback to column B
+
+  const milestones = [];
+
+  // 2. Parse only the top section and STOP when we hit the Master Task List
+  for (let r = headerIdx + 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.every(c => !c)) continue; // skip blanks
+
+    const rowStr = row.join(' ').toLowerCase();
+    
+    // BREAK CONDITION: Stop if we bleed into the master task list headers
+    if (rowStr.includes('s/n') && (rowStr.includes('department') || rowStr.includes('action'))) break;
+    
+    const name = String(row[colName] || '').trim();
+    if (!name || name.length < 3) continue;
+
+    // BREAK CONDITION: Stop if the name is just a date log (e.g., "Sept 29") bleeding in
+    if (/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*\d{1,2}/i.test(name) && !rowStr.includes('%')) break;
+
+    // Skip irrelevant headers
+    if (/^(action|status|last update|construction|progress|lakowe|overall|actual|target|legend)/i.test(name) && !/overall construction/i.test(name)) continue;
+
+    const projPct = parsePct(colProj >= 0 ? row[colProj] : null);
+    const actPct  = (job.hasActual && colAct >= 0) ? parsePct(row[colAct]) : null;
+    const dateStr = formatMilestoneDate(colDate >= 0 ? row[colDate] : null);
+    const status  = String(colStatus >= 0 ? row[colStatus] : '').trim();
+
+    // Intercept the "Overall Construction Progress" row for the top Dashboard bars
+    if (/overall construction/i.test(name)) {
+      projected = projPct || 0;
+      actual = actPct || 0;
+      overallFound = true;
+    }
+
+    if (projPct === null && actPct === null && !status) continue;
+    milestones.push({ name, dateStr, projPct, actPct, status });
   }
 
-  // 2. DOM RENDERING (GAP ANALYSIS UI)
+  // Fallback for the top bars if "Overall Construction" wasn't explicitly named
+  if (!overallFound) {
+    const updateRow = rows.find(r => r && r.some && r.some(cell => /Last Update|Overall/i.test(String(cell))));
+    if (updateRow) {
+      const percentages = updateRow.map(String).filter(c => c.includes('%')).map(c => parseFloat(c.replace(/[^0-9.-]+/g, ''))).filter(n => !isNaN(n));
+      projected = percentages[0] || 0;
+      if (job.proj === 'Annexe') actual = percentages[1] || 0;
+    }
+  }
+
+  // 3. Render Top Progress Bars
   const panel = document.getElementById(job.contentEl);
   if (!panel) return;
 
@@ -3086,7 +3120,6 @@ function renderMilestonesPanel(rows, job) {
                   <span style="font-weight: 800; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Deficit / Surplus</span>
                   <span style="font-weight: 800; color: ${gapColor}; background: ${gapBg}; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid ${gapColor}40;">Gap: ${gap.toFixed(1)}%</span>
               </div>
-              
               <div class="progress-container" style="margin-bottom: 16px;">
                   <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
                       <span style="color: var(--text-muted);">Projected Plan</span>
@@ -3096,7 +3129,6 @@ function renderMilestonesPanel(rows, job) {
                       <div style="background: var(--status-orange); width: ${projected}%; height: 100%; border-radius: 4px;"></div>
                   </div>
               </div>
-
               <div class="progress-container">
                   <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
                       <span style="color: var(--text-muted);">Actual Progress</span>
@@ -3109,14 +3141,12 @@ function renderMilestonesPanel(rows, job) {
           </div>
       `;
   } else {
-      // Crossings (Projected Only)
       html += `
           <div class="gap-analysis-card" style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
               <div style="display: flex; justify-content: space-between; margin-bottom: 16px; align-items: center;">
                   <span style="font-weight: 800; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Deficit / Surplus</span>
                   <span style="color: var(--text-muted); font-size: 11px; font-style: italic;">(Actuals offline)</span>
               </div>
-              
               <div class="progress-container">
                   <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
                       <span style="color: var(--text-muted);">Projected Plan</span>
@@ -3132,40 +3162,7 @@ function renderMilestonesPanel(rows, job) {
 
   html += `</div>`;
 
-  // 3. DETAILED MILESTONE TABLE GENERATION
-  const milestones = [];
-  
-  // Auto-detect columns based on the header row in the sheet
-  let colName = 1, colProj = 4, colAct = 5, colDate = 3, colStatus = 2;
-  const headerRow = rows.find(r => r && r.some && r.some(c => /Activity|Milestone/i.test(String(c))));
-  
-  if (headerRow) {
-    colName = headerRow.findIndex(c => /Activity|Milestone|Description/i.test(String(c)));
-    colProj = headerRow.findIndex(c => /Projected|Plan/i.test(String(c)));
-    colAct = headerRow.findIndex(c => /Actual/i.test(String(c)));
-    colDate = headerRow.findIndex(c => /Date|Target/i.test(String(c)));
-    colStatus = headerRow.findIndex(c => /Status/i.test(String(c)));
-    if (colName === -1) colName = 1;
-  }
-
-  for (let r = 0; r < rows.length; r++) {
-    const row = rows[r];
-    if (!row || row.every(c => !c)) continue;
-
-    const name = String(row[colName] || '').trim();
-    if (!name || name.length < 3) continue;
-    if (/^(action|status|last update|construction|progress|lakowe|overall|actual|target|legend|road progress)/i.test(name)) continue;
-
-    const projPct = parsePct(colProj >= 0 ? row[colProj] : null);
-    const actPct  = (job.hasActual && colAct >= 0) ? parsePct(row[colAct]) : null;
-    const dateStr = formatMilestoneDate(colDate >= 0 ? row[colDate] : null);
-    const status  = String(colStatus >= 0 ? row[colStatus] : '').trim();
-
-    if (projPct === null && actPct === null && !status) continue;
-    milestones.push({ name, dateStr, projPct, actPct, status });
-  }
-
-  // Inject Table HTML if tasks are found
+  // 4. Render the Data Table
   if (milestones.length > 0) {
     html += '<div class="milestone-table-wrap" style="margin-top:20px;"><table class="milestone-table"><thead><tr>';
     html += '<th>Milestone / Activity</th>';
