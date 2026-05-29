@@ -3142,166 +3142,7 @@ function renderMilestonesPanel(rows, job) {
   panel.style.display = 'block';
   _milestonesLoaded[job.proj] = true;
 }
-  // ── Parse rows: skip blanks, headers, and section titles ──
-  const milestones = [];
-  const sectionHeaders = new Set();
-
-  for (let r = 0; r < rows.length; r++) {
-    const row = rows[r];
-    if (!row || row.every(c => c === null || c === undefined || c === '')) continue;
-
-    const nameRaw = row[colName];
-    if (nameRaw === null || nameRaw === undefined || nameRaw === '') continue;
-    const name = String(nameRaw).trim();
-    if (!name || name.length < 3) continue;
-
-    // Skip pure header/label rows
-    if (/^(action|status|last update|construction|progress|lakowe|overall|actual|target|legend|road progress)$/i.test(name)) continue;
-    if (/^(park works|preconstruction|lakowe annex (internal|external)|lakowe crossings)/i.test(name)) {
-      sectionHeaders.add(r);
-      continue;
-    }
-
-    const projRaw = colProj >= 0 ? row[colProj] : null;
-    const actRaw  = colAct  >= 0 ? row[colAct]  : null;
-    const dateRaw = colDate >= 0 ? row[colDate]  : null;
-
-    const projPct = parsePct(projRaw);
-    const actPct  = (job.hasActual && actRaw !== null && actRaw !== undefined) ? parsePct(actRaw) : null;
-    const dateStr = formatMilestoneDate(dateRaw);
-
-    // Get status if available (col 2 for both sheets)
-    const status = row[2] ? String(row[2]).trim() : '';
-
-    // Only include rows that have at least a name + some progress data
-    if (projPct === null && actPct === null && !status) continue;
-
-    milestones.push({ name, dateStr, projPct, actPct, status });
-  }
-
-  if (milestones.length === 0) {
-    document.getElementById(job.loadEl).innerHTML =
-      '<span style="color:var(--status-orange)">&#9888; No milestone rows found. Check browser console (F12) for raw data.</span>';
-    return;
-  }
-
-  // ── Gap summary counts ──
-  let behind = 0, ahead = 0, ontrack = 0;
-  let projComplete = 0, projInProgress = 0, projNotStarted = 0;
-
-  milestones.forEach(m => {
-    if (job.hasActual && m.actPct !== null && m.projPct !== null) {
-      const gap = m.actPct - m.projPct;
-      if (gap < -5) behind++;
-      else if (gap > 5) ahead++;
-      else ontrack++;
-    } else if (!job.hasActual && m.projPct !== null) {
-      if (m.projPct >= 90) projComplete++;
-      else if (m.projPct > 0) projInProgress++;
-      else projNotStarted++;
-    }
-  });
-
-  // ── Build HTML ──
-  let html = '<div class="milestone-gap-summary">';
-  if (job.hasActual) {
-    if (behind  > 0) html += '<div class="gap-chip behind"><div class="gap-chip-dot"></div>' + behind  + ' Behind Plan</div>';
-    if (ahead   > 0) html += '<div class="gap-chip ahead"><div class="gap-chip-dot"></div>'  + ahead   + ' Ahead of Plan</div>';
-    if (ontrack > 0) html += '<div class="gap-chip ontrack"><div class="gap-chip-dot"></div>'+ ontrack + ' On Track</div>';
-  } else {
-    if (projComplete   > 0) html += '<div class="gap-chip ahead"><div class="gap-chip-dot"></div>'   + projComplete   + ' Complete (&#x2265;90%)</div>';
-    if (projInProgress > 0) html += '<div class="gap-chip ontrack"><div class="gap-chip-dot"></div>' + projInProgress + ' In Progress</div>';
-    if (projNotStarted > 0) html += '<div class="gap-chip behind"><div class="gap-chip-dot"></div>'  + projNotStarted + ' Not Started</div>';
-  }
-  html += '</div>';
-
-  html += '<div class="milestone-table-wrap"><table class="milestone-table"><thead><tr>';
-  html += '<th>Milestone / Activity</th>';
-  if (job.hasActual) html += '<th>Target Date</th><th style="min-width:110px">Projected</th><th style="min-width:110px">Actual</th><th>Gap</th>';
-  else               html += '<th>Status</th><th style="min-width:150px">Progress to Date</th>';
-  html += '</tr></thead><tbody>';
-
-  milestones.forEach(m => {
-    const gap      = (job.hasActual && m.actPct !== null && m.projPct !== null) ? (m.actPct - m.projPct) : null;
-    const gapClass = gap === null ? 'nodata' : (gap < -5 ? 'behind' : gap > 5 ? 'ahead' : 'ontrack');
-    const gapLabel = gap === null ? '&#8212;' : (gap >= 0 ? '+' + gap.toFixed(1) + 'pp' : gap.toFixed(1) + 'pp');
-
-    // Bar colour for actual bar
-    const barClass = job.hasActual
-      ? gapClass
-      : (m.projPct === null ? 'ontrack' : m.projPct >= 90 ? 'ahead' : m.projPct >= 40 ? 'ontrack' : 'behind');
-
-    // Status badge colour
-    const statusLower = m.status.toLowerCase();
-    const statusColor = /complet|done/i.test(m.status)  ? 'var(--status-green)'
-                      : /ongoing|in.?progress/i.test(m.status) ? 'var(--status-blue)'
-                      : /delayed|off.?track|behind/i.test(m.status) ? 'var(--status-red)'
-                      : /pending|not.?start/i.test(m.status) ? 'var(--text-muted)'
-                      : 'var(--text-secondary)';
-
-    html += '<tr><td class="ms-name">' + escHtml(m.name) + '</td>';
-
-    if (job.hasActual) {
-      // Date
-      html += '<td class="ms-date" style="color:var(--text-muted);white-space:nowrap">' + (m.dateStr || '&#8212;') + '</td>';
-      // Projected bar
-      const pw = m.projPct !== null ? m.projPct : 0;
-      html += '<td><div style="display:flex;align-items:center;gap:8px">'
-            + '<div class="ms-bar-wrap"><div class="ms-bar-track">'
-            + '<div class="ms-bar-proj" style="width:' + pw + '%"></div>'
-            + '</div></div>'
-            + '<span class="ms-pct" style="color:var(--text-muted);flex-shrink:0">' + (m.projPct !== null ? m.projPct + '%' : '&#8212;') + '</span>'
-            + '</div></td>';
-      // Actual bar
-      const aw = m.actPct !== null ? m.actPct : 0;
-      html += '<td><div style="display:flex;align-items:center;gap:8px">'
-            + '<div class="ms-bar-wrap"><div class="ms-bar-track">'
-            + '<div class="ms-bar-actual ' + barClass + '" style="width:' + aw + '%"></div>'
-            + '</div></div>'
-            + '<span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0">' + (m.actPct !== null ? m.actPct + '%' : '&#8212;') + '</span>'
-            + '</div></td>';
-      // Gap badge
-      html += '<td><span class="ms-gap ' + gapClass + '">' + gapLabel + '</span></td>';
-    } else {
-      // Crossings: status + single progress bar
-      html += '<td style="font-size:11px;font-weight:600;color:' + statusColor + '">' + escHtml(m.status) + '</td>';
-      const pw = m.projPct !== null ? m.projPct : 0;
-      html += '<td><div style="display:flex;align-items:center;gap:8px">'
-            + '<div class="ms-bar-wrap" style="flex:1"><div class="ms-bar-track">'
-            + '<div class="ms-bar-actual ' + barClass + '" style="width:' + pw + '%"></div>'
-            + '</div></div>'
-            + '<span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0;min-width:32px;text-align:right">' + (m.projPct !== null ? m.projPct + '%' : '&#8212;') + '</span>'
-            + '</div></td>';
-    }
-    html += '</tr>';
-  });
-
-  html += '</tbody></table></div>';
-
-  // Footer note
-  const sheetName = job.proj === 'Crossings' ? 'KD P' : 'KD';
-  if (job.hasActual) {
-    const totalShortfall = milestones.reduce((s, m) => {
-      const g = (m.actPct !== null && m.projPct !== null) ? (m.actPct - m.projPct) : 0;
-      return s + (g < 0 ? Math.abs(g) : 0);
-    }, 0).toFixed(1);
-    html += '<div style="margin-top:12px;font-size:11px;color:var(--text-muted);padding:10px 0;border-top:1px solid var(--border)">'
-          + '<strong style="color:var(--text-secondary)">Overall gap:</strong> '
-          + behind + ' of ' + milestones.filter(m => m.actPct !== null).length
-          + ' milestones tracking behind plan. Total shortfall: '
-          + '<strong style="color:' + (behind > 0 ? 'var(--status-red)' : 'var(--status-green)') + '">' + totalShortfall + 'pp</strong>.'
-          + ' Source: <em>' + sheetName + '</em> sheet &middot; Refreshed on sync.</div>';
-  } else {
-    html += '<div style="margin-top:12px;font-size:11px;color:var(--text-muted);padding:10px 0;border-top:1px solid var(--border)">'
-          + 'Projected-only progress from the <em>' + sheetName + '</em> sheet. Actual figures not tracked in this tab. &middot; Refreshed on sync.</div>';
-  }
-
-  document.getElementById(job.loadEl).style.display = 'none';
-  const contentEl = document.getElementById(job.contentEl);
-  contentEl.innerHTML = html;
-  contentEl.style.display = 'block';
-  _milestonesLoaded[job.proj] = true;
-}
+  
 function parsePct(val) {
   if (val === '' || val === null || val === undefined) return null;
   const s = String(val).replace('%','').trim();
@@ -4502,41 +4343,6 @@ ${body}
   <p style="font-family:Arial; font-size:9pt; color:#888;">Mixta Africa &nbsp;|&nbsp; ${esc(projLabel)} &nbsp;|&nbsp; ${esc(month)} Performance Report &nbsp;|&nbsp; Generated: ${esc(dateStr)}</p>
 </div>
 
-
-<!-- ══ AI PROJECT CHATBOT ══ -->
-<div class="chatbot-panel" id="chatbot-panel">
-  <div class="chatbot-header">
-    <div class="chatbot-header-left">
-      <div class="chatbot-header-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.63 1.17 5 3.06 6.68L4 22l4.5-2.25C9.6 20.23 10.77 20.5 12 20.5c5.52 0 10-4.03 10-9s-4.48-9-10-9z"/></svg>
-      </div>
-      <div>
-        <div class="chatbot-title">Project AI Assistant</div>
-        <div class="chatbot-subtitle">Lakowe Crossings &amp; Annexe · All Sessions</div>
-      </div>
-    </div>
-    <button class="chatbot-close-btn" onclick="closeChatbot()" aria-label="Close">✕</button>
-  </div>
-  <div class="chatbot-welcome" id="chatbot-welcome">
-    <div class="chatbot-welcome-emoji">🏗️</div>
-    <h3>Welcome! How may I assist you today?</h3>
-    <p>I have full access to all tasks, deadlines, financial data,<br>and meeting notes across every session in both projects.</p>
-  </div>
-  <div class="chatbot-suggestions" id="chatbot-suggestions">
-    <button class="chatbot-suggestion" onclick="useSuggestion(this)">What's overdue in Crossings?</button>
-    <button class="chatbot-suggestion" onclick="useSuggestion(this)">Annexe account balance history</button>
-    <button class="chatbot-suggestion" onclick="useSuggestion(this)">IPD tasks this session</button>
-    <button class="chatbot-suggestion" onclick="useSuggestion(this)">Delayed tasks across all depts</button>
-    <button class="chatbot-suggestion" onclick="useSuggestion(this)">How many offer letters active?</button>
-  </div>
-  <div class="chatbot-messages" id="chatbot-messages"></div>
-  <div class="chatbot-input-row">
-    <textarea class="chatbot-input" id="chatbot-input" placeholder="Ask anything about the projects…" rows="1"
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
-    <button class="chatbot-send-btn" id="chatbot-send-btn" onclick="sendChatMessage()">Send</button>
-  </div>
-</div>
-
 </body>
 </html>`;
 
@@ -5040,5 +4846,40 @@ window.onAuthGateSignedIn = window.onAuthGateSignedIn || function(user, access) 
 </script>
 <script src="dashboard-auth.js"></script>
 <script src="dashboard-pi-engine.js"></script>
+
+<!-- ══ AI PROJECT CHATBOT ══ -->
+<div class="chatbot-panel" id="chatbot-panel">
+  <div class="chatbot-header">
+    <div class="chatbot-header-left">
+      <div class="chatbot-header-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.63 1.17 5 3.06 6.68L4 22l4.5-2.25C9.6 20.23 10.77 20.5 12 20.5c5.52 0 10-4.03 10-9s-4.48-9-10-9z"/></svg>
+      </div>
+      <div>
+        <div class="chatbot-title">Project AI Assistant</div>
+        <div class="chatbot-subtitle">Lakowe Crossings &amp; Annexe · All Sessions</div>
+      </div>
+    </div>
+    <button class="chatbot-close-btn" onclick="closeChatbot()" aria-label="Close">✕</button>
+  </div>
+  <div class="chatbot-welcome" id="chatbot-welcome">
+    <div class="chatbot-welcome-emoji">🏗️</div>
+    <h3>Welcome! How may I assist you today?</h3>
+    <p>I have full access to all tasks, deadlines, financial data,<br>and meeting notes across every session in both projects.</p>
+  </div>
+  <div class="chatbot-suggestions" id="chatbot-suggestions">
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">What's overdue in Crossings?</button>
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">Annexe account balance history</button>
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">IPD tasks this session</button>
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">Delayed tasks across all depts</button>
+    <button class="chatbot-suggestion" onclick="useSuggestion(this)">How many offer letters active?</button>
+  </div>
+  <div class="chatbot-messages" id="chatbot-messages"></div>
+  <div class="chatbot-input-row">
+    <textarea class="chatbot-input" id="chatbot-input" placeholder="Ask anything about the projects…" rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+    <button class="chatbot-send-btn" id="chatbot-send-btn" onclick="sendChatMessage()">Send</button>
+  </div>
+</div>
+  
 </body>
 </html>
