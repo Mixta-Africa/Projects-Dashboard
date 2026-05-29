@@ -2284,7 +2284,164 @@ function processSheet(rows, proj, sheetName, isLatest) {
   
   renderDiagPanel();
 }
+function processSheet(rows, proj, sheetName, isLatest) {
+  // ── LAYER 3: Department whitelist + fuzzy matching ──
+  const KNOWN_DEPTS = [
+    'Design', 'Costing', 'IPD', 'Landscape', 'Operations',
+    'Fincon', 'Sales', 'MCC', 'Legal', 'Telemarketing', 'General', 'AMC',
+    'DA', 'Mrs H', 'Risk', 'Financial Planning'
+  ];
+  
+  const fuzzyMatchDept = (val) => {
+    if (!val) return null;
+    const clean = String(val).trim();
+    const lower = clean.toLowerCase();
 
+    if (DEPT_NORMALIZE_MAP[lower]) return DEPT_NORMALIZE_MAP[lower];
+    for (const key of Object.keys(DEPT_NORMALIZE_MAP)) {
+      if (lower.startsWith(key)) return DEPT_NORMALIZE_MAP[key];
+    }
+    for (const dept of KNOWN_DEPTS) {
+      const regex = new RegExp(`\\b${dept.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\b`, 'i');
+      if (regex.test(clean)) return dept;
+    }
+    if (clean.length > 1 && !/^(department|dept|s\/n|next step|action point|status|result|explanation|due|timeline|target|note)$/i.test(clean) && !/^\\d{5,}$/.test(clean)) {
+      return clean; 
+    }
+    return null;
+  };
+  
+  const targets = []; 
+  let lastDept = 'General'; 
+  let tasksAdded = 0; 
+  let targetsAdded = 0; 
+  let rowsScanned = rows.length;
+  
+  // ── EXACT COLUMN MAPPING AS SPECIFIED ──
+  let colMap = { sn: 1, dept: 2, action: 3, due: 4, result: 5, explanation: 6, project: 7, status: 8 };
+  
+  let headerRowIdx = -1;
+  for (let r = 0; r < Math.min(15, rows.length); r++) {
+    if (!rows[r]) continue;
+    const rowStr = rows[r].join(' ').toLowerCase();
+    
+    if ((rowStr.includes('s/n') || rowStr.includes('no.')) && (rowStr.includes('department') || rowStr.includes('dept'))) {
+      headerRowIdx = r;
+      for (let ci = 0; ci < rows[r].length; ci++) {
+        const h = String(rows[r][ci]).toLowerCase().trim();
+        if (h === 's/n' || h === 'no.' || h === '#') colMap.sn = ci;
+        else if (h === 'department' || h === 'dept') colMap.dept = ci;
+        else if (h === 'next steps' || h === 'next step' || h === 'action point' || h === 'action') colMap.action = ci;
+        else if (h === 'next steps timeline' || h === 'timeline' || h === 'due date' || h === 'due') colMap.due = ci;
+        else if (h === 'result' || h === 'result/context') colMap.result = ci;
+        else if (h === 'explanation notes' || h === 'explanation' || h === 'remarks') colMap.explanation = ci;
+        else if (h === 'project') colMap.project = ci;
+        else if (h === 'status') colMap.status = ci;
+      }
+      
+      sheetDiag[sheetName] = sheetDiag[sheetName] || {};
+      sheetDiag[sheetName].colMap = {...colMap};
+      sheetDiag[sheetName].headerRow = rows[r].map(String);
+      sheetDiag[sheetName].headerRowIdx = r;
+      break;
+    }
+  }
+
+  const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
+
+  for (let i = startRow; i < rows.length; i++) {
+    const c = rows[i];
+    if (!c || c.length < 2 || c.join('').trim() === '') continue;
+    
+    const rowStr = c.join(' ').toLowerCase();
+    if (rowStr.includes('calendar') && rowStr.includes('>>')) continue;
+
+    let deptCellValue = String(c[colMap.dept] || '').trim();
+    let action = String(c[colMap.action] || '').trim();
+    let explanationText = String(c[colMap.explanation] || '').trim();
+    
+    if (/^targets?$/i.test(deptCellValue)) {
+        let tContent = explanationText;
+        if (!tContent && action.length > 5) tContent = action;
+
+        if (tContent && tContent.length > 3 && !/^(target|targets|end of.*target)$/i.test(tContent.trim())) {
+            let tCls = 't-atrisk';
+            if (tContent.toLowerCase().includes('done') || tContent.toLowerCase().includes('achieved') || tContent.toLowerCase().includes('complete') || tContent.includes('✓')) {
+                tCls = 't-done';
+            } else if (tContent.toLowerCase().includes('ongoing') || tContent.toLowerCase().includes('progress')) {
+                tCls = 't-ongoing';
+            }
+            
+            targets.push(
+                `<div class="target-item ${tCls}">` +
+                `<div class="t-status-bar"></div>` +
+                `<div class="t-body"><div class="t-note">${tContent}</div></div>` +
+                `</div>`
+            ); 
+            targetsAdded++; 
+        }
+        continue; 
+    }
+    
+    if (deptCellValue) {
+      const matched = fuzzyMatchDept(deptCellValue);
+      if (matched) lastDept = matched; 
+    }
+
+    // ── METRIC EXTRACTION FROM OPERATIONS ──
+    if (isLatest && /operations|fincon/i.test(lastDept)) {
+        const actionText = action + ' ' + explanationText;
+        extractAndApplyMetrics(actionText, proj);
+    }
+    
+    if (!action || action.length < 4) continue;
+    if (/^(department|next step|action point|s\/n|status|result|explanation|due|timeline|target|note)$/i.test(action)) continue;
+    if (/^\d{5,}$/.test(action) || /gmt\+/i.test(action) || /west africa standard time/i.test(action)) continue;
+    if (/^(inflow|account balance|value of sales|no of sales|no\. of sales|units sold|budget spent|total inflow)\s*[-–:]/i.test(action)) continue;
+    if (/^(sales[-–:]\s*\d|bal[-–:])/i.test(action)) continue;
+
+    let rawStat = String(c[colMap.status] || 'ontrack').toLowerCase();
+    let statusRaw = rawStat.replace(/[^a-z]/g, '');
+    if (rowStr.includes('on hold') || rowStr.includes('on-hold') || statusRaw.includes('onhold')) statusRaw = 'onhold';
+    else if (statusRaw.includes('delay') || statusRaw.includes('offtrack')) statusRaw = 'delayed';
+    else if (statusRaw.includes('achieve') || statusRaw.includes('done') || statusRaw.includes('complete')) statusRaw = 'achieved';
+    else if (statusRaw.includes('update')) statusRaw = 'update';
+    else statusRaw = 'ontrack';
+
+    taskDatabase.push({ 
+      project: proj, 
+      session: sheetName, 
+      dept: lastDept,
+      action: action, 
+      due: formatExcelDate(c[colMap.due]), 
+      resultToAchieve: String(c[colMap.result] || '').trim(), 
+      explanation: explanationText, 
+      status: statusRaw,
+      _sheetRowIndex: i + 1  
+    });
+    tasksAdded++;
+  }
+
+  if (targets.length > 0) {
+    sessionTargets[proj + ':' + sheetName] = targets;
+    if (isLatest) {
+      const el = document.getElementById(proj === 'Crossings' ? 'targets-crossings' : 'targets-annexe');
+      if (el) el.innerHTML = targets.join('');
+    }
+  }
+
+  sheetDiag[sheetName] = sheetDiag[sheetName] || {};
+  Object.assign(sheetDiag[sheetName], { proj, isLatest, rowsScanned, tasksAdded, targetsAdded, colMap, headerRow: sheetDiag[sheetName].headerRow || [], warnings: [] });
+  const d = sheetDiag[sheetName];
+  
+  if (tasksAdded === 0 && rowsScanned > 20) d.warnings.push('⚠ Zero tasks extracted — check that action column mapped correctly (current: col ' + colMap.action + ')');
+  if (isLatest && targetsAdded === 0 && rowsScanned > 30) d.warnings.push('⚠ No targets extracted — ensure targets are placed in Explanation Notes with "Target" as Dept');
+  
+  if (d.headerRow && d.colMap) { const actionHeader = d.headerRow[d.colMap.action] || '(empty)'; const dueHeader = d.headerRow[d.colMap.due] || '(empty)'; d.info = `action col ${d.colMap.action} → "${actionHeader}" | due col ${d.colMap.due} → "${dueHeader}"`; }
+  
+  renderDiagPanel();
+}
+  
 function setMetric(id, val) { const el = document.getElementById(id); if (el && val) el.textContent = val; }
 function parseMillions(str) { if (!str) return null; const s = str.replace(/[₦,\s]/g,'').toUpperCase(); const numMatch = s.match(/([\d.]+)([BMK]?)/); if (!numMatch) return null; let val = parseFloat(numMatch[1]); if (numMatch[2] === 'B') val *= 1000; else if (numMatch[2] === 'K') val /= 1000; return val; }
 function balanceColorClass(valStr) { const m = parseMillions(valStr); if (m === null) return 'color-green'; if (m < 50) return 'color-red'; if (m < 100) return 'color-amber'; return 'color-green'; }
