@@ -3407,71 +3407,48 @@ async function generateDynamicPI(proj) {
     ? `ANNEXE-SPECIFIC CONTEXT:\n- Overall construction: 35.3% actual vs 40.7% projected (5.4pp shortfall)\n- Internal roads: 42.7% actual vs 47.5% projected\n- MEP/utilities (ALMOG): ~1% started — barely mobilised\n- Streets not yet cleared: Segun Odegbami, Tobi Amusan\n- Rainy season begins May — drainage & compaction at serious risk of stalling\n- Layout provisional approval: 40+ weeks overdue (Commissioner signature pending)\n- No active ad campaign or offer letters as of latest session\n- ₦100M still owed to Elms Gardens (cross-project liability)\n- QS onboarding recently closed — critical for contractor payment sign-off`
     : `CROSSINGS-SPECIFIC CONTEXT:\n- Overall programme: 27.8% actual vs 30.6% projected (2.8pp shortfall)\n- Phase 1 sandfill: 44% complete; road clearing: 56.5% complete\n- Main civil works: NOT STARTED — gated on ₦800M cumulative inflow milestone\n- Currently ₦${Math.round(800-(parseNairaToM(snap.inflow)))}M short of the ₦800M civil mobilisation trigger\n- Account down ~81% over 6 weeks — zero new inflow since January 2026\n- BAFF vs FUNKUS civil contractor decision still unresolved at DA level\n- Hospitality site redesigned CX9→CX10 — adds 6 commercial + 68 residential units\n- Renders and "coming soon" billboard blocked pending design freeze\n- Rainy season puts Phase 1 clearing and sandfill at risk`;
 
-  const prompt = `You are a sharp business strategy associate at a senior real estate development firm. You are writing the Predictive Intelligence section of the live project dashboard for ${projLabel}.
+  const prompt = `You are a Senior Business Strategy Associate advising Mixta Africa's executive board. 
+Your objective is to analyze the provided live dashboard metrics for ${projLabel} and deliver a 'Predictive Intelligence' brief.
 
-LIVE DASHBOARD DATA (as of ${new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'})}):
-- Total Inflow: ${snap.inflow}
-- Units Sold: ${snap.units}
-- Value of Sales: ${snap.sales}
-- Account Balance: ${snap.balance}
-- Active Offer Letters: ${snap.offers}
-- Estimated Cash Runway: ~${snap.runwayWks} weeks (at ₦${snap.burnRate}M/week burn)
-- Latest data sheet: ${snap.latest}
-
-TASK HEALTH:
-- On Track: ${snap.ontrack} | Delayed: ${snap.delayed} | On Hold: ${snap.onhold} | Achieved: ${snap.achieved} | Overdue: ${snap.overdue}
-
-TOP DELAYED / OVERDUE ITEMS:
-${snap.topDelayed || 'None currently delayed'}
-
-RECENTLY ACHIEVED:
-${snap.topAchieved || 'None'}
-
-DEPARTMENT BREAKDOWN:
-${snap.deptSummary}
+LIVE CONTEXT:
+- Cash Liquidity: ${snap.balance}
+- Estimated Runway: ~${snap.runwayWks} weeks (at ₦${snap.burnRate}M/week burn)
+- Sales Pipeline: ${snap.offers} Active Offer Letters
+- Critical Bottlenecks: ${snap.delayed} Delayed Tasks (${snap.overdue} Overdue).
 
 ${projContext}
 
-YOUR TASK:
-Write a tight, punchy Predictive Intelligence section for the executive dashboard. Think like someone who's been in the room — not an academic. No fluff, no theory. Tell leadership what's actually happening, what it means for the business, and what needs to happen next week.
+CRITICAL INSTRUCTIONS:
+1. NO ACADEMIC OR THEORETICAL FLUFF. Speak strictly in terms of cash flow, contractor mobilization, and real estate execution.
+2. Focus on the "So What?": If account balances are low and offers are stagnant, explicitly state that contractor payments for the next phase are at severe risk.
+3. Be candid, sharp, and action-oriented. Do not soften the blow.
 
-Structure your output in this EXACT HTML format (use these exact class names):
+YOUR TASK:
+Output EXACTLY these HTML blocks (using the exact class names provided) to inject into the dashboard:
 
 <div class="pi-insight-block" style="border-top:3px solid ${accentColor};margin-top:0">
-  <div class="pi-insight-headline">📍 Where We Stand Right Now</div>
-  <div class="pi-insight-text">[2-3 sentences. Cut straight to the business position — what's the headline situation? Use the numbers. Don't describe, conclude.]</div>
+  <div class="pi-insight-headline">📍 Liquidity & Sales Correlation</div>
+  <div class="pi-insight-text">[1-2 punchy sentences. How does the current cash liquidity and offer letter pipeline directly impact our immediate construction ability?]</div>
 </div>
 
 <div class="pi-metrics-row">
-  [4 pi-metric cards: account balance, cash runway, offer letters, and the most critical gap metric — each with class danger/warning/safe. Use live data from above.]
+  <div class="pi-metric danger"><div class="pi-metric-accent"></div><div class="pi-metric-label">Account Balance</div><div class="pi-metric-value">${snap.balance}</div><div class="pi-metric-sub">Runway: ~${snap.runwayWks} wks</div></div>
+  <div class="pi-metric warning"><div class="pi-metric-accent"></div><div class="pi-metric-label">Active Offers</div><div class="pi-metric-value">${snap.offers}</div><div class="pi-metric-sub">Pipeline status</div></div>
+  <div class="pi-metric safe"><div class="pi-metric-accent"></div><div class="pi-metric-label">Delayed Tasks</div><div class="pi-metric-value">${snap.delayed}</div><div class="pi-metric-sub">Bottlenecks</div></div>
+  <div class="pi-metric safe"><div class="pi-metric-accent"></div><div class="pi-metric-label">Total Inflow</div><div class="pi-metric-value">${snap.inflow}</div><div class="pi-metric-sub">To date</div></div>
 </div>
 
 <div class="pi-insight-block">
-  <div class="pi-insight-headline">🔥 The Burning Issues (This Week)</div>
-  <div class="pi-insight-text">[What needs a decision or action in the next 7 days. Be specific — name the people, the amounts, the deadlines. Not "we should monitor" — tell them what to do and why it's urgent. 3-5 sentences max.]</div>
+  <div class="pi-insight-headline">🔥 Milestone Delivery Risks</div>
+  <div class="pi-insight-text">[1-2 sentences identifying exactly what milestone is at risk right now due to the bottlenecks or cash position.]</div>
 </div>
 
 <div class="pi-insight-block">
-  <div class="pi-insight-headline">📉 What the Trend Is Telling Us</div>
-  <div class="pi-insight-text">[Read the direction of travel from the data. Is this improving, deteriorating, or flat-lining? What does the task health + financial picture signal about the next 4-6 weeks if nothing changes? Draw a clear conclusion — not a list of observations. 3-4 sentences.]</div>
+  <div class="pi-insight-headline">🎯 Immediate Required Executive Action</div>
+  <div class="pi-insight-text">[1-2 sentences. What exact decision must the board make THIS WEEK to unblock the project? Name it clearly.]</div>
 </div>
 
-<div class="pi-risk-list" style="margin:0 24px 8px">
-  [3-4 pi-risk-item entries. Each needs: pi-risk-dot class (critical/high/medium), pi-risk-title with emoji, pi-risk-body (2-3 sentences — business consequence focus, not description), pi-risk-tag. Risks must be derived from the live data above, not generic.]
-</div>
-
-<div class="pi-insight-block">
-  <div class="pi-insight-headline">🎯 The Strategic Play</div>
-  <div class="pi-insight-text">[What's the one or two moves that unlock the most value right now? Think sequencing — what unblocks what? Speak like someone who understands the critical path. 3-4 sentences. End with a clear recommendation.]</div>
-</div>
-
-TONE RULES:
-- Write like you're briefing a sharp MD who's been in the field, not presenting to a board you're trying to impress
-- Short, direct sentences. No academic hedging ("it may be noted that..."). No passive voice.
-- Use actual numbers from the data above. If a number tells a story, let it.
-- If something is bad, say it's bad. Don't soften real problems.
-- No bullet points — flow as narrative within the insight blocks
-- Output ONLY the HTML, nothing else before or after it`;
+Output ONLY the HTML, nothing else before or after it.`;
 
   // ── Use Groq (CORS-friendly, fast) ──
   const GROQ_KEY = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
