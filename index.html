@@ -2255,7 +2255,7 @@ async function syncWithGoogleSheet() {
     // ── Reset PI + milestones so they regenerate with fresh data ──
     _piGenerated = { Crossings: false, Annexe: false };
     _milestonesLoaded = { Crossings: false, Annexe: false };
-    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept(); populateSessionPicker(); if(_dashboardSession!=='latest') refreshDashboardForSession();
+    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept(); populateSessionPicker(); if(_dashboardSession!=='latest') refreshDashboardForSession(); renderDynamicCharts();
   } catch (error) { console.error('Error syncing:', error); } finally { document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing')); }
 }
 
@@ -4695,20 +4695,86 @@ function addChatMsg(role, text, thinking=false) {
 }
 function removeChatMsg(id) { const el=document.getElementById(id); if(el) el.remove(); }
 
+// ═══════════════════════════════════════════════════════
+// DYNAMIC CHART RENDERING ENGINE
+// ═══════════════════════════════════════════════════════
+let annexChartInstance = null;
+let cxChartInstance = null;
+
+function renderDynamicCharts() {
+  if (typeof Chart === 'undefined') return;
+
+  // Helper to extract numeric metrics from a given session
+  function getChartMetrics(proj, session) {
+    let inflowVal = null, balanceVal = null;
+    taskDatabase.filter(t => t.project === proj && t.session === session && /operations|fincon/i.test(t.dept)).forEach(t => {
+      const txt = (t.action||'') + ' ' + (t.explanation||'');
+      let m = txt.match(/\binflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
+      if (m) inflowVal = parseNairaToM(m[1]) / 1000; // Store as Billions
+      m = txt.match(/account bal(?:ance)?[\s:\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
+      if (m) balanceVal = parseNairaToM(m[1]) / 100; // Store as 100Millions
+    });
+    return { inflow: inflowVal, balance: balanceVal };
+  }
+
+  function buildChartData(proj) {
+    let sessions = [...(availableSessions[proj] || [])].reverse();
+    let labels = [], inflowData = [], balanceData = [];
+    let lastInf = 0, lastBal = 0;
+    
+    sessions.forEach(s => {
+      labels.push(formatSheetName(s));
+      let m = getChartMetrics(proj, s);
+      // Carry forward the last known value if a session was skipped
+      if (m.inflow !== null) lastInf = m.inflow;
+      if (m.balance !== null) lastBal = m.balance;
+      inflowData.push(lastInf);
+      balanceData.push(lastBal);
+    });
+    return { labels, inflowData, balanceData };
+  }
+
+  const gridC = 'rgba(0,0,0,0.06)', textC = '#999';
+  const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 } } }, scales: { x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } }, y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } } } };
+
+  // Render Annexe
+  const annData = buildChartData('Annexe');
+  const ctxAnnexe = document.getElementById('c1');
+  if (ctxAnnexe && annData.labels.length) {
+    if (annexChartInstance) annexChartInstance.destroy();
+    annexChartInstance = new Chart(ctxAnnexe, {
+      type: 'line', 
+      data: { labels: annData.labels, datasets: [ 
+        { label: 'Inflow (₦B)', data: annData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4, yAxisID: 'y' }, 
+        { label: 'Balance (₦100M)', data: annData.balanceData, borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' } 
+      ]},
+      options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { ...baseOpts.scales.y, position: 'right', grid: { display: false } } } }
+    });
+  }
+
+  // Render Crossings
+  const cxData = buildChartData('Crossings');
+  const ctxCx = document.getElementById('c3');
+  if (ctxCx && cxData.labels.length) {
+    if (cxChartInstance) cxChartInstance.destroy();
+    cxChartInstance = new Chart(ctxCx, {
+      type: 'line', 
+      data: { labels: cxData.labels, datasets: [ 
+        { label: 'Inflow (₦B)', data: cxData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4 } 
+      ]},
+      options: baseOpts
+    });
+  }
+}
+
 window.onload = function () {
-  // ── Groq API key (hardcoded for this deployment) ──
   if (!window.GROQ_API_KEY && typeof process !== 'undefined' && process.env && process.env.GROQ_API_KEY) {
     window.GROQ_API_KEY = process.env.GROQ_API_KEY;
   }
   
   updateTargetHeaders();
-  initFirebase(); // Attaches DB listeners — Auth is owned by dashboard-auth.js
+  initFirebase();
 
-  // ── DATA LOAD IS GATED ON AUTH ────────────────────────────────────────
-  // dashboard-auth.js calls window.onAuthGateReady() after a valid sign-in.
-  // Until that fires, no sheet data loads and no content is shown.
-  // onAuthGateReady is defined BEFORE window.onload in the script flow below.
-  // This line is kept as a safety no-op so nothing breaks if the order changes.
   if (!window.onAuthGateReady) {
     window.onAuthGateReady = function () {
       loadSeedData();
@@ -4718,37 +4784,31 @@ window.onload = function () {
     };
   }
 
-  // ── Initialise charts inside onload so Chart.js is guaranteed loaded ──
   try {
-  const lastPointPlugin = {
-    id: 'lastPointLabel',
-    afterDatasetsDraw(chart) {
-      const { ctx, data } = chart;
-      data.datasets.forEach((ds, i) => {
-        const meta = chart.getDatasetMeta(i); if (meta.hidden) return; const lastIdx = ds.data.length - 1; if (lastIdx < 0) return;
-        const pt = meta.data[lastIdx]; const val = ds.data[lastIdx]; if (val == null) return;
-        let label; if (ds.label && (ds.label.includes('Inflow') || ds.label.includes('₦B'))) { label = '₦' + val.toFixed(2) + 'B'; } else { label = '₦' + (val * 100).toFixed(0) + 'M'; }
-        ctx.save(); ctx.font = 'bold 10px DM Mono, monospace'; ctx.fillStyle = ds.borderColor; ctx.textAlign = 'right'; ctx.fillText(label, pt.x - 4, pt.y - 10); ctx.restore();
-      });
-    }
-  };
-  Chart.register(lastPointPlugin);
-  
-  const labels = ['Jan 5','Jan 12','Jan 19','Jan 26','Feb 2','Feb 9','Feb 16','Feb 23','Mar 2','Mar 9','Mar 16','Mar 23','Mar 30','Apr 2','Apr 7','Apr 13','Apr 16','Apr 20'];
-  const annexInflow = [5.97,5.14,5.97,5.97,6.4,6.05,6.08,6.11,6.14,6.17,6.25,6.27,6.27,6.27,6.27,6.27,6.27,6.27];
-  const annexBalance = [388,161,172.8,99.5,89,80.4,150.8,87.9,105.7,65.3,73.1,36.6,58.9,62.9,82.78,150,149.1,61.9];
-  const cxInflow = [1.05,1.179,1.3,1.3,1.3,1.415,1.415,1.415,1.415,1.415,2.07,1.68,1.72,1.72,1.72,1.72,1.72,1.72];
-  const gridC = 'rgba(0,0,0,0.06)', textC = '#999';
-  const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 } } }, scales: { x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } }, y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } } } };
-  
-  new Chart(document.getElementById('c1'), {
-    type: 'line', data: { labels, datasets: [ { label: 'Inflow (₦B)', data: annexInflow, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4, yAxisID: 'y' }, { label: 'Balance (₦100M)', data: annexBalance.map(v => +(v/100).toFixed(2)), borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' } ] },
-    options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { ...baseOpts.scales.y, position: 'right', grid: { display: false } } } }
-  });
-  new Chart(document.getElementById('c3'), {
-    type: 'line', data: { labels, datasets: [ { label: 'Inflow (₦B)', data: cxInflow, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4 } ] },
-    options: baseOpts
-  });
+    const lastPointPlugin = {
+      id: 'lastPointLabel',
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        data.datasets.forEach((ds, i) => {
+          const meta = chart.getDatasetMeta(i); if (meta.hidden) return; const lastIdx = ds.data.length - 1; if (lastIdx < 0) return;
+          const pt = meta.data[lastIdx]; const val = ds.data[lastIdx]; if (val == null) return;
+          let label; 
+          // Correctly format Billions vs Millions dynamically
+          if (ds.label && (ds.label.includes('Inflow') || ds.label.includes('₦B'))) { 
+            label = '₦' + val.toFixed(2) + 'B'; 
+          } else { 
+            let bVal = (val * 100).toFixed(1);
+            label = '₦' + (bVal.endsWith('.0') ? bVal.slice(0, -2) : bVal) + 'M'; 
+          }
+          ctx.save(); ctx.font = 'bold 10px DM Mono, monospace'; ctx.fillStyle = ds.borderColor; ctx.textAlign = 'right'; ctx.fillText(label, pt.x - 4, pt.y - 10); ctx.restore();
+        });
+      }
+    };
+    Chart.register(lastPointPlugin);
+    
+    // Draw initial seed charts
+    setTimeout(renderDynamicCharts, 500);
+
   } catch(e) {
     console.warn('Chart initialisation failed:', e);
   }
