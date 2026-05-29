@@ -3047,23 +3047,101 @@ async function fetchAndRenderMilestones() {
 }
 
 function renderMilestonesPanel(rows, job) {
-  // ── Column mapping (0-indexed, based on actual sheet structure) ──
-  // Annexe KD:      B(1)=name, E(4)=completion date, G(6)=projected, H(7)=actual
-  // Crossings KD P: B(1)=name, C(2)=status, D(3)=progress(projected only)
-  const isCrossings = !job.hasActual;
+  // 1. ROBUST EXTRACTION LOGIC
+  let projected = 0;
+  let actual = 0;
 
-  // We scan rows for the section header and data
-  // Both sheets have col index 1 = name, but we also accept col 0 as fallback
-  let colName = 1, colDate = -1, colProj = -1, colAct = -1;
+  // Scan the rows to find the "Last Update" row, regardless of which column it sits in
+  const updateRow = rows.find(r => r && r.some && r.some(cell => String(cell).trim() === 'Last Update'));
 
-  if (isCrossings) {
-    // KD P: name=B(1), progress=D(3)
-    colName = 1; colDate = -1; colProj = 3; colAct = -1;
-  } else {
-    // KD: name=B(1), completion=E(4), projected=G(6), actual=H(7)
-    colName = 1; colDate = 4; colProj = 6; colAct = 7;
+  if (updateRow) {
+      // Extract all cells containing '%' and parse them into clean numbers
+      const percentages = updateRow
+          .filter(cell => typeof cell === 'string' && cell.includes('%'))
+          .map(cell => parseFloat(cell.replace(/[^0-9.-]+/g, '')));
+
+      if (job.proj === 'Annexe') {
+          projected = percentages[0] || 0;
+          actual = percentages[1] || 0;
+      } else {
+          projected = percentages[0] || 0;
+      }
   }
 
+  // 2. DOM RENDERING (GAP ANALYSIS UI)
+  const panel = document.getElementById(job.contentEl);
+  if (!panel) return;
+
+  let html = `
+      <div style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+          <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Timeline Variance</h3>
+      </div>
+      <div class="milestones-body" style="padding: 0;">`;
+
+  if (job.proj === 'Annexe') {
+      const gap = projected - actual;
+      // Red if behind (gap > 0), Green if ahead/on-track (gap <= 0)
+      const gapColor = gap > 0 ? 'var(--status-red)' : 'var(--status-green)';
+      const gapBg = gap > 0 ? 'var(--status-red-bg)' : 'var(--status-green-bg)';
+      
+      html += `
+          <div class="gap-analysis-card" style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 16px; align-items: center;">
+                  <span style="font-weight: 800; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Deficit / Surplus</span>
+                  <span style="font-weight: 800; color: ${gapColor}; background: ${gapBg}; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid ${gapColor}40;">Gap: ${gap.toFixed(1)}%</span>
+              </div>
+              
+              <div class="progress-container" style="margin-bottom: 16px;">
+                  <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
+                      <span style="color: var(--text-muted);">Projected Plan</span>
+                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected}%</span>
+                  </div>
+                  <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;">
+                      <div style="background: var(--status-orange); width: ${projected}%; height: 100%; border-radius: 4px;"></div>
+                  </div>
+              </div>
+
+              <div class="progress-container">
+                  <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
+                      <span style="color: var(--text-muted);">Actual Progress</span>
+                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${actual}%</span>
+                  </div>
+                  <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;">
+                      <div style="background: var(--status-green); width: ${actual}%; height: 100%; border-radius: 4px;"></div>
+                  </div>
+              </div>
+          </div>
+      `;
+  } else {
+      // Crossings (Projected Only)
+      html += `
+          <div class="gap-analysis-card" style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 16px; align-items: center;">
+                  <span style="font-weight: 800; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Deficit / Surplus</span>
+                  <span style="color: var(--text-muted); font-size: 11px; font-style: italic;">(Actuals offline)</span>
+              </div>
+              
+              <div class="progress-container">
+                  <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
+                      <span style="color: var(--text-muted);">Projected Plan</span>
+                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected}%</span>
+                  </div>
+                  <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;">
+                      <div style="background: var(--status-orange); width: ${projected}%; height: 100%; border-radius: 4px;"></div>
+                  </div>
+              </div>
+          </div>
+      `;
+  }
+
+  html += `</div>`;
+  
+  // Hide loading spinner and inject HTML
+  document.getElementById(job.loadEl).style.display = 'none';
+  panel.innerHTML = html;
+  panel.style.display = 'block';
+  _milestonesLoaded[job.proj] = true;
+}
   // ── Parse rows: skip blanks, headers, and section titles ──
   const milestones = [];
   const sectionHeaders = new Set();
