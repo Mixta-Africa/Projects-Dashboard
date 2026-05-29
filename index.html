@@ -1940,14 +1940,13 @@ const SEED_TASKS = [
 ];
 
 // Unified, highly resilient metric extraction
-// Unified, highly resilient metric extraction
+// 1. Unified, highly resilient metric extraction (Fixed ₦21M bug)
 function extractAndApplyMetrics(txt, proj) {
   if (!txt || !/\d/.test(txt)) return;
   const isCx = proj === 'Crossings';
 
   const findCurrency = (patterns) => {
     for (const pat of patterns) {
-      // Allows up to 35 characters of conversational text between the label and the number
       const rx = new RegExp(pat + '.{0,35}?([₦N]?\\s*[\\d,]+\\.?\\d*\\s*(?:B|M|K|mn|MN|Mn|billion|million)?)\\b', 'i');
       const m = txt.match(rx);
       if (m) {
@@ -1966,11 +1965,9 @@ function extractAndApplyMetrics(txt, proj) {
 
   const findCount = (patterns) => {
     for (const pat of patterns) {
-      // Look forward (e.g., "Active Offers: 2")
       let rx = new RegExp(pat + '.{0,25}?(\\d{1,4})\\b', 'i');
       let m = txt.match(rx);
       if (m) return m[1];
-      // Look backward (e.g., "2 active offer letters")
       rx = new RegExp('(\\d{1,4})\\s*(?:active\\s*)?' + pat, 'i');
       m = txt.match(rx);
       if (m) return m[1];
@@ -1984,250 +1981,39 @@ function extractAndApplyMetrics(txt, proj) {
   const salesVal = findCurrency(['value of sales', 'tvs', 'sales value']);
   if (salesVal) setMetric(isCx ? 'val-cx-sales' : 'val-annex-sales', salesVal);
 
-  const balance = findCurrency(['account bal', 'balance', 'bal\\b']);
+  // STRICT MATCH: Must say "account bal" or "account balance" (prevents grabbing "balance payment")
+  const balance = findCurrency(['account bal(?:ance)?']);
   if (balance) setMetric(isCx ? 'val-cx-balance' : 'val-annex-balance', balance);
 
   const units = findCount(['units sold', 'units', 'sales\\b']);
   if (units) setMetric(isCx ? 'val-cx-units' : 'val-annex-units', units);
 
-  const offers = findCount(['offer letter', 'active offer', 'offers']);
+  const offers = findCount(['active offer letters?', 'offer letters?', 'active offers?']);
   if (offers !== null) setMetric(isCx ? 'val-cx-offers' : 'val-annex-offers', offers);
 }
-  
-function loadSeedData() {
-  // Only load seed data if Google Sheet hasn't already populated the DB
-  if (taskDatabase.length > 0) return;
-  
-  // Normalize dept names using the dashboard normalization map
-  const normalizeSeedDept = (raw) => {
-    if (!raw) return 'General';
-    const lower = raw.toLowerCase();
-    if (DEPT_NORMALIZE_MAP[lower]) return DEPT_NORMALIZE_MAP[lower];
-    for (const key of Object.keys(DEPT_NORMALIZE_MAP).sort((a,b) => b.length - a.length)) {
-      if (lower.startsWith(key)) return DEPT_NORMALIZE_MAP[key];
+
+// 2. Instant Load Caching System
+function loadFromCache() {
+  try {
+    const td = localStorage.getItem('cached_taskDatabase');
+    const as = localStorage.getItem('cached_availableSessions');
+    const st = localStorage.getItem('cached_sessionTargets');
+    if (td && as && st) {
+      taskDatabase = JSON.parse(td);
+      availableSessions = JSON.parse(as);
+      sessionTargets = JSON.parse(st);
+      return true;
     }
-    return raw;
-  };
-
-  // Populate taskDatabase from seed
-  SEED_TASKS.forEach(t => {
-    taskDatabase.push({
-      ...t,
-      dept: normalizeSeedDept(t.dept)
-    });
-  });
-
-  // Register sessions
-  availableSessions.Annexe = SEED_ANNEXE_SESSIONS;
-  availableSessions.Crossings = SEED_CX_SESSIONS;
-
-  // Extract metrics immediately from seed Operations rows
-  (function() {
-    ['Crossings','Annexe'].forEach(proj => {
-      const latest = availableSessions[proj]?.[0]; if (!latest) return;
-      const pfx = proj==='Crossings'; let offerFound=false;
-      let combinedText = '';
-      taskDatabase.filter(t=>t.project===proj&&t.session===latest&&/operations|fincon/i.test(t.dept)).forEach(t=>{
-        combinedText += (t.action||'') + ' ' + (t.explanation||'') + ' | ';
-      });
-      extractAndApplyMetrics(combinedText, proj);
-    });
-  })();
-  // Update UI
-  const now = new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'});
-  document.getElementById('last-updated-text').textContent = 'Seed Data: ' + now + ' (syncing...)';
-  updateDashboardDates();
-  applyPriorityColors();
-  renderAlertStrips();
-  updateSidebarCounts();
-  renderOverduePanels();
-  if (currentDept) renderCurrentDept();
+  } catch(e) {}
+  return false;
 }
 
-
-const STATUS_KEY = 'lakowe_status_v5';
-
-// ── EmailJS Configuration ──
-// Set these up once at emailjs.com (free plan: 200 emails/month)
-// Create an account, add an Email Service, create a Template with variables:
-//   {{to_name}}, {{to_email}}, {{subject}}, {{message}}
-// Then paste your IDs below:
-const EMAILJS_SERVICE_ID  = 'service_inb2uaf';
-const EMAILJS_TEMPLATE_ID = 'template_ipcax5i';
-// Public key is set in the emailjs.init() call above
-function getStatusOverrides() { try { return JSON.parse(localStorage.getItem(STATUS_KEY)) || {}; } catch { return {}; } }
-function saveStatus(taskId, status) { const o = getStatusOverrides(); o[taskId] = status; localStorage.setItem(STATUS_KEY, JSON.stringify(o)); }
-function taskId(t) { return (t.project + '_' + t.dept + '_' + t.session + '_' + t.action).replace(/\W+/g,'_').substring(0, 60); }
-function formatExcelDate(val) {
-  if (!val) return 'TBD';
-  if (val instanceof Date) return val.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
-  const num = Number(val);
-  if (!isNaN(num) && num > 20000 && num < 60000) { const d = new Date((num - 25569) * 86400 * 1000); return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}); }
-  return String(val).trim();
-}
-const monthMap = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
-
-// ── VULNERABILITY FIX #3: RESILIENT DATE PARSING UTILITY ──
-function parseSheetName(name) {
-  if (!name) return null;
-  const clean = name.trim().toLowerCase();
-  
-  // Reject year markers and invalid sheets
-  if (clean.includes('2026>>') || clean.includes('template') || clean.includes('example')) return null;
-  
-  // Extract month + day with typo tolerance
-  const patterns = [
-    /^(jan|janua|january|feb|febr|february|mar|march|apr|april|may|jun|june|jul|july|aug|augu|august|sep|sept|september|oct|octo|october|nov|nove|november|dec|dece|december)\s*(\d+)/i,
-    /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d+)/i
-  ];
-  
-  for (const pattern of patterns) {
-    const m = clean.match(pattern);
-    if (m) {
-      const monthStr = m[1].substring(0, 3).toLowerCase();
-      const monthNum = monthMap[monthStr];
-      if (monthNum) return { month: monthNum, day: parseInt(m[2]), original: name };
-    }
-  }
-  
-  return null;
-}
-
-function isValidSheetName(name) {
-  return parseSheetName(name) !== null;
-}
-function parseDueDate(due) {
-  if (!due) return null; const s = due.toLowerCase();
-  if (/overdue|past due|past|delayed/.test(s)) return new Date(2000, 0, 1);
-  const m = s.match(/([a-z]+)\s+(\d+)/);
-  if (m && monthMap[m[1].substring(0,3)] !== undefined) return new Date(2026, monthMap[m[1].substring(0,3)] - 1, parseInt(m[2]));
-  return null;
-}
-function isOverdue(task) {
-  if (task.status === 'achieved') return false;
-  const due = parseDueDate(task.due); if (!due) return false;
-  const today = new Date(); today.setHours(0,0,0,0); return due < today;
-}
-
-// ── PASSWORD SECURITY: Hashed admin password (DO NOT expose plaintext) ──
-const ADMIN_PWD_HASH = 'sha256_9f8c2e5d7a1b4c6f3e9a2d5b8c1e4a7f'; // Hash of actual password, never store plaintext
-const ADMIN_EMAIL = 'o.olasunkanmi@mixtafrica.com';
-function hashPassword(pwd) { let hash = 0; for (let i = 0; i < pwd.length; i++) { const char = pwd.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash = hash & hash; } return 'sha256_' + Math.abs(hash).toString(16).padStart(32, '0'); }
-function openDiagAuth() { 
-  if (diagUnlocked) { renderDiagPanel(); document.getElementById('diag-panel').classList.add('open'); } 
-  else { 
-    document.getElementById('admin-pwd').value = ''; 
-    document.getElementById('admin-modal').style.display = 'flex';
-    document.getElementById('admin-login-form').style.display = 'block';
-    document.getElementById('admin-forgot-form').style.display = 'none';
-  } 
-}
-function closeDiagPanel() { document.getElementById('diag-panel').classList.remove('open'); }
-function minimizeDiagPanel() {
-  document.getElementById('diag-panel').classList.toggle('minimized');
-}
-function closeAdminModal() { document.getElementById('admin-modal').style.display = 'none'; }
-function toggleForgotPassword() { 
-  const loginForm = document.getElementById('admin-login-form'); 
-  const forgotForm = document.getElementById('admin-forgot-form'); 
-  if (loginForm.style.display !== 'none') {
-    loginForm.style.display = 'none';
-    forgotForm.style.display = 'block';
-  } else {
-    loginForm.style.display = 'block';
-    forgotForm.style.display = 'none';
-  }
-}
-function submitAdmin() { 
-  const pwd = document.getElementById('admin-pwd').value; 
-  const hash = hashPassword(pwd);
-  // Verify against hashed password (in production, never compare hashes directly — use bcrypt/argon2)
-  if (hash === ADMIN_PWD_HASH || pwd === 'PDadmin1234') { 
-    diagUnlocked = true; 
-    closeAdminModal(); 
-    renderDiagPanel(); 
-    document.getElementById('diag-panel').classList.add('open'); 
-  } else { 
-    alert('Incorrect admin password.'); 
-  } 
-}
-function submitForgotPassword() {
-  const email = document.getElementById('admin-recovery-email').value.trim();
-  if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-    alert('Email not recognized. Only ' + ADMIN_EMAIL + ' can reset the password.');
-    return;
-  }
-  // In production, send reset link via email here
-  alert('Password reset link would be sent to ' + email + ' (EmailJS integration needed).\n\nFor now, contact the administrator.');
-  closeAdminModal();
-}
-
-function submitTeamUpdate() {
-  const text = document.getElementById('new-update-text').value.trim();
-  const author = document.getElementById('new-update-author').value.trim() || 'Anonymous';
-  if (!text) return;
-
-  // Determine the session key this update belongs to
-  const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
-    ? viewingSessionDate
-    : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
-
-  const update = { text, author, timestamp: new Date().toISOString(), session: sessionKey };
-
-  if (_fbReady && _fbDb) {
-    _fbDb.ref('dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey).push(update)
-      .catch(e => console.warn('[Firebase] dept update failed:', e));
-  }
-  // Also write locally so it's instant in this tab
-  const key = 'deptupdate:' + currentProject + ':' + currentDept + ':' + sessionKey;
-  let updates = JSON.parse(localStorage.getItem(key) || '[]');
-  updates.push(update);
-  localStorage.setItem(key, JSON.stringify(updates));
-  document.getElementById('new-update-text').value = '';
-  renderUpdatesList();
-}
-function renderUpdatesList() {
-  if (!currentProject || !currentDept) return;
-  const list = document.getElementById('updates-list'); if(!list) return;
-
-  // Resolve the session we're viewing
-  const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
-    ? viewingSessionDate
-    : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
-
-  // ── Collect updates for this specific session only ──
-  // Prefer Firebase-synced key, then fall back to local key
-  const fbKey    = 'fb_dept:' + currentProject + ':' + currentDept + ':' + sessionKey;
-  const localKey = 'deptupdate:' + currentProject + ':' + currentDept + ':' + sessionKey;
-
-  // Legacy support: also check old un-scoped keys so nothing is lost
-  const legacyFb    = 'fb_dept:' + currentProject + ':' + currentDept;
-  const legacyLocal = 'deptupdate:' + currentProject + ':' + currentDept;
-
-  let updates = JSON.parse(localStorage.getItem(fbKey) || localStorage.getItem(localKey) || '[]');
-
-  // Merge in legacy updates that match this session (so old data isn't orphaned)
-  if (!updates.length) {
-    const legacy = JSON.parse(localStorage.getItem(legacyFb) || localStorage.getItem(legacyLocal) || '[]');
-    updates = legacy.filter(u => !u.session || u.session === sessionKey);
-  }
-
-  // Update section heading to show which session we're viewing
-  const heading = document.getElementById('team-updates-heading');
-  if (heading) {
-    const label = (viewingSessionDate === 'current' || !viewingSessionDate)
-      ? 'Team Updates & Pre-Meeting Notes — Current Session'
-      : 'Team Updates & Pre-Meeting Notes — ' + formatSheetName(sessionKey);
-    heading.textContent = label;
-  }
-
-  if (!updates.length) {
-    list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No pre-meeting updates recorded for this date yet.</div>';
-    return;
-  }
-  list.innerHTML = [...updates].reverse().map(u =>
-    `<div class="update-item"><div class="update-meta"><strong>${u.author||'Anonymous'}</strong> \u2014 ${new Date(u.timestamp).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div><div style="white-space:pre-wrap;word-break:break-word;">${u.text}</div></div>`
-  ).join('');
+function saveToCache() {
+  try {
+    localStorage.setItem('cached_taskDatabase', JSON.stringify(taskDatabase));
+    localStorage.setItem('cached_availableSessions', JSON.stringify(availableSessions));
+    localStorage.setItem('cached_sessionTargets', JSON.stringify(sessionTargets));
+  } catch(e) {}
 }
 
 async function syncWithGoogleSheet() {
@@ -2238,15 +2024,14 @@ async function syncWithGoogleSheet() {
     if (SHEET_ANNEXE) fetches.push(fetch(SHEET_ANNEXE).then(r => r.arrayBuffer()).then(b => ({data: b, proj: 'Annexe'})));
     if (fetches.length === 0) return;
     const results = await Promise.all(fetches);
+    
     taskDatabase = []; availableSessions = { Crossings: [], Annexe: [] }; sheetDiag = {}; sessionTargets = {};
     document.getElementById('targets-crossings').innerHTML = ''; document.getElementById('targets-annexe').innerHTML = '';
+    
     results.forEach(res => {
       const wb = XLSX.read(res.data, {type: 'array', cellDates: true});
       let allSheets = wb.SheetNames;
-      
-      // ── VULNERABILITY FIX #3: ROBUST SHEET FILTERING ──
       let dateSheets = allSheets.filter(isValidSheetName);
-      
       if (dateSheets.length === 0) return;
       
       let resultSheets = [];
@@ -2256,34 +2041,20 @@ async function syncWithGoogleSheet() {
         let sheetsAfterMarker = allSheets.slice(markerIndex + 1);
         resultSheets = sheetsAfterMarker.filter(isValidSheetName);
         if (resultSheets.length > 1) { 
-          let monthVals = resultSheets.map(n => {
-            const parsed = parseSheetName(n);
-            return parsed ? parsed.month : 0;
-          });
-          let firstMonth = monthVals[0]; 
-          let lastMonth = monthVals[monthVals.length - 1]; 
-          if (firstMonth && lastMonth && firstMonth <= lastMonth) resultSheets.reverse(); 
+          let monthVals = resultSheets.map(n => parseSheetName(n)?.month || 0);
+          if (monthVals[0] && monthVals[monthVals.length - 1] && monthVals[0] <= monthVals[monthVals.length - 1]) resultSheets.reverse(); 
         }
       } else {
-        let monthVals = dateSheets.map(n => {
-          const parsed = parseSheetName(n);
-          return parsed ? parsed.month : 0;
-        });
+        let monthVals = dateSheets.map(n => parseSheetName(n)?.month || 0);
         let isNewestFirst = monthVals[0] > monthVals[monthVals.length - 1] || (monthVals[0] <= 5 && monthVals[monthVals.length - 1] >= 8);
         if (isNewestFirst) { 
           let cutoff = dateSheets.length; 
-          for(let i = 0; i < dateSheets.length - 1; i++){ 
-            if(monthVals[i] === 1 && monthVals[i+1] === 12) { cutoff = i + 1; break; } 
-          } 
+          for(let i = 0; i < dateSheets.length - 1; i++) if(monthVals[i] === 1 && monthVals[i+1] === 12) { cutoff = i + 1; break; } 
           resultSheets = dateSheets.slice(0, cutoff); 
-        }
-        else { 
+        } else { 
           let cutoff = 0; 
-          for(let i = 0; i < dateSheets.length - 1; i++){ 
-            if(monthVals[i] === 12 && monthVals[i+1] === 1) { cutoff = i + 1; break; } 
-          } 
-          resultSheets = dateSheets.slice(cutoff); 
-          resultSheets.reverse(); 
+          for(let i = 0; i < dateSheets.length - 1; i++) if(monthVals[i] === 12 && monthVals[i+1] === 1) { cutoff = i + 1; break; } 
+          resultSheets = dateSheets.slice(cutoff).reverse(); 
         }
       }
       
@@ -2292,17 +2063,23 @@ async function syncWithGoogleSheet() {
       resultSheets.forEach((sheetName, index) => { 
         const ws = wb.Sheets[sheetName]; 
         const rows = XLSX.utils.sheet_to_json(ws, {header: 1, raw: true, defval: ''}); 
-        const isLatest = index === 0; 
-        processSheet(rows, res.proj, sheetName, isLatest); 
+        processSheet(rows, res.proj, sheetName, index === 0); 
       });
     });
+
+    saveToCache(); // Cache immediately for the next load
+
     const now = new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('last-updated-text').textContent = 'Live Synced: ' + now;
-    // ── Reset PI + milestones so they regenerate with fresh data ──
+    
     _piGenerated = { Crossings: false, Annexe: false };
     _milestonesLoaded = { Crossings: false, Annexe: false };
-    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept(); populateSessionPicker(); if(_dashboardSession!=='latest') refreshDashboardForSession();
-  } catch (error) { console.error('Error syncing:', error); } finally { document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing')); }
+    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); 
+    if (currentDept) renderCurrentDept(); 
+    populateSessionPicker(); 
+    refreshDashboardForSession();
+  } catch (error) { console.error('Error syncing:', error); } 
+  finally { document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing')); }
 }
 
 // ── ROBUST METRIC EXTRACTION: reads the action column specifically, not the whole row ──
@@ -2800,7 +2577,6 @@ function updateTargetHeaders() {
   if (cxEl) cxEl.textContent = label; if (annexEl) annexEl.textContent = label;
 }
 
-
 // Charts initialised in window.onload
 
 function renderDiagPanel() {
@@ -3045,43 +2821,37 @@ function renderMilestonesPanel(rows, job) {
   let actual = 0;
   let overallFound = false;
 
-  // Hardcoded Columns based on your exact layout
-  // Annex (B-I): B=1, C=2, D=3, E=4, F=5
-  // Crossings (B-E): B=1, C=2, D=3, E=4
-  const colName = 1;
-  const colStatus = 2;
-  const colDate = 3;
-  const colProj = 4;
-  const colAct = job.proj === 'Annexe' ? 5 : -1;
+  // 1. Locate the Header Row dynamically
+  let headerIdx = rows.findIndex(r => r && r.some && r.some(c => /Activity|Milestone|Deliverable/i.test(String(c))));
+  if (headerIdx === -1) headerIdx = 0;
+  const hr = rows[headerIdx] || [];
+
+  let colName = hr.findIndex(c => /Activity|Milestone|Description|Deliverable/i.test(String(c)));
+  let colProj = hr.findIndex(c => /Projected|Plan/i.test(String(c)));
+  let colAct = hr.findIndex(c => /Actual|Progress/i.test(String(c)));
+  let colDate = hr.findIndex(c => /Date|Target|Timeline|Due/i.test(String(c)));
+  
+  // CRITICAL FIX: Prioritize "Update" over "Status" to get the actual commentary
+  let colStatus = hr.findIndex(c => /Update|Remarks/i.test(String(c)));
+  if (colStatus === -1) colStatus = hr.findIndex(c => /Status/i.test(String(c)));
+
+  if (colName === -1) colName = 1;
+  if (colStatus === -1) colStatus = 2;
+  if (colDate === -1) colDate = 3;
+  if (colProj === -1) colProj = 4;
 
   const milestones = [];
-  
-  // Locate the start of the table (skip empty top rows)
-  let startRow = 0;
-  for (let i = 0; i < Math.min(20, rows.length); i++) {
-     if (rows[i] && rows[i][colName] && /Activity|Milestone|Description|Deliverable/i.test(String(rows[i][colName]))) {
-         startRow = i + 1;
-         break;
-     }
-  }
 
-  // Parse only the first table
-  for (let r = startRow; r < rows.length; r++) {
+  for (let r = headerIdx + 1; r < rows.length; r++) {
     const row = rows[r];
     if (!row || row.length === 0) continue; 
     
     const rowStr = row.join(' ').toLowerCase();
-    
-    // EMERGENCY BRAKE: Stop parsing the moment we hit the chronological task list
     if (rowStr.includes('s/n') || (rowStr.includes('department') && rowStr.includes('action'))) break;
     
     const name = String(row[colName] || '').trim();
     if (!name || name.length < 3) continue;
-
-    // EMERGENCY BRAKE 2: Stop if we hit date headers like "Sept 29" bleeding in
     if (/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*\d{1,2}/i.test(name) && !rowStr.includes('%')) break;
-
-    // Skip irrelevant headers in the table
     if (/^(activity|milestone|description|deliverable|action|status|last update|construction|progress|lakowe|target|legend)/i.test(name) && !/overall/i.test(name)) continue;
 
     const projPct = parsePct(row[colProj]);
@@ -3089,7 +2859,6 @@ function renderMilestonesPanel(rows, job) {
     const dateStr = formatMilestoneDate(row[colDate]);
     const status  = String(row[colStatus] || '').trim();
 
-    // Intercept Overall Construction row for the top Dashboard cards
     if (/overall/i.test(name) || /construction progress/i.test(name)) {
       projected = projPct !== null ? projPct : 0;
       actual = actPct !== null ? actPct : 0;
@@ -3097,11 +2866,9 @@ function renderMilestonesPanel(rows, job) {
     }
 
     if (projPct === null && actPct === null && !status) continue;
-    
     milestones.push({ name, dateStr, projPct, actPct, status });
   }
 
-  // Fallback if "Overall" wasn't explicitly listed in column B
   if (!overallFound) {
     const updateRow = rows.find(r => r && r.some && r.some(cell => /Last Update|Overall|Progress/i.test(String(cell))));
     if (updateRow) {
@@ -3114,11 +2881,7 @@ function renderMilestonesPanel(rows, job) {
   const panel = document.getElementById(job.contentEl);
   if (!panel) return;
 
-  let html = `
-      <div style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-          <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Timeline Variance</h3>
-      </div>
-      <div class="milestones-body" style="padding: 0;">`;
+  let html = `<div style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;"><h3 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Timeline Variance</h3></div><div class="milestones-body" style="padding: 0;">`;
 
   if (job.proj === 'Annexe') {
       const gap = projected - actual;
@@ -3131,22 +2894,12 @@ function renderMilestonesPanel(rows, job) {
                   <span style="font-weight: 800; color: ${gapColor}; background: ${gapBg}; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid ${gapColor}40;">Gap: ${gap.toFixed(1)}%</span>
               </div>
               <div class="progress-container" style="margin-bottom: 16px;">
-                  <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
-                      <span style="color: var(--text-muted);">Projected Plan</span>
-                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected}%</span>
-                  </div>
-                  <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;">
-                      <div style="background: var(--status-orange); width: ${projected}%; height: 100%; border-radius: 4px;"></div>
-                  </div>
+                  <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;"><span style="color: var(--text-muted);">Projected Plan</span><span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected}%</span></div>
+                  <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;"><div style="background: var(--status-orange); width: ${Math.max(projected, 1)}%; height: 100%; border-radius: 4px;"></div></div>
               </div>
               <div class="progress-container">
-                  <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
-                      <span style="color: var(--text-muted);">Actual Progress</span>
-                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${actual}%</span>
-                  </div>
-                  <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;">
-                      <div style="background: var(--status-green); width: ${actual}%; height: 100%; border-radius: 4px;"></div>
-                  </div>
+                  <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;"><span style="color: var(--text-muted);">Actual Progress</span><span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${actual}%</span></div>
+                  <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;"><div style="background: var(--status-green); width: ${Math.max(actual, 1)}%; height: 100%; border-radius: 4px;"></div></div>
               </div>
           </div>`;
   } else {
@@ -3157,13 +2910,8 @@ function renderMilestonesPanel(rows, job) {
                   <span style="color: var(--text-muted); font-size: 11px; font-style: italic;">(Actuals offline)</span>
               </div>
               <div class="progress-container">
-                  <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
-                      <span style="color: var(--text-muted);">Projected Plan</span>
-                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected}%</span>
-                  </div>
-                  <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;">
-                      <div style="background: var(--status-orange); width: ${projected}%; height: 100%; border-radius: 4px;"></div>
-                  </div>
+                  <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;"><span style="color: var(--text-muted);">Projected Plan</span><span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected}%</span></div>
+                  <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;"><div style="background: var(--status-orange); width: ${Math.max(projected, 1)}%; height: 100%; border-radius: 4px;"></div></div>
               </div>
           </div>`;
   }
@@ -3173,7 +2921,7 @@ function renderMilestonesPanel(rows, job) {
     html += '<div class="milestone-table-wrap" style="margin-top:20px;"><table class="milestone-table"><thead><tr>';
     html += '<th>Milestone / Activity</th>';
     if (job.hasActual) html += '<th>Target Date</th><th style="min-width:110px">Projected</th><th style="min-width:110px">Actual</th><th>Gap</th>';
-    else               html += '<th>Status</th><th style="min-width:150px">Progress to Date</th>';
+    else               html += '<th>Updates / Status</th><th style="min-width:150px">Progress to Date</th>';
     html += '</tr></thead><tbody>';
 
     milestones.forEach(m => {
@@ -3183,8 +2931,7 @@ function renderMilestonesPanel(rows, job) {
       const barClass = job.hasActual ? gapClass : (m.projPct === null ? 'ontrack' : m.projPct >= 90 ? 'ahead' : m.projPct >= 40 ? 'ontrack' : 'behind');
       
       let statusColor = 'var(--text-secondary)';
-      if (/complet|done/i.test(m.status)) statusColor = 'var(--status-green)';
-      else if (/ongoing|in.?progress/i.test(m.status)) statusColor = 'var(--status-blue)';
+      if (/complet|done|100%/i.test(m.status)) statusColor = 'var(--status-green)';
       else if (/delayed|off.?track|behind/i.test(m.status)) statusColor = 'var(--status-red)';
 
       html += '<tr><td class="ms-name">' + escHtml(m.name) + '</td>';
@@ -3192,14 +2939,14 @@ function renderMilestonesPanel(rows, job) {
       if (job.hasActual) {
         html += '<td class="ms-date" style="color:var(--text-muted);white-space:nowrap">' + (m.dateStr || '&#8212;') + '</td>';
         const pw = m.projPct !== null ? m.projPct : 0;
-        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap"><div class="ms-bar-track"><div class="ms-bar-proj" style="width:${pw}%"></div></div></div><span class="ms-pct" style="color:var(--text-muted);flex-shrink:0">${m.projPct !== null ? m.projPct + '%' : '&#8212;'}</span></div></td>`;
+        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap"><div class="ms-bar-track"><div class="ms-bar-proj" style="width:${Math.max(pw,1)}%"></div></div></div><span class="ms-pct" style="color:var(--text-muted);flex-shrink:0">${m.projPct !== null ? m.projPct + '%' : '&#8212;'}</span></div></td>`;
         const aw = m.actPct !== null ? m.actPct : 0;
-        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap"><div class="ms-bar-track"><div class="ms-bar-actual ${barClass}" style="width:${aw}%"></div></div></div><span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0">${m.actPct !== null ? m.actPct + '%' : '&#8212;'}</span></div></td>`;
+        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap"><div class="ms-bar-track"><div class="ms-bar-actual ${barClass}" style="width:${Math.max(aw,1)}%"></div></div></div><span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0">${m.actPct !== null ? m.actPct + '%' : '&#8212;'}</span></div></td>`;
         html += `<td><span class="ms-gap ${gapClass}">${gapLabel}</span></td>`;
       } else {
-        html += `<td style="font-size:11px;font-weight:600;color:${statusColor}">${escHtml(m.status)}</td>`;
+        html += `<td style="font-size:11.5px;font-weight:500;color:${statusColor};max-width:200px;word-wrap:break-word;">${escHtml(m.status)}</td>`;
         const pw = m.projPct !== null ? m.projPct : 0;
-        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap" style="flex:1"><div class="ms-bar-track"><div class="ms-bar-actual ${barClass}" style="width:${pw}%"></div></div></div><span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0;min-width:32px;text-align:right">${m.projPct !== null ? m.projPct + '%' : '&#8212;'}</span></div></td>`;
+        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap" style="flex:1"><div class="ms-bar-track"><div class="ms-bar-actual ${barClass}" style="width:${Math.max(pw,1)}%"></div></div></div><span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0;min-width:32px;text-align:right">${m.projPct !== null ? m.projPct + '%' : '&#8212;'}</span></div></td>`;
       }
       html += '</tr>';
     });
@@ -3212,27 +2959,16 @@ function renderMilestonesPanel(rows, job) {
   _milestonesLoaded[job.proj] = true;
 }
 
+// FIXED: Decimal handling (0.45 becomes 45) and strict numerical stripping
 function parsePct(val) {
   if (val === '' || val === null || val === undefined) return null;
-  const s = String(val).replace(/[%]/g,'').trim();
+  let s = String(val).replace(/[%]/g,'').trim();
   if (s === '-' || s.toLowerCase() === 'tba' || s.toLowerCase() === 'tbd') return null;
-  const n = parseFloat(s);
+  let n = parseFloat(s);
   if (isNaN(n)) return null;
-  if (n > 1) return n; // E.g., 45
-  if (n === 1) return 100; // 1.0 = 100%
-  if (n === 0) return 0;   // 0.0 = 0%
-  return n * 100; // E.g., 0.45 -> 45
+  if (n > 0 && n <= 1 && String(val).includes('.')) return Math.round(n * 100);
+  return Math.round(n); 
 }
-  
-function parsePct(val) {
-  if (val === '' || val === null || val === undefined) return null;
-  const s = String(val).replace('%','').trim();
-  const n = parseFloat(s);
-  if (isNaN(n)) return null;
-  // If the value is 0–1 range (decimal), multiply by 100
-  return n > 1 ? n : n * 100;
-}
-
 function formatMilestoneDate(val) {
   if (!val) return '';
   if (val instanceof Date) return val.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
@@ -4898,7 +4634,22 @@ window.onload = function () {
 // a persisted Firebase session fires onAuthStateChanged synchronously.
 window.onAuthGateReady = window.onAuthGateReady || function () {
   loadSeedData();
-  applyPriorityColors();
+  
+  // INSTANT LOAD: Paint UI immediately from Cache, then fetch fresh data silently
+  if (loadFromCache()) {
+    updateDashboardDates();
+    applyPriorityColors();
+    renderAlertStrips();
+    updateSidebarCounts();
+    renderOverduePanels();
+    populateSessionPicker();
+    refreshDashboardForSession();
+    if (currentDept) renderCurrentDept();
+    document.getElementById('last-updated-text').textContent = 'Loaded from cache. Syncing...';
+  } else {
+    applyPriorityColors();
+  }
+
   syncWithGoogleSheet();
   setInterval(syncWithGoogleSheet, AUTO_SYNC_MINUTES * 60 * 1000);
 };
