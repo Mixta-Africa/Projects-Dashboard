@@ -4523,6 +4523,40 @@ function refreshDashboardForSession() {
   document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent = finalBalance;
   document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent = finalOffers;
 
+  applyPriorityColors();
+
+  // ── Targets for selected session ──
+  const targetEl = document.getElementById(pfx ? 'targets-crossings' : 'targets-annexe');
+  if (targetEl) {
+    const key = proj + ':' + session;
+    const stored = sessionTargets[key];
+    targetEl.innerHTML = stored && stored.length ? stored.join('') : '<div class="t-note" style="padding:12px;color:var(--text-muted)">No targets recorded for this session.</div>';
+  }
+
+  // ── Overdue panel ──
+  const realFirst = availableSessions[proj][0];
+  if (availableSessions[proj][0] !== session) availableSessions[proj].unshift(session);
+  renderOverduePanels();
+  // restore
+  if (availableSessions[proj][0] === session && session !== realFirst) availableSessions[proj].shift();
+
+  // ── Date header label ──
+  const m2 = session.match(/^([a-z]{3})\s*(\d+)/i);
+  if (m2) {
+    const mn = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
+    const mon = mn[m2[1].toLowerCase()] || m2[1];
+    const el = document.getElementById(pfx ? 'ph-date-cx' : 'ph-date-annex');
+    if (el) el.textContent = 'Jan 5 \u2013 ' + mon + ' ' + parseInt(m2[2]) + ', 2026';
+  }
+
+  // ── Targets title ──
+  const m3 = session.match(/^([a-z]+)/i);
+  if (m3) {
+    const mon = m3[1].charAt(0).toUpperCase() + m3[1].slice(1).toLowerCase();
+    const el = document.getElementById(pfx ? 'targets-cx-title' : 'targets-annex-title');
+    if (el) el.textContent = 'End of ' + mon + ' Targets';
+  }
+}
 // ═══════════════════════════════════════════════════════
 // AI PROJECT CHATBOT
 // ═══════════════════════════════════════════════════════
