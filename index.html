@@ -2367,37 +2367,53 @@ function processSheet(rows, proj, sheetName, isLatest) {
 
   // ── HISTORICAL METRIC SCAN (merged-cell safe) ──
   // Scans ALL rows via raw text regardless of dept column value.
-  // This handles pre-May 4 sheets where the Operations dept cell was merged/blank.
-  // We do this as a separate pass so it never interferes with isLatest DOM updates.
+  // Handles pre-May 4 sheets where the Operations dept cell was merged/blank.
+  // extractRaw is defined outside the loop to avoid strict-mode function-in-loop errors.
+  const extractRawMetric = (text, labelRx) => {
+    const m = text.match(new RegExp(labelRx + '[:\s\-]+([\u20a6N]?\s*[\d,]+\.?\d*\s*[BMKbmk]?(?:mn|MN)?)', 'i'));
+    if (!m) return null;
+    let raw = m[1].trim().replace(/,/g,'').toUpperCase().replace(/MN$/,'M');
+    if (!raw.startsWith('\u20a6')) raw = raw.replace(/^N(?=\d)/, '\u20a6');
+    if (!raw.startsWith('\u20a6')) raw = '\u20a6' + raw;
+    return raw;
+  };
   for (let hi = startRow > 0 ? startRow : 0; hi < rows.length; hi++) {
     const hc = rows[hi];
     if (!hc || hc.join('').trim() === '') continue;
     const hStr = hc.join(' ');
-    // Only scan rows that look like they contain metric data
     if (!/inflow|account bal/i.test(hStr)) continue;
-
-    function _extractRaw(text, labelRx) {
-      const m = text.match(new RegExp(labelRx + '[:\\s\\-]+([\u20a6N]?\\s*[\\d,]+\\.?\\d*\\s*[BMKbmk]?(?:mn|MN)?)', 'i'));
-      if (!m) return null;
-      let raw = m[1].trim().replace(/,/g,'').toUpperCase().replace(/MN$/,'M');
-      if (!raw.startsWith('\u20a6')) raw = raw.replace(/^N(?=\d)/, '\u20a6');
-      if (!raw.startsWith('\u20a6')) raw = '\u20a6' + raw;
-      return raw;
-    }
-
-    const hInflow = _extractRaw(hStr, 'inflow|total inflow');
-    const hBal    = _extractRaw(hStr, 'account bal(?:ance)?');
-
+    const hInflow = extractRawMetric(hStr, 'inflow|total inflow');
+    const hBal    = extractRawMetric(hStr, 'account bal(?:ance)?');
     if (hInflow && window._chartMetrics[proj][sheetName].inflow === null)
       window._chartMetrics[proj][sheetName].inflow = parseNairaToM(hInflow) / 1000;
     if (hBal && window._chartMetrics[proj][sheetName].balance === null)
       window._chartMetrics[proj][sheetName].balance = parseNairaToM(hBal) / 100;
-
-    // Stop early once we have both values
     if (window._chartMetrics[proj][sheetName].inflow !== null &&
         window._chartMetrics[proj][sheetName].balance !== null) break;
   }
 
+  const extractLabeled = (text, labelPatterns) => {
+    for (const pat of labelPatterns) {
+      const rx = new RegExp(pat + '[:\s\-]+([₦N]?\s*[\d,]+\.?\d*\s*[BMKbmk]?(?:mn|MN|Mn)?)', 'i');
+      const m = text.match(rx);
+      if (m) {
+        let raw = m[1].trim().replace(/,/g,'').toUpperCase().replace(/MN$/,'M');
+        if (!raw.startsWith('₦')) raw = raw.replace(/^N(?=\d)/, '₦');
+        if (!raw.startsWith('₦')) raw = '₦' + raw;
+        return raw;
+      }
+    }
+    return null;
+  };
+  const extractLabeledCount = (text, labelPatterns) => {
+    for (const pat of labelPatterns) {
+      let m = text.match(new RegExp(pat + '[:\s\-]+(\d{1,4})\b', 'i'));
+      if (m) return m[1];
+      m = text.match(new RegExp('(\d{1,4})\s+' + pat, 'i'));
+      if (m) return m[1];
+    }
+    return null;
+  };
   for (let i = startRow; i < rows.length; i++) {
     const c = rows[i];
     if (!c || c.length < 2 || c.join('').trim() === '') continue;
@@ -2447,31 +2463,6 @@ function processSheet(rows, proj, sheetName, isLatest) {
     // ── METRIC EXTRACTION FROM OPERATIONS ──
     if (isLatest && /operations|fincon/i.test(lastDept)) {
         const actionText = action + ' ' + explanationText;
-        
-        function extractLabeled(text, labelPatterns) {
-          for (const pat of labelPatterns) {
-            const rx = new RegExp(pat + '[:\\s\\-]+([₦N]?\\s*[\\d,]+\\.?\\d*\\s*[BMKbmk]?(?:mn|MN|Mn)?)', 'i');
-            const m = text.match(rx);
-            if (m) {
-              let raw = m[1].trim().replace(/,/g,'').toUpperCase().replace(/MN$/,'M');
-              if (!raw.startsWith('₦')) raw = raw.replace(/^N(?=\d)/, '₦');
-              if (!raw.startsWith('₦')) raw = '₦' + raw;
-              return raw;
-            }
-          }
-          return null;
-        }
-
-        function extractLabeledCount(text, labelPatterns) {
-          for (const pat of labelPatterns) {
-            let m = text.match(new RegExp(pat + '[:\\s\\-]+(\\d{1,4})\\b', 'i'));
-            if (m) return m[1];
-            m = text.match(new RegExp('(\\d{1,4})\\s+' + pat, 'i'));
-            if (m) return m[1];
-          }
-          return null;
-        }
-
         const hasMetricData = /[₦N][\d,]+|\bsales[-:\s]+\d|\d+\s*units|\d+\s*offer/i.test(actionText);
 
         if (hasMetricData) {
