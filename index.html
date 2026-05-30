@@ -2360,7 +2360,7 @@ function processSheet(rows, proj, sheetName, isLatest) {
   const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
   let operationsOfferFound = false;
 
-  // 1. Initialize a global chart metric store for this sheet
+  // Initialize a global chart metric store for this sheet
   window._chartMetrics = window._chartMetrics || {};
   window._chartMetrics[proj] = window._chartMetrics[proj] || {};
   window._chartMetrics[proj][sheetName] = { inflow: null, balance: null };
@@ -2372,7 +2372,7 @@ function processSheet(rows, proj, sheetName, isLatest) {
     const rowStr = c.join(' ').toLowerCase();
     if (rowStr.includes('calendar') && rowStr.includes('>>')) continue;
 
-    // 2. Scan the raw row string to bypass any merged cell/column shift issues
+    // Scan the raw row string to bypass any merged cell/column shift issues
     if (/(inflow|account bal)/i.test(rowStr)) {
         let mInflow = rowStr.match(/\binflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
         if (mInflow) window._chartMetrics[proj][sheetName].inflow = parseNairaToM(mInflow[1]) / 1000;
@@ -4506,7 +4506,6 @@ function refreshDashboardForSession() {
   const proj = currentProject;
   const pfx = proj === 'Crossings';
 
-  // ── Helper: Extract metrics dynamically for any given session ──
   function extractSessionMetrics(targetSession) {
     let m = {};
     let offerFound = false;
@@ -4535,17 +4534,15 @@ function refreshDashboardForSession() {
     return m;
   }
 
-  // ── Retrieve metrics for the selected session, and fallback to the LATEST session ──
   const latestSession = availableSessions[proj][0];
   const selectedMetrics = extractSessionMetrics(session);
   const latestMetrics = extractSessionMetrics(latestSession);
 
-  // Apply fallback logic: Selected Session -> Latest Session -> Empty state
   const finalInflow = selectedMetrics.inflow || latestMetrics.inflow || '...';
   const finalUnits = selectedMetrics.units || latestMetrics.units || '...';
   const finalSales = selectedMetrics.sales || latestMetrics.sales || '...';
   const finalBalance = selectedMetrics.balance || latestMetrics.balance || '...';
-  const finalOffers = selectedMetrics.offers || latestMetrics.offers || '0';
+  const finalOffers = selectedMetrics.offers || latestMetrics.offers || '...';
 
   document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent = finalInflow;
   document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent = finalUnits;
@@ -4555,7 +4552,6 @@ function refreshDashboardForSession() {
 
   applyPriorityColors();
 
-  // ── Targets for selected session ──
   const targetEl = document.getElementById(pfx ? 'targets-crossings' : 'targets-annexe');
   if (targetEl) {
     const key = proj + ':' + session;
@@ -4563,14 +4559,11 @@ function refreshDashboardForSession() {
     targetEl.innerHTML = stored && stored.length ? stored.join('') : '<div class="t-note" style="padding:12px;color:var(--text-muted)">No targets recorded for this session.</div>';
   }
 
-  // ── Overdue panel ──
   const realFirst = availableSessions[proj][0];
   if (availableSessions[proj][0] !== session) availableSessions[proj].unshift(session);
   renderOverduePanels();
-  // restore
   if (availableSessions[proj][0] === session && session !== realFirst) availableSessions[proj].shift();
 
-  // ── Date header label ──
   const m2 = session.match(/^([a-z]{3})\s*(\d+)/i);
   if (m2) {
     const mn = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
@@ -4579,7 +4572,6 @@ function refreshDashboardForSession() {
     if (el) el.textContent = 'Jan 5 \u2013 ' + mon + ' ' + parseInt(m2[2]) + ', 2026';
   }
 
-  // ── Targets title ──
   const m3 = session.match(/^([a-z]+)/i);
   if (m3) {
     const mon = m3[1].charAt(0).toUpperCase() + m3[1].slice(1).toLowerCase();
@@ -4587,6 +4579,98 @@ function refreshDashboardForSession() {
     if (el) el.textContent = 'End of ' + mon + ' Targets';
   }
 }
+
+// ── Update Landing Page Buttons ──
+function updateLandingPageMetrics() {
+  ['Crossings', 'Annexe'].forEach(proj => {
+    const pfx = proj === 'Crossings' ? 'cx' : 'annex';
+    const inflowEl = document.getElementById(`val-${pfx}-inflow`);
+    const unitsEl = document.getElementById(`val-${pfx}-units`);
+    if(!inflowEl || !unitsEl) return;
+
+    const finalInflow = inflowEl.textContent;
+    const finalUnits = unitsEl.textContent;
+    
+    const subtitleId = proj === 'Crossings' ? 'landing-cx-subtitle' : 'landing-annex-subtitle';
+    const el = document.getElementById(subtitleId);
+    if (el) {
+      if (finalInflow.includes('Syncing') || finalInflow.includes('...')) {
+        el.textContent = 'Syncing live data...';
+      } else {
+        el.textContent = `${finalUnits} units · ${finalInflow} inflow`;
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// DYNAMIC CHART RENDERING ENGINE
+// ═══════════════════════════════════════════════════════
+let annexChartInstance = null;
+let cxChartInstance = null;
+
+function renderDynamicCharts() {
+  if (typeof Chart === 'undefined') return;
+
+  function getChartMetrics(proj, session) {
+    if (window._chartMetrics && window._chartMetrics[proj] && window._chartMetrics[proj][session]) {
+      return window._chartMetrics[proj][session];
+    }
+    return { inflow: null, balance: null };
+  }
+
+  function buildChartData(proj) {
+    let sessions = [...(availableSessions[proj] || [])].reverse();
+    let labels = [], inflowData = [], balanceData = [];
+    let rawMetrics = sessions.map(s => getChartMetrics(proj, s));
+    
+    let firstInf = rawMetrics.find(m => m.inflow !== null)?.inflow || 0;
+    let firstBal = rawMetrics.find(m => m.balance !== null)?.balance || 0;
+    
+    let lastInf = firstInf;
+    let lastBal = firstBal;
+    
+    rawMetrics.forEach((m, i) => {
+      labels.push(formatSheetName(sessions[i]));
+      if (m.inflow !== null) lastInf = m.inflow;
+      if (m.balance !== null) lastBal = m.balance;
+      inflowData.push(lastInf);
+      balanceData.push(lastBal);
+    });
+    return { labels, inflowData, balanceData };
+  }
+
+  const gridC = 'rgba(0,0,0,0.06)', textC = '#999';
+  const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 } } }, scales: { x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } }, y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } } } };
+
+  const annData = buildChartData('Annexe');
+  const ctxAnnexe = document.getElementById('c1');
+  if (ctxAnnexe && annData.labels.length) {
+    if (annexChartInstance) annexChartInstance.destroy();
+    annexChartInstance = new Chart(ctxAnnexe, {
+      type: 'line', 
+      data: { labels: annData.labels, datasets: [ 
+        { label: 'Inflow (₦B)', data: annData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4, yAxisID: 'y' }, 
+        { label: 'Balance (₦100M)', data: annData.balanceData, borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' } 
+      ]},
+      options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { ...baseOpts.scales.y, position: 'right', grid: { display: false } } } }
+    });
+  }
+
+  const cxData = buildChartData('Crossings');
+  const ctxCx = document.getElementById('c3');
+  if (ctxCx && cxData.labels.length) {
+    if (cxChartInstance) cxChartInstance.destroy();
+    cxChartInstance = new Chart(ctxCx, {
+      type: 'line', 
+      data: { labels: cxData.labels, datasets: [ 
+        { label: 'Inflow (₦B)', data: cxData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4 } 
+      ]},
+      options: baseOpts
+    });
+  }
+}
+
 // ═══════════════════════════════════════════════════════
 // AI PROJECT CHATBOT
 // ═══════════════════════════════════════════════════════
@@ -4632,7 +4716,6 @@ function buildFullProjectContext() {
       bySession[t.session][t.dept].push(t);
     });
 
-    // Prevent 413 Error by only sending the 2 most recent sessions to the AI
     const recentSessions = sessions.slice(0, 2);
     
     recentSessions.forEach(s => {
@@ -4663,7 +4746,6 @@ async function sendChatMessage() {
   input.value = '';
   btn.disabled = true;
 
-  // Hide welcome + suggestions after first message
   document.getElementById('chatbot-welcome').style.display = 'none';
   document.getElementById('chatbot-suggestions').style.display = 'none';
 
@@ -4686,7 +4768,6 @@ async function sendChatMessage() {
       answer = d.content?.[0]?.text || 'No response.';
     } else { throw new Error('API ' + r.status); }
   } catch(e) {
-    // Groq fallback
     try {
       const groqKey = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
       if (!groqKey) throw new Error('No API key. Set GROQ_API_KEY in localStorage to enable the chatbot.');
@@ -4716,7 +4797,6 @@ function addChatMsg(role, text, thinking=false) {
   const div = document.createElement('div');
   div.id = id;
   div.className = 'chat-msg ' + role + (thinking ? ' thinking' : '');
-  // Simple markdown: **bold**
   div.innerHTML = text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
   const box = document.getElementById('chatbot-messages');
   box.appendChild(div);
@@ -4724,145 +4804,6 @@ function addChatMsg(role, text, thinking=false) {
   return id;
 }
 function removeChatMsg(id) { const el=document.getElementById(id); if(el) el.remove(); }
-
-// ═══════════════════════════════════════════════════════
-// DYNAMIC CHART RENDERING ENGINE
-// ═══════════════════════════════════════════════════════
-let annexChartInstance = null;
-let cxChartInstance = null;
-
-function renderDynamicCharts() {
-  if (typeof Chart === 'undefined') return;
-
-  // Helper to extract numeric metrics from a given session
-  function getChartMetrics(proj, session) {
-    if (window._chartMetrics && window._chartMetrics[proj] && window._chartMetrics[proj][session]) {
-      return window._chartMetrics[proj][session];
-    }
-    return { inflow: null, balance: null };
-  }
-
-  function buildChartData(proj) {
-    let sessions = [...(availableSessions[proj] || [])].reverse();
-    let labels = [], inflowData = [], balanceData = [];
-    let lastInf = 0, lastBal = 0;
-    
-    sessions.forEach(s => {
-      labels.push(formatSheetName(s));
-      let m = getChartMetrics(proj, s);
-      // Carry forward the last known value if a session was skipped
-      if (m.inflow !== null) lastInf = m.inflow;
-      if (m.balance !== null) lastBal = m.balance;
-      inflowData.push(lastInf);
-      balanceData.push(lastBal);
-    });
-    return { labels, inflowData, balanceData };
-  }
-
-  const gridC = 'rgba(0,0,0,0.06)', textC = '#999';
-  const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 } } }, scales: { x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } }, y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } } } };
-
-  // Render Annexe
-  const annData = buildChartData('Annexe');
-  const ctxAnnexe = document.getElementById('c1');
-  if (ctxAnnexe && annData.labels.length) {
-    if (annexChartInstance) annexChartInstance.destroy();
-    annexChartInstance = new Chart(ctxAnnexe, {
-      type: 'line', 
-      data: { labels: annData.labels, datasets: [ 
-        { label: 'Inflow (₦B)', data: annData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4, yAxisID: 'y' }, 
-        { label: 'Balance (₦100M)', data: annData.balanceData, borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' } 
-      ]},
-      options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { ...baseOpts.scales.y, position: 'right', grid: { display: false } } } }
-    });
-  }
-
-  // Render Crossings
-  const cxData = buildChartData('Crossings');
-  const ctxCx = document.getElementById('c3');
-  if (ctxCx && cxData.labels.length) {
-    if (cxChartInstance) cxChartInstance.destroy();
-    cxChartInstance = new Chart(ctxCx, {
-      type: 'line', 
-      data: { labels: cxData.labels, datasets: [ 
-        { label: 'Inflow (₦B)', data: cxData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4 } 
-      ]},
-      options: baseOpts
-    });
-  }
-}
-
-// ═══════════════════════════════════════════════════════
-// DYNAMIC CHART RENDERING ENGINE
-// ═══════════════════════════════════════════════════════
-let annexChartInstance = null;
-let cxChartInstance = null;
-
-function renderDynamicCharts() {
-  if (typeof Chart === 'undefined') return;
-
-  function getChartMetrics(proj, session) {
-    if (window._chartMetrics && window._chartMetrics[proj] && window._chartMetrics[proj][session]) {
-      return window._chartMetrics[proj][session];
-    }
-    return { inflow: null, balance: null };
-  }
-
-  function buildChartData(proj) {
-    let sessions = [...(availableSessions[proj] || [])].reverse();
-    let labels = [], inflowData = [], balanceData = [];
-    
-    let rawMetrics = sessions.map(s => getChartMetrics(proj, s));
-    
-    // Find first known values so we don't start at zero if early sheets are blank
-    let firstInf = rawMetrics.find(m => m.inflow !== null)?.inflow || 0;
-    let firstBal = rawMetrics.find(m => m.balance !== null)?.balance || 0;
-    
-    let lastInf = firstInf;
-    let lastBal = firstBal;
-    
-    rawMetrics.forEach((m, i) => {
-      labels.push(formatSheetName(sessions[i]));
-      if (m.inflow !== null) lastInf = m.inflow;
-      if (m.balance !== null) lastBal = m.balance;
-      inflowData.push(lastInf);
-      balanceData.push(lastBal);
-    });
-    return { labels, inflowData, balanceData };
-  }
-
-  const gridC = 'rgba(0,0,0,0.06)', textC = '#999';
-  const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 } } }, scales: { x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } }, y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } } } };
-
-  // Render Annexe
-  const annData = buildChartData('Annexe');
-  const ctxAnnexe = document.getElementById('c1');
-  if (ctxAnnexe && annData.labels.length) {
-    if (annexChartInstance) annexChartInstance.destroy();
-    annexChartInstance = new Chart(ctxAnnexe, {
-      type: 'line', 
-      data: { labels: annData.labels, datasets: [ 
-        { label: 'Inflow (₦B)', data: annData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4, yAxisID: 'y' }, 
-        { label: 'Balance (₦100M)', data: annData.balanceData, borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' } 
-      ]},
-      options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { ...baseOpts.scales.y, position: 'right', grid: { display: false } } } }
-    });
-  }
-
-  // Render Crossings
-  const cxData = buildChartData('Crossings');
-  const ctxCx = document.getElementById('c3');
-  if (ctxCx && cxData.labels.length) {
-    if (cxChartInstance) cxChartInstance.destroy();
-    cxChartInstance = new Chart(ctxCx, {
-      type: 'line', 
-      data: { labels: cxData.labels, datasets: [ 
-        { label: 'Inflow (₦B)', data: cxData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4 } 
-      ]},
-      options: baseOpts
-    });
-  }
-}
 
 window.onload = function () {
   if (!window.GROQ_API_KEY && typeof process !== 'undefined' && process.env && process.env.GROQ_API_KEY) {
@@ -4902,7 +4843,6 @@ window.onload = function () {
           ctx.font = 'bold 10px DM Mono, monospace'; 
           ctx.textAlign = 'right'; 
           
-          // Shift dataset 1 up, and dataset 2 down to prevent overlap
           let yOffset = (i === 0) ? -10 : 16;
           
           const textWidth = ctx.measureText(label).width;
@@ -4917,7 +4857,6 @@ window.onload = function () {
     };
     Chart.register(lastPointPlugin);
     
-    // Draw initial seed charts
     setTimeout(renderDynamicCharts, 500);
 
   } catch(e) {
