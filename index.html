@@ -2359,6 +2359,11 @@ function processSheet(rows, proj, sheetName, isLatest) {
   const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
   let operationsOfferFound = false;
 
+  // 1. Initialize a global chart metric store for this sheet
+  window._chartMetrics = window._chartMetrics || {};
+  window._chartMetrics[proj] = window._chartMetrics[proj] || {};
+  window._chartMetrics[proj][sheetName] = { inflow: null, balance: null };
+
   for (let i = startRow; i < rows.length; i++) {
     const c = rows[i];
     if (!c || c.length < 2 || c.join('').trim() === '') continue;
@@ -2366,9 +2371,16 @@ function processSheet(rows, proj, sheetName, isLatest) {
     const rowStr = c.join(' ').toLowerCase();
     if (rowStr.includes('calendar') && rowStr.includes('>>')) continue;
 
+    // 2. Scan the raw row string to bypass any merged cell/column shift issues
+    if (/(inflow|account bal)/i.test(rowStr)) {
+        let mInflow = rowStr.match(/\binflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
+        if (mInflow) window._chartMetrics[proj][sheetName].inflow = parseNairaToM(mInflow[1]) / 1000;
+        
+        let mBal = rowStr.match(/account bal(?:ance)?[\s:\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
+        if (mBal) window._chartMetrics[proj][sheetName].balance = parseNairaToM(mBal[1]) / 100;
+    }
+
     let deptCellValue = String(c[colMap.dept] || '').trim();
-    let action = String(c[colMap.action] || '').trim();
-    let explanationText = String(c[colMap.explanation] || '').trim();
     
     // ── STRICT TARGET EXTRACTION ──
     // If department contains "target", extract the target from Explanation Notes
@@ -4706,15 +4718,10 @@ function renderDynamicCharts() {
 
   // Helper to extract numeric metrics from a given session
   function getChartMetrics(proj, session) {
-    let inflowVal = null, balanceVal = null;
-    taskDatabase.filter(t => t.project === proj && t.session === session && /operations|fincon/i.test(t.dept)).forEach(t => {
-      const txt = (t.action||'') + ' ' + (t.explanation||'');
-      let m = txt.match(/\binflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
-      if (m) inflowVal = parseNairaToM(m[1]) / 1000; // Store as Billions
-      m = txt.match(/account bal(?:ance)?[\s:\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-      if (m) balanceVal = parseNairaToM(m[1]) / 100; // Store as 100Millions
-    });
-    return { inflow: inflowVal, balance: balanceVal };
+    if (window._chartMetrics && window._chartMetrics[proj] && window._chartMetrics[proj][session]) {
+      return window._chartMetrics[proj][session];
+    }
+    return { inflow: null, balance: null };
   }
 
   function buildChartData(proj) {
