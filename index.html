@@ -2372,16 +2372,9 @@ function processSheet(rows, proj, sheetName, isLatest) {
     const rowStr = c.join(' ').toLowerCase();
     if (rowStr.includes('calendar') && rowStr.includes('>>')) continue;
 
-    // Scan the raw row string to bypass any merged cell/column shift issues
-    if (/(inflow|account bal)/i.test(rowStr)) {
-        let mInflow = rowStr.match(/\binflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
-        if (mInflow) window._chartMetrics[proj][sheetName].inflow = parseNairaToM(mInflow[1]) / 1000;
-        
-        let mBal = rowStr.match(/account bal(?:ance)?[\s:\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-        if (mBal) window._chartMetrics[proj][sheetName].balance = parseNairaToM(mBal[1]) / 100;
-    }
-
     let deptCellValue = String(c[colMap.dept] || '').trim();
+    let action = String(c[colMap.action] || '').trim();
+    let explanationText = String(c[colMap.explanation] || '').trim();
     
     // ── STRICT TARGET EXTRACTION ──
     // If department contains "target", extract the target from Explanation Notes
@@ -2465,6 +2458,11 @@ function processSheet(rows, proj, sheetName, isLatest) {
             const offers = extractLabeledCount(actionText, ['offer letters?', 'active offer', 'offer letter']);
             if (offers !== null) { setMetric(proj==='Crossings'?'val-cx-offers':'val-annex-offers', offers); operationsOfferFound = true; }
           }
+
+          // ── POPULATE _chartMetrics FOR HISTORICAL CHARTS ──
+          // Placed here (inside the Operations block) so action/explanationText are guaranteed defined
+          if (inflow) window._chartMetrics[proj][sheetName].inflow = parseNairaToM(inflow) / 1000;
+          if (balance) window._chartMetrics[proj][sheetName].balance = parseNairaToM(balance) / 100;
         }
     }
     
