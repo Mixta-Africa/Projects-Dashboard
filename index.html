@@ -1101,8 +1101,8 @@ body.users-bar-visible .dept-sidebar {
     <h2>Projects Tracker</h2>
     <p>Select a project to view its live performance dashboard</p>
     <div class="landing-buttons">
-      <button class="landing-btn btn-cx" onclick="selectProject('Crossings')">Lakowe Crossings <small>6 units · ₦1.72B inflow</small></button>
-      <button class="landing-btn btn-annex" onclick="selectProject('Annexe')">Lakowe Annex <small>78 units · ₦6.27B inflow</small></button>
+      <button class="landing-btn btn-cx" onclick="selectProject('Crossings')">Lakowe Crossings <small id="landing-cx-subtitle">Syncing...</small></button>
+      <button class="landing-btn btn-annex" onclick="selectProject('Annexe')">Lakowe Annex <small id="landing-annex-subtitle">Syncing...</small></button>
     </div>
   </div>
 </div>
@@ -1995,6 +1995,7 @@ function loadSeedData() {
   renderAlertStrips();
   updateSidebarCounts();
   renderOverduePanels();
+  updateLandingPageMetrics();
   if (currentDept) renderCurrentDept();
 }
 
@@ -2255,7 +2256,7 @@ async function syncWithGoogleSheet() {
     // ── Reset PI + milestones so they regenerate with fresh data ──
     _piGenerated = { Crossings: false, Annexe: false };
     _milestonesLoaded = { Crossings: false, Annexe: false };
-    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept(); populateSessionPicker(); if(_dashboardSession!=='latest') refreshDashboardForSession(); renderDynamicCharts();
+    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept(); populateSessionPicker(); if(_dashboardSession!=='latest') refreshDashboardForSession(); renderDynamicCharts(); updateLandingPageMetrics();
   } catch (error) { console.error('Error syncing:', error); } finally { document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing')); }
 }
 
@@ -4448,12 +4449,29 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'admin-modal') closeAdminModal(); // <-- Added Admin Modal
 });
 
-
-
 // ═══════════════════════════════════════════════════════
 // SESSION PICKER — drives all dashboard tiles per date
 // ═══════════════════════════════════════════════════════
-let _dashboardSession = 'latest';
+// ── Update Landing Page Buttons ──
+function updateLandingPageMetrics() {
+  ['Crossings', 'Annexe'].forEach(proj => {
+    const pfx = proj === 'Crossings' ? 'cx' : 'annex';
+    
+    const finalInflow = document.getElementById(`val-${pfx}-inflow`).textContent;
+    const finalUnits = document.getElementById(`val-${pfx}-units`).textContent;
+    
+    const subtitleId = proj === 'Crossings' ? 'landing-cx-subtitle' : 'landing-annex-subtitle';
+    const el = document.getElementById(subtitleId);
+    if (el) {
+      if (finalInflow.includes('Syncing')) {
+        el.textContent = 'Syncing live data...';
+      } else {
+        el.textContent = `${finalUnits} units · ${finalInflow} inflow`;
+      }
+    }
+  });
+}
+  let _dashboardSession = 'latest';
 
 function populateSessionPicker() {
   const picker = document.getElementById('dashboard-session-picker');
@@ -4774,6 +4792,78 @@ function renderDynamicCharts() {
   }
 }
 
+// ═══════════════════════════════════════════════════════
+// DYNAMIC CHART RENDERING ENGINE
+// ═══════════════════════════════════════════════════════
+let annexChartInstance = null;
+let cxChartInstance = null;
+
+function renderDynamicCharts() {
+  if (typeof Chart === 'undefined') return;
+
+  function getChartMetrics(proj, session) {
+    if (window._chartMetrics && window._chartMetrics[proj] && window._chartMetrics[proj][session]) {
+      return window._chartMetrics[proj][session];
+    }
+    return { inflow: null, balance: null };
+  }
+
+  function buildChartData(proj) {
+    let sessions = [...(availableSessions[proj] || [])].reverse();
+    let labels = [], inflowData = [], balanceData = [];
+    
+    let rawMetrics = sessions.map(s => getChartMetrics(proj, s));
+    
+    // Find first known values so we don't start at zero if early sheets are blank
+    let firstInf = rawMetrics.find(m => m.inflow !== null)?.inflow || 0;
+    let firstBal = rawMetrics.find(m => m.balance !== null)?.balance || 0;
+    
+    let lastInf = firstInf;
+    let lastBal = firstBal;
+    
+    rawMetrics.forEach((m, i) => {
+      labels.push(formatSheetName(sessions[i]));
+      if (m.inflow !== null) lastInf = m.inflow;
+      if (m.balance !== null) lastBal = m.balance;
+      inflowData.push(lastInf);
+      balanceData.push(lastBal);
+    });
+    return { labels, inflowData, balanceData };
+  }
+
+  const gridC = 'rgba(0,0,0,0.06)', textC = '#999';
+  const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 } } }, scales: { x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } }, y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } } } };
+
+  // Render Annexe
+  const annData = buildChartData('Annexe');
+  const ctxAnnexe = document.getElementById('c1');
+  if (ctxAnnexe && annData.labels.length) {
+    if (annexChartInstance) annexChartInstance.destroy();
+    annexChartInstance = new Chart(ctxAnnexe, {
+      type: 'line', 
+      data: { labels: annData.labels, datasets: [ 
+        { label: 'Inflow (₦B)', data: annData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4, yAxisID: 'y' }, 
+        { label: 'Balance (₦100M)', data: annData.balanceData, borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' } 
+      ]},
+      options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { ...baseOpts.scales.y, position: 'right', grid: { display: false } } } }
+    });
+  }
+
+  // Render Crossings
+  const cxData = buildChartData('Crossings');
+  const ctxCx = document.getElementById('c3');
+  if (ctxCx && cxData.labels.length) {
+    if (cxChartInstance) cxChartInstance.destroy();
+    cxChartInstance = new Chart(ctxCx, {
+      type: 'line', 
+      data: { labels: cxData.labels, datasets: [ 
+        { label: 'Inflow (₦B)', data: cxData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4 } 
+      ]},
+      options: baseOpts
+    });
+  }
+}
+
 window.onload = function () {
   if (!window.GROQ_API_KEY && typeof process !== 'undefined' && process.env && process.env.GROQ_API_KEY) {
     window.GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -4799,15 +4889,29 @@ window.onload = function () {
         data.datasets.forEach((ds, i) => {
           const meta = chart.getDatasetMeta(i); if (meta.hidden) return; const lastIdx = ds.data.length - 1; if (lastIdx < 0) return;
           const pt = meta.data[lastIdx]; const val = ds.data[lastIdx]; if (val == null) return;
+          
           let label; 
-          // Correctly format Billions vs Millions dynamically
           if (ds.label && (ds.label.includes('Inflow') || ds.label.includes('₦B'))) { 
             label = '₦' + val.toFixed(2) + 'B'; 
           } else { 
             let bVal = (val * 100).toFixed(1);
             label = '₦' + (bVal.endsWith('.0') ? bVal.slice(0, -2) : bVal) + 'M'; 
           }
-          ctx.save(); ctx.font = 'bold 10px DM Mono, monospace'; ctx.fillStyle = ds.borderColor; ctx.textAlign = 'right'; ctx.fillText(label, pt.x - 4, pt.y - 10); ctx.restore();
+          
+          ctx.save(); 
+          ctx.font = 'bold 10px DM Mono, monospace'; 
+          ctx.textAlign = 'right'; 
+          
+          // Shift dataset 1 up, and dataset 2 down to prevent overlap
+          let yOffset = (i === 0) ? -10 : 16;
+          
+          const textWidth = ctx.measureText(label).width;
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          ctx.fillRect(pt.x - textWidth - 6, pt.y + yOffset - 10, textWidth + 4, 14);
+          
+          ctx.fillStyle = ds.borderColor; 
+          ctx.fillText(label, pt.x - 4, pt.y + yOffset); 
+          ctx.restore();
         });
       }
     };
