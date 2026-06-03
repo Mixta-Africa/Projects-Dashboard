@@ -1,0 +1,66 @@
+name: Deploy Dashboard to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Inject GROQ API key
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: sed -i "s|__GROQ_API_KEY__|${GROQ_API_KEY}|g" index.html
+
+      - name: Inject Cerebras API key
+        env:
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+        run: sed -i "s|__CEREBRAS_API_KEY__|${CEREBRAS_API_KEY}|g" index.html
+
+      - name: Inject Resend API key
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: sed -i "s|__RESEND_API_KEY__|${RESEND_API_KEY}|g" index.html
+
+      - name: Inject GitHub Workflow Token
+        env:
+          GH_WORKFLOW_TOKEN: ${{ secrets.GH_WORKFLOW_TOKEN }}
+        run: sed -i "s|__GH_WORKFLOW_TOKEN__|${GH_WORKFLOW_TOKEN}|g" index.html
+
+      - name: Verify injections
+        run: |
+          grep -q '__GROQ_API_KEY__'       index.html && echo "WARNING: GROQ key not injected"        || echo "✓ GROQ_API_KEY injected"
+          grep -q '__CEREBRAS_API_KEY__'   index.html && echo "WARNING: CEREBRAS key not injected"    || echo "✓ CEREBRAS_API_KEY injected"
+          grep -q '__RESEND_API_KEY__'     index.html && echo "WARNING: RESEND key not injected"      || echo "✓ RESEND_API_KEY injected"
+          grep -q '__GH_WORKFLOW_TOKEN__'  index.html && echo "WARNING: GH_WORKFLOW_TOKEN not injected" || echo "✓ GH_WORKFLOW_TOKEN injected"
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload site to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
