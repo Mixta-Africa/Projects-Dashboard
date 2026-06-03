@@ -53,19 +53,12 @@
 <link rel="apple-touch-icon" href="Mixta Africa.jpg">
 <link rel="manifest" id="pwa-manifest">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<!-- EmailJS removed — using Resend API for HTML email delivery -->
 <!-- Firebase v10 modular SDKs via CDN compat layer -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-<script>
-  // EmailJS initialisation — replace with your public key from emailjs.com
-  (function(){
-    if (typeof emailjs !== 'undefined') {
-      emailjs.init({ publicKey: 'ZhLk9En36yNDqWqTL' });
-    }
-  })();
-</script>
+<!-- EmailJS init removed -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -509,7 +502,7 @@ body.users-bar-visible .dept-sidebar {
   .pi-metrics-row { grid-template-columns: repeat(2, 1fr); }
   .pi-forecast-grid { grid-template-columns: 1fr; }
 }
-@media (max-width: 400px) { .metrics-grid { grid-template-columns: 1fr; } }
+@media (max-width: 400px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
 /* ══════════════════════════════════════════════════════
    PREDICTIVE INTELLIGENCE PANEL — Executive Analytics UX
    Expert data-ink ratio, high signal-to-noise, linear layout
@@ -959,14 +952,18 @@ body.users-bar-visible .dept-sidebar {
 }
 
 @media (max-width: 768px) {
-  nav { flex-wrap: wrap; height: auto; min-height: var(--nav-h); padding: 12px 20px; gap: 12px; justify-content: space-between; }
-  .nav-brand span { display: none; } /* Hide "AFRICA" word on mobile */
-  .nav-tabs { order: 3; width: 100%; justify-content: center; overflow-x: auto; padding-bottom: 6px; }
-  .page { margin-top: 110px; padding-top: 12px; } /* Push content down safely below wrapped nav */
+  nav { flex-wrap: wrap; height: auto; min-height: var(--nav-h); padding: 12px 16px; gap: 10px; justify-content: space-between; }
+  .nav-brand { flex-shrink: 0; }
+  .nav-brand span { display: none; }
+  .nav-tabs { order: 3; width: 100%; justify-content: flex-start; overflow-x: auto; padding-bottom: 6px; }
+  .page { margin-top: 110px; padding-top: 12px; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
-  .nav-right { gap: 8px; }
-  .admin-btn { padding: 6px 12px; }
-  .admin-btn span:not(.diag-badge-count) { display: none; } /* Hide Admin Name */
+  .nav-right { gap: 6px; flex-wrap: nowrap; overflow-x: auto; max-width: none; }
+  .nav-right::-webkit-scrollbar { display: none; }
+  .nav-badge-group, .admin-btn, .auth-action-btn { flex-shrink: 0; }
+  .admin-btn { padding: 6px 10px; }
+  .admin-btn span:not(.diag-badge-count) { display: none; }
+  .nav-date { display: none; }
   .tool-modal { max-width: 100%; border-radius: 0; max-height: 100vh; height: 100vh; }
   .report-type-grid { grid-template-columns: 1fr; }
   .tool-nav-btn .tool-nav-label { display: none; }
@@ -974,8 +971,11 @@ body.users-bar-visible .dept-sidebar {
 }
 
 @media (max-width: 480px) {
-  .stat-grid { grid-template-columns: 1fr; }
-  .nav-project-btn { padding: 6px 12px; font-size: 11px; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 12px; }
+  .metric-value { font-size: 18px; }
+  .stat-card-label { font-size: 9px; }
+  .nav-project-btn { padding: 6px 10px; font-size: 10px; }
 }
 
 /* ── AUTH STYLES ── */
@@ -2674,14 +2674,11 @@ function loadSeedData() {
 
 const STATUS_KEY = 'lakowe_status_v5';
 
-// ── EmailJS Configuration ──
-// Set these up once at emailjs.com (free plan: 200 emails/month)
-// Create an account, add an Email Service, create a Template with variables:
-//   {{to_name}}, {{to_email}}, {{subject}}, {{message}}
-// Then paste your IDs below:
-const EMAILJS_SERVICE_ID  = 'service_inb2uaf';
-const EMAILJS_TEMPLATE_ID = 'template_ipcax5i';
-// Public key is set in the emailjs.init() call above
+// ── Resend Configuration ──
+// API key is injected at build time by GitHub Actions from the RESEND_API_KEY secret.
+// Falls back to localStorage for local development.
+const RESEND_FROM = 'Mixta Africa Projects <onboarding@resend.dev>';
+const RESEND_REPLY_TO = 'o.olasunkanmi@mixtafrica.com';
 function getStatusOverrides() { try { return JSON.parse(localStorage.getItem(STATUS_KEY)) || {}; } catch { return {}; } }
 function saveStatus(taskId, status) { const o = getStatusOverrides(); o[taskId] = status; localStorage.setItem(STATUS_KEY, JSON.stringify(o)); }
 function taskId(t) { return (t.project + '_' + t.dept + '_' + t.session + '_' + t.action).replace(/\W+/g,'_').substring(0, 60); }
@@ -4146,30 +4143,38 @@ Output EXACTLY these HTML blocks (using the exact class names provided) to injec
 
 Output ONLY the HTML, nothing else before or after it.`;
 
-  // ── Use Groq (CORS-friendly, fast) ──
+  // ── Use Groq primary / Cerebras fallback ──
   const GROQ_KEY = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
-  if (!GROQ_KEY) {
-    if (loadEl) loadEl.innerHTML = '<span style="color:var(--status-orange);font-size:12px">⚠ GROQ_API_KEY not configured as environment secret.</span>';
+  const CEREBRAS_KEY = window.CEREBRAS_API_KEY || localStorage.getItem('CEREBRAS_API_KEY');
+  if (!GROQ_KEY && !CEREBRAS_KEY) {
+    if (loadEl) loadEl.innerHTML = '<span style="color:var(--status-orange);font-size:12px">⚠ No AI API key configured (GROQ_API_KEY or CEREBRAS_API_KEY).</span>';
     return;
   }
+  const _piMessages1 = [
+    { role: 'system', content: 'You are a sharp business strategy associate at a real estate development firm. Write punchy, direct executive intelligence. Output only valid HTML using the exact class names given. No markdown, no preamble.' },
+    { role: 'user', content: prompt }
+  ];
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 1400,
-        temperature: 0.3,
-        messages: [
-          { role: 'system', content: 'You are a sharp business strategy associate at a real estate development firm. Write punchy, direct executive intelligence. Output only valid HTML using the exact class names given. No markdown, no preamble.' },
-          { role: 'user', content: prompt }
-        ]
-      })
-    });
+    let res;
+    if (GROQ_KEY) {
+      res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
+        body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 1400, temperature: 0.3, messages: _piMessages1 })
+      });
+    }
+    if (!GROQ_KEY || !res.ok) {
+      if (!CEREBRAS_KEY) throw new Error('Groq failed and no Cerebras key available');
+      res = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + CEREBRAS_KEY },
+        body: JSON.stringify({ model: 'llama-3.3-70b', max_tokens: 1400, temperature: 0.3, messages: _piMessages1 })
+      });
+    }
     const data = await res.json();
     const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
       ? data.choices[0].message.content.trim() : '';
-    if (!text) throw new Error('Empty response from Groq');
+    if (!text) throw new Error('Empty response from AI provider');
 
     // Strip any accidental markdown fences
     const clean = text.replace(/^```html?\n?/i,'').replace(/\n?```$/,'').trim();
@@ -4739,26 +4744,26 @@ function injectTrendBadges(proj) {
 // ╔══════════════════════════════════════════════════════════════════╝
 const MAILING_LIST = {
   Crossings: {
-    Design:     ['dcs_nigeria@mixtafrica.com','a.arokodare@mixtafrica.com','c.uwadiale@mixtafrica.com','a.uwuigbe@mixtafrica.com'],
+    Design:     ['dcs_nigeria@mixtafrica.com'],
     AMC:        ['deji.alli@mixtafrica.com','s.hughes@mixtafrica.com','b.ajayi@mixtafrica.com'],
-    IPD:        ['ipd_nigeria@mixtafrica.com','pmo_nigeria@mixtafrica.com','w.salami@mixtafrica.com','t.banjo@mixtafrica.com','h.kacou@mixtafrica.com'],
-    Costing:    ['mn_costingandprocurement@mixtafrica.com','o.james@mixtafrica.com','j.olowe@mixtafrica.com','t.ibidokun@mixtafrica.com'],
-    MCC:        ['mcc@mixtafrica.com','k.haastrup@mixtafrica.com','n.anaeto@mixtafrica.com'],
+    IPD:        ['ipd_nigeria@mixtafrica.com','pmo_nigeria@mixtafrica.com'],
+    Costing:    ['mn_costingandprocurement@mixtafrica.com','o.james@mixtafrica.com'],
+    MCC:        ['mcc@mixtafrica.com'],
     Sales:      ['a.cameron-cole@mixtafrica.com','e.ezeh@mixtafrica.com'],
-    Legal:      ['r.idaeho@mixtafrica.com','o.shoyoye@mixtafrica.com'],
-    FINCON:     ['o.ekpikie@mixtafrica.com','o.tona-obafemi@mixtafrica.com','o.isabu@mixtafrica.com','a.omotayo@mixtafrica.com'],
-    Operations: ['u.ojembe@mixtafrica.com','o.ajala@mixtafrica.com','c.ajie@mixtafrica.com','r.jolaiya@mixtafrica.com']
+    Legal:      ['legal@mixtafrica.com'],
+    FINCON:     ['mixta_fincon@mixtafrica.com'],
+    Operations: ['realestateoperations_nigeria@mixtafrica.com'],
   },
   Annexe: {
-    Design:        ['dcs_nigeria@mixtafrica.com','a.arokodare@mixtafrica.com','c.uwadiale@mixtafrica.com','a.uwuigbe@mixtafrica.com'],
+    Design:        ['dcs_nigeria@mixtafrica.com'],
     AMC:           ['deji.alli@mixtafrica.com','s.hughes@mixtafrica.com'],
-    IPD:           ['ipd_nigeria@mixtafrica.com','pmo_nigeria@mixtafrica.com','w.salami@mixtafrica.com','t.banjo@mixtafrica.com','h.kacou@mixtafrica.com'],
-    Costing:       ['mn_costingandprocurement@mixtafrica.com','o.ogunewu@mixtafrica.com','j.olowe@mixtafrica.com','t.ibidokun@mixtafrica.com'],
-    MCC:           ['mcc@mixtafrica.com','k.haastrup@mixtafrica.com','n.anaeto@mixtafrica.com'],
+    IPD:           ['ipd_nigeria@mixtafrica.com','pmo_nigeria@mixtafrica.com'],
+    Costing:       ['mn_costingandprocurement@mixtafrica.com','o.ogunewu@mixtafrica.com'],
+    MCC:           ['mcc@mixtafrica.com'],
     Sales:         ['a.cameron-cole@mixtafrica.com','e.ezeh@mixtafrica.com'],
-    Legal:         ['r.idaeho@mixtafrica.com','o.shoyoye@mixtafrica.com'],
-    FINCON:        ['o.ekpikie@mixtafrica.com','o.tona-obafemi@mixtafrica.com','a.omotayo@mixtafrica.com'],
-    Operations:    ['u.ojembe@mixtafrica.com','o.ajala@mixtafrica.com','c.ajie@mixtafrica.com','r.jolaiya@mixtafrica.com'],
+    Legal:         ['legal@mixtafrica.com'],
+    FINCON:        ['mixta_fincon@mixtafrica.com'],
+    Operations:    ['realestateoperations_nigeria@mixtafrica.com'],
     Telemarketing: ['m.apuh@mixtafrica.com']
   }
 };
@@ -4817,7 +4822,7 @@ function reminderProjectChanged() {
 
   // NEW: "Active Departments Only" option
   const activeOpt = document.createElement('option');
-  activeOpt.value = '__ACTIVE__'; activeOpt.textContent = '🔥 Active Departments Only';
+  activeOpt.value = '__ACTIVE__'; activeOpt.textContent = '💡Active Departments Only';
   deptSel.appendChild(activeOpt);
 
   Object.keys(MAILING_LIST[_reminderProject]).forEach(dept => {
@@ -4959,10 +4964,11 @@ function getDeptReminderTasks(proj, dept, latest, overrides) {
 // Build the plain-text email body for one department
 function buildReminderEmailBody(proj, dept, tasks) {
   const projLabel = 'Lakowe ' + proj;
+  const projColor = proj === 'Annexe' ? '#D32F2F' : '#1b5e20';
   const dateStr = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
   const total = tasks.delayed.length + tasks.ontrack.length + tasks.onhold.length;
 
-  // Opening urgency line — fixed subject/verb agreement so "department" always uses "has"
+  // Opening urgency line
   let urgencyLine = '';
   if (total === 0) {
     urgencyLine = 'Our records show no outstanding tasks for your department at this time. Please log into the Projects Dashboard to verify and update your task statuses.';
@@ -4973,48 +4979,93 @@ function buildReminderEmailBody(proj, dept, tasks) {
     urgencyLine = `Your department has ${total} open ${total === 1 ? 'task' : 'tasks'} in the tracker. Kindly review and ensure ${total === 1 ? 'it is' : 'they are'} progressing ahead of our next review session.`;
   }
 
-  // Build task section
-  function formatSection(list, heading) {
+  // Build an HTML table for a category of tasks
+  function buildTable(list, heading, headerColor, statusLabel) {
     if (!list.length) return '';
-    let out = '\n' + heading + '\n';
-    list.forEach((t, i) => {
-      out += `  ${i + 1}. ${t.action}`;
-      if (t.due && t.due !== 'TBD') out += ` (Due: ${t.due})`;
-      if (isOverdue(t)) out += ' — OVERDUE';
-      out += '\n';
-    });
-    return out;
+    let rows = list.map((t, i) => {
+      const overdueTag = isOverdue(t) ? ' <span style="color:#c62828;font-weight:800;font-size:11px;">OVERDUE</span>' : '';
+      const due = (t.due && t.due !== 'TBD') ? t.due : '—';
+      const rowBg = i % 2 === 0 ? '#ffffff' : '#f9f9f9';
+      return `<tr style="background:${rowBg};">
+        <td style="padding:10px 14px;border-bottom:1px solid #e8e8e8;font-size:13px;color:#1a1a1a;line-height:1.5;">${t.action}${overdueTag}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #e8e8e8;font-size:12px;color:#555;white-space:nowrap;text-align:center;">${due}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #e8e8e8;font-size:11px;font-weight:800;text-align:center;white-space:nowrap;color:${headerColor};">${statusLabel}</td>
+      </tr>`;
+    }).join('');
+
+    return `<p style="margin:24px 0 8px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:${headerColor};">${heading}</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:8px;">
+      <thead>
+        <tr style="background:${headerColor};">
+          <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:800;color:#ffffff;text-transform:uppercase;letter-spacing:0.05em;">Task / Action Item</th>
+          <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:800;color:#ffffff;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">Due Date</th>
+          <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:800;color:#ffffff;text-transform:uppercase;letter-spacing:0.05em;">Status</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
   }
 
   let taskSection = '';
-  if (total === 0) {
-    taskSection = '';
-  } else {
-    taskSection += formatSection(tasks.delayed, 'DELAYED / OVERDUE — Action Required:');
-    taskSection += formatSection(tasks.ontrack, 'IN PROGRESS — On Track:');
-    taskSection += formatSection(tasks.onhold,  'ON HOLD — Due Within 7 Days:');
+  if (total > 0) {
+    taskSection += buildTable(tasks.delayed, '🔴 Delayed / Overdue — Immediate Action Required', '#c62828', 'DELAYED');
+    taskSection += buildTable(tasks.ontrack, '🟢 In Progress — On Track', '#2e7d32', 'ON TRACK');
+    taskSection += buildTable(tasks.onhold,  '⏸ On Hold — Due Within 7 Days', '#e65100', 'ON HOLD');
   }
 
-  // Closing instruction — singular/plural
+  // Closing instruction
   const concludeLine = total === 1
     ? 'Kindly conclude this task ahead of the next meeting and provide an update on the dashboard.'
     : total > 1
       ? 'Kindly conclude these tasks ahead of the next meeting and provide updates on the dashboard.'
       : 'Kindly log into the dashboard and confirm your department status ahead of the next meeting.';
 
-  return `Dear ${dept} Team,
+  // Build full HTML email
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f4;padding:24px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
 
-I trust you are well.
+        <!-- Header -->
+        <tr><td style="background:${projColor};padding:24px 32px;">
+          <p style="margin:0;font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.1em;">Mixta Africa — Task Reminder</p>
+          <p style="margin:6px 0 0;font-size:20px;font-weight:800;color:#ffffff;">${projLabel} · ${dept} Department</p>
+          <p style="margin:4px 0 0;font-size:12px;color:rgba(255,255,255,0.75);">${dateStr}</p>
+        </td></tr>
 
-${urgencyLine}
-${taskSection}
-${concludeLine}
+        <!-- Body -->
+        <tr><td style="padding:28px 32px;">
+          <p style="margin:0 0 16px;font-size:14px;color:#1a1a1a;">Dear <strong>${dept} Team</strong>,</p>
+          <p style="margin:0 0 20px;font-size:14px;color:#444;line-height:1.6;">I trust you are well.</p>
+          <p style="margin:0 0 20px;font-size:14px;color:#444;line-height:1.6;">${urgencyLine}</p>
 
-If any item is blocked or requires escalation, please respond to this email or flag it on the dashboard immediately so the project team can assist.
+          ${taskSection || '<p style="margin:0 0 20px;font-size:13px;color:#777;font-style:italic;">No open tasks recorded for this department in the current session.</p>'}
 
-Best Regards,
-Mixta Africa — Projects Team
-${projLabel} | ${dateStr}`;
+          <p style="margin:20px 0 0;font-size:14px;color:#444;line-height:1.6;">${concludeLine}</p>
+          <p style="margin:12px 0 0;font-size:14px;color:#444;line-height:1.6;">If any item is blocked or requires escalation, please respond to this email or flag it on the dashboard immediately so the project team can assist.</p>
+        </td></tr>
+
+        <!-- Divider -->
+        <tr><td style="padding:0 32px;"><hr style="border:none;border-top:1px solid #ebebeb;margin:0;"></td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding:20px 32px 28px;">
+          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#1a1a1a;">Mixta Africa — Projects Team</p>
+          <p style="margin:0 0 12px;font-size:12px;color:#888;">${projLabel} &nbsp;|&nbsp; ${dateStr}</p>
+          <p style="margin:0;font-size:13px;color:#555;">
+            View real-time task status and updates on the
+            <a href="https://bit.ly/MixtaProjectsDashboard" style="color:${projColor};font-weight:700;text-decoration:none;">Projects Dashboard</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 }
 
 // Compose email(s) and show preview
@@ -5098,14 +5149,10 @@ function sendReminderEmail() {
   const statusEl = document.getElementById('reminder-status-text');
   const btn = document.getElementById('reminder-send-btn');
 
-  // Check EmailJS library is loaded and keys are set
-  const ejsConfigured = typeof emailjs !== 'undefined'
-    && EMAILJS_SERVICE_ID !== '' 
-    && EMAILJS_TEMPLATE_ID !== '';
-
-  if (!ejsConfigured) {
-    statusEl.textContent = '⚠ EmailJS not ready — opening mail app as fallback.';
-    _sendViaMailto();
+  // Resolve GitHub workflow token — injected at build time or localStorage for local dev
+  const GH_TOKEN = window.GH_WORKFLOW_TOKEN || localStorage.getItem('GH_WORKFLOW_TOKEN');
+  if (!GH_TOKEN) {
+    statusEl.textContent = '⚠ GH_WORKFLOW_TOKEN not configured. Add it to GitHub Secrets.';
     return;
   }
 
@@ -5114,42 +5161,29 @@ function sendReminderEmail() {
     return;
   }
 
-  // Build the list of emails to send
   var emailsToSend = [];
   var mode = document.getElementById('reminder-mode').value;
 
-  // Helper to construct email payloads (handles AMC personalization)
+  // Helper — builds email payloads, handles AMC personalisation
   function pushEmail(dept, rawRecipients, subject, baseBody) {
     if (!rawRecipients || rawRecipients.length === 0) return;
-    
     if (dept.toUpperCase() === 'AMC') {
-      // AMC gets individualized emails to apply personal greetings
       rawRecipients.forEach(function(realEmail) {
         var greeting = 'Dear AMC Team,';
         var e = realEmail.toLowerCase();
-        
-        if (e.includes('d.alli') || e.includes('deji.alli')) {
-          greeting = 'Dear DA,';
-        } else if (e.includes('s.hughes')) {
-          greeting = 'Dear Mrs H,';
-        } else if (e.includes('b.ajayi')) {
-          greeting = 'Dear BA,';
-        }
-
-        // Swap out the generic greeting
+        if (e.includes('d.alli') || e.includes('deji.alli')) greeting = 'Dear DA,';
+        else if (e.includes('s.hughes')) greeting = 'Dear Mrs H,';
+        else if (e.includes('b.ajayi')) greeting = 'Dear BA,';
         var customBody = baseBody.replace('Dear ' + dept + ' Team,', greeting);
         var toAddress = mode === 'test' ? TEST_EMAIL : realEmail;
-        
-        emailsToSend.push({ to: [toAddress], subject: subject, body: customBody, dept: dept });
+        emailsToSend.push({ to: [toAddress], subject: subject, html: customBody, dept: dept });
       });
     } else {
-      // Standard departments get one email sent to all their recipients
-      var finalRecipients = mode === 'test' ? [TEST_EMAIL] : rawRecipients;
-      emailsToSend.push({ to: finalRecipients, subject: subject, body: baseBody, dept: dept });
+      var recipients = mode === 'test' ? [TEST_EMAIL] : rawRecipients;
+      emailsToSend.push({ to: recipients, subject: subject, html: baseBody, dept: dept });
     }
   }
 
-  // Route All vs Single generation into the builder
   if (_allDeptEmails && _allDeptEmailKeys.length > 0) {
     _allDeptEmailKeys.forEach(function(dept) {
       var info = _allDeptEmails[dept];
@@ -5157,74 +5191,78 @@ function sendReminderEmail() {
       pushEmail(dept, originalList, info.subject, info.body);
     });
   } else if (_generatedEmailBody) {
-    var originalList = _reminderDept && MAILING_LIST[_reminderProject] ? (MAILING_LIST[_reminderProject][_reminderDept] || []) : [];
+    var originalList = _reminderDept && MAILING_LIST[_reminderProject]
+      ? (MAILING_LIST[_reminderProject][_reminderDept] || []) : [];
     pushEmail(_reminderDept, originalList, _generatedEmailSubject, _generatedEmailBody);
   }
 
   if (emailsToSend.length === 0) { statusEl.textContent = 'No emails to send.'; return; }
 
   btn.disabled = true;
-  btn.innerHTML = '<span class="tool-spinner"></span> Sending...';
+  btn.innerHTML = '<span class="tool-spinner"></span> Queuing emails...';
   statusEl.textContent = '';
 
-  // Send sequentially using EmailJS
-  var totalEmails = emailsToSend.reduce(function(n, e) { return n + e.to.length; }, 0);
-  var sentCount = 0;
-  var failCount = 0;
+  // GitHub Actions workflow dispatch API — runs server-side, no CORS issues
+  const REPO = 'Mixta-Africa/Projects-Dashboard-Features-Testing';
+  const WORKFLOW = 'send-email.yml';
 
-  function sendNext(emailList, idx) {
-    if (idx >= emailList.length) {
-      // All done
-      var mode = document.getElementById('reminder-mode').value;
-      if (failCount === 0) {
-        statusEl.textContent = '✓ ' + sentCount + ' email' + (sentCount !== 1 ? 's' : '') + ' sent successfully' + (mode === 'test' ? ' to test address' : '');
+  // Dispatch one workflow run per email group
+  // GitHub Actions inputs are strings so we JSON-encode the email payload
+  var dispatched = 0;
+  var failed = 0;
+
+  function dispatchNext(idx) {
+    if (idx >= emailsToSend.length) {
+      var currentMode = document.getElementById('reminder-mode').value;
+      if (failed === 0) {
+        statusEl.textContent = '✓ ' + dispatched + ' email' + (dispatched !== 1 ? 's' : '') + ' queued — delivering within 30 seconds' + (currentMode === 'test' ? ' (test mode)' : '');
       } else {
-        statusEl.textContent = sentCount + ' sent, ' + failCount + ' failed. Check browser console for details.';
+        statusEl.textContent = dispatched + ' queued, ' + failed + ' failed. Check that GH_WORKFLOW_TOKEN has workflow scope.';
       }
       btn.innerHTML = '📨 Send Email' + (emailsToSend.length > 1 ? 's' : '');
       btn.disabled = false;
       return;
     }
 
-    var emailGroup = emailList[idx];
-    // Send to each recipient in the group
-    var recipientList = emailGroup.to;
-    var recipIdx = 0;
+    var emailGroup = emailsToSend[idx];
 
-    function sendToNextRecipient() {
-      if (recipIdx >= recipientList.length) {
-        // Move to next dept group
-        statusEl.textContent = 'Sending... ' + sentCount + ' of ' + totalEmails + ' sent';
-        sendNext(emailList, idx + 1);
-        return;
-      }
-      var recipient = recipientList[recipIdx];
-      recipIdx++;
-
-      var templateParams = {
-        to_email: recipient,
-        to_name:  emailGroup.dept + ' Team',
-        subject:  emailGroup.subject,
-        message:  emailGroup.body,
-        reply_to: 'o.olasunkanmi@mixtafrica.com'
-      };
-
-      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-        .then(function() {
-          sentCount++;
-          statusEl.textContent = 'Sending... ' + sentCount + ' of ' + totalEmails + ' sent';
-          sendToNextRecipient();
-        })
-        .catch(function(err) {
-          failCount++;
-          console.error('EmailJS send failed for', recipient, err);
-          sendToNextRecipient();
+    fetch('https://api.github.com/repos/' + REPO + '/actions/workflows/' + WORKFLOW + '/dispatches', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': 'Bearer ' + GH_TOKEN,
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ref: 'main',
+        inputs: {
+          to:      JSON.stringify(emailGroup.to),
+          subject: emailGroup.subject,
+          html:    emailGroup.html,
+          dept:    emailGroup.dept
+        }
+      })
+    })
+    .then(function(res) {
+      if (res.status === 204) {
+        dispatched++;
+        statusEl.textContent = 'Queuing... ' + dispatched + ' of ' + emailsToSend.length;
+        dispatchNext(idx + 1);
+      } else {
+        return res.json().then(function(data) {
+          throw new Error(data.message || 'HTTP ' + res.status);
         });
-    }
-    sendToNextRecipient();
+      }
+    })
+    .catch(function(err) {
+      failed++;
+      console.error('[GH Dispatch] Failed for', emailGroup.dept, err.message);
+      dispatchNext(idx + 1);
+    });
   }
 
-  sendNext(emailsToSend, 0);
+  dispatchNext(0);
 }
 
 // Fallback: open mailto if EmailJS not set up
@@ -5455,34 +5493,38 @@ Write a comprehensive executive performance report with these sections:
 Write in a direct, analytical tone for executive leadership. Use specific numbers. Draw conclusions, not just descriptions. Format tables clearly using | pipe notation.`;
 
   try {
-    // Use Groq API — fast, reliable, no CORS issues from static HTML
+    // Use Groq primary / Cerebras fallback
     const groqKey = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
-    if (!groqKey) {
-      statusEl.textContent = '⚠ Groq API key not configured. Set GROQ_API_KEY in GitHub secrets or localStorage.';
-      console.error('GROQ_API_KEY not found in environment or localStorage');
+    const cerebrasKey = window.CEREBRAS_API_KEY || localStorage.getItem('CEREBRAS_API_KEY');
+    if (!groqKey && !cerebrasKey) {
+      statusEl.textContent = '⚠ No AI API key configured (GROQ_API_KEY or CEREBRAS_API_KEY).';
       return;
     }
-    
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + groqKey
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 4096,
-        temperature: 0.3,
-        messages: [
-          { role: 'system', content: 'You are a senior real estate project analyst. Write precise, data-driven executive reports. Always use the exact numbers provided. Format all tables with pipe notation.' },
-          { role: 'user', content: prompt }
-        ]
-      })
-    });
+    const _reportMessages = [
+      { role: 'system', content: 'You are a senior real estate project analyst. Write precise, data-driven executive reports. Always use the exact numbers provided. Format all tables with pipe notation.' },
+      { role: 'user', content: prompt }
+    ];
+    let res;
+    if (groqKey) {
+      res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
+        body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 4096, temperature: 0.3, messages: _reportMessages })
+      });
+    }
+    if (!groqKey || !res.ok) {
+      if (!cerebrasKey) throw new Error('Groq failed and no Cerebras key available');
+      statusEl.textContent = 'Groq unavailable, switching to Cerebras...';
+      res = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cerebrasKey },
+        body: JSON.stringify({ model: 'llama-3.3-70b', max_tokens: 4096, temperature: 0.3, messages: _reportMessages })
+      });
+    }
 
     if (!res.ok) {
       const err = await res.text();
-      throw new Error('Groq API error ' + res.status + ': ' + err.substring(0,200));
+      throw new Error('AI API error ' + res.status + ': ' + err.substring(0,200));
     }
 
     const data = await res.json();
@@ -5490,7 +5532,7 @@ Write in a direct, analytical tone for executive leadership. Use specific number
       ? data.choices[0].message.content.trim()
       : '';
 
-    if (!text) throw new Error('Empty response from Groq');
+    if (!text) throw new Error('Empty response from AI provider');
 
     _reportContent = text;
     document.getElementById('report-outline-preview').textContent = text;
@@ -6507,14 +6549,26 @@ async function sendChatMessage() {
   } catch(e) {
     try {
       const groqKey = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
-      if (!groqKey) throw new Error('No API key. Set GROQ_API_KEY in localStorage to enable the chatbot.');
-      const gr = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-        body: JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:1200,
-          messages:[{role:'system',content:systemPrompt},...messages] })
-      });
-      if (!gr.ok) throw new Error('Groq ' + gr.status);
+      const cerebrasKey = window.CEREBRAS_API_KEY || localStorage.getItem('CEREBRAS_API_KEY');
+      if (!groqKey && !cerebrasKey) throw new Error('No fallback API key configured.');
+      const _chatMsgs = [{role:'system',content:systemPrompt},...messages];
+      let gr;
+      if (groqKey) {
+        gr = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+          body: JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:1200, messages:_chatMsgs })
+        });
+      }
+      if (!groqKey || !gr.ok) {
+        if (!cerebrasKey) throw new Error('Groq ' + (gr ? gr.status : 'unavailable') + ' and no Cerebras key.');
+        gr = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+cerebrasKey},
+          body: JSON.stringify({ model:'llama-3.3-70b', max_tokens:1200, messages:_chatMsgs })
+        });
+      }
+      if (!gr.ok) throw new Error('All AI providers failed (' + gr.status + ')');
       const gd = await gr.json();
       answer = gd.choices?.[0]?.message?.content || 'No response.';
     } catch(e2) { answer = '\u26a0\ufe0f ' + e2.message; }
@@ -6543,8 +6597,28 @@ function addChatMsg(role, text, thinking=false) {
 function removeChatMsg(id) { const el=document.getElementById(id); if(el) el.remove(); }
 
 window.onload = function () {
-  if (!window.GROQ_API_KEY && typeof process !== 'undefined' && process.env && process.env.GROQ_API_KEY) {
-    window.GROQ_API_KEY = process.env.GROQ_API_KEY;
+  // API keys injected at build time by GitHub Actions (see .github/workflows/deploy.yml)
+  // Placeholders below are replaced with real values via sed before deployment.
+  // Falls back to localStorage for local development.
+  if (!window.GROQ_API_KEY) {
+    const _gk = '__GROQ_API_KEY__';
+    if (_gk && !_gk.startsWith('__')) window.GROQ_API_KEY = _gk;
+    else window.GROQ_API_KEY = localStorage.getItem('GROQ_API_KEY') || '';
+  }
+  if (!window.CEREBRAS_API_KEY) {
+    const _ck = '__CEREBRAS_API_KEY__';
+    if (_ck && !_ck.startsWith('__')) window.CEREBRAS_API_KEY = _ck;
+    else window.CEREBRAS_API_KEY = localStorage.getItem('CEREBRAS_API_KEY') || '';
+  }
+  if (!window.RESEND_API_KEY) {
+    const _rk = '__RESEND_API_KEY__';
+    if (_rk && !_rk.startsWith('__')) window.RESEND_API_KEY = _rk;
+    else window.RESEND_API_KEY = localStorage.getItem('RESEND_API_KEY') || '';
+  }
+  if (!window.GH_WORKFLOW_TOKEN) {
+    const _gh = '__GH_WORKFLOW_TOKEN__';
+    if (_gh && !_gh.startsWith('__')) window.GH_WORKFLOW_TOKEN = _gh;
+    else window.GH_WORKFLOW_TOKEN = localStorage.getItem('GH_WORKFLOW_TOKEN') || '';
   }
   
   updateTargetHeaders();
@@ -6671,8 +6745,8 @@ label = '₦' + (bVal.endsWith('.00') ? bVal.slice(0, -3) : bVal) + 'Bn';
         <div class="email-preview-label">Recipients</div>
         <div id="reminder-recipients" class="email-meta" style="margin-bottom: 16px;"></div>
 
-        <div class="email-preview-label">Email preview (generated by AI)</div>
-        <div id="reminder-email-preview" class="email-preview-box">Select a department to preview the email content.</div>
+        <div class="email-preview-label">Email preview (HTML — renders as formatted table in inbox)</div>
+        <div id="reminder-email-preview" class="email-preview-box" style="font-size:12px;color:var(--text-muted);font-style:italic;">Select a department to generate a preview. The email will render as a formatted HTML table in the recipient's inbox.</div>
       </div>
 
     </div>
