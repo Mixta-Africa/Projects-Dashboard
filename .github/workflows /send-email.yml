@@ -1,0 +1,64 @@
+name: Send Task Reminder Email
+
+on:
+  workflow_dispatch:
+    inputs:
+      to:
+        description: 'Recipient email(s) as JSON array string'
+        required: true
+      subject:
+        description: 'Email subject line'
+        required: true
+      html:
+        description: 'Full HTML email body'
+        required: true
+      dept:
+        description: 'Department name (for logging)'
+        required: true
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send email via Resend
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TO: ${{ inputs.to }}
+          SUBJECT: ${{ inputs.subject }}
+          HTML: ${{ inputs.html }}
+          DEPT: ${{ inputs.dept }}
+        run: |
+          echo "Sending reminder to $DEPT department..."
+
+          # Write HTML to temp file — avoids all single-quote/shell escaping issues
+          printf '%s' "$HTML" > /tmp/email_body.html
+
+          # Build JSON payload safely using jq --rawfile (reads file as string)
+          jq -n \
+            --arg from "Mixta Africa Projects <onboarding@resend.dev>" \
+            --argjson to "$TO" \
+            --arg subject "$SUBJECT" \
+            --rawfile html /tmp/email_body.html \
+            --arg reply_to "o.olasunkanmi@mixtafrica.com" \
+            '{from: $from, to: $to, subject: $subject, html: $html, reply_to: $reply_to}' \
+            > /tmp/payload.json
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/payload.json)
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+
+          echo "Response: $BODY"
+          echo "HTTP Status: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✓ Email sent successfully to $DEPT"
+          else
+            echo "✗ Failed to send email to $DEPT"
+            exit 1
+          fi
