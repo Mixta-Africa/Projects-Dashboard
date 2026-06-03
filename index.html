@@ -346,24 +346,26 @@ body.users-bar-visible .dept-sidebar {
 .dept-panel { display: none; animation: fadeIn 0.25s ease; }
 .dept-panel.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-.dept-history-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; width: 100%; }
-.history-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.dept-header { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px 24px; box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 16px; flex-wrap: wrap; }
+.dept-header-left { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.dept-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 16px; max-width: 100%; }
+
+.dept-history-bar { display: flex; flex-direction: column; gap: 8px; width: 100%; align-items: flex-end; }
+.history-row { display: flex; align-items: center; justify-content: flex-end; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: 100%; }
 .history-row::-webkit-scrollbar { display: none; }
-.history-pill { flex-shrink: 0; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); background: var(--white); color: var(--text-muted); font-family: inherit; }
-.history-pill:hover { border-color: var(--active-theme-color, var(--cx-color)); color: var(--active-theme-color, var(--cx-color)); }
-.history-pill.active { background: var(--active-theme-color, var(--cx-color)); border-color: var(--active-theme-color, var(--cx-color)); color: white; }
-.history-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; flex-shrink: 0; }
-.date-sub-row { display: flex; align-items: center; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-left: 4px; }
+.history-pill { flex-shrink: 0; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); background: var(--white); color: var(--text-secondary); font-family: inherit; }
+.history-pill:hover { background: var(--bg); color: var(--text-primary); }
+.history-pill.active { background: var(--cx-color); border-color: var(--cx-color); color: white; }
+.history-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; flex-shrink: 0; }
+
+.date-sub-row { display: flex; align-items: center; justify-content: flex-end; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: 100%; }
 .date-sub-row::-webkit-scrollbar { display: none; }
-.date-pill { flex-shrink: 0; padding: 4px 12px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); background: var(--bg); color: var(--text-muted); font-family: inherit; letter-spacing: 0.04em; }
-.date-pill:hover { border-color: var(--active-theme-color, var(--cx-color)); color: var(--active-theme-color, var(--cx-color)); }
-.date-pill.active { background: var(--active-theme-color, var(--cx-color)); border-color: var(--active-theme-color, var(--cx-color)); color: white; }
-.date-sub-label { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
-.dept-header { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.dept-header-text { min-width: 0; }
-.dept-header-text h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
-.dept-header-text p { font-size: 13px; color: var(--text-secondary); word-wrap: break-word; }
-.dept-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.date-pill { flex-shrink: 0; padding: 4px 12px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); font-family: inherit; }
+.date-pill:hover { background: var(--bg); color: var(--text-primary); }
+.date-pill.active { background: var(--cx-color); border-color: var(--cx-color); color: white; }
+.date-sub-label { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+
+.dept-controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .filter-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; width: 100%; }
 .filter-tab { padding: 6px 14px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border); background: var(--white); color: var(--text-muted); transition: all 0.2s; font-family: inherit; }
 .filter-tab:hover { border-color: var(--active-theme-color, var(--cx-color)); color: var(--active-theme-color, var(--cx-color)); }
@@ -427,6 +429,10 @@ body.users-bar-visible .dept-sidebar {
 .team-updates-section h3 { font-size: 14px; font-weight: 800; margin-bottom: 14px; color: var(--text-primary); }
 .updates-list { max-height: 250px; overflow-y: auto; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
 .update-item { background: var(--bg); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; border-left: 3px solid var(--active-theme-color, var(--cx-color)); }
+.update-task-tag { display: inline-block; margin-left: 8px; background: var(--active-theme-color, var(--cx-color)); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; vertical-align: middle; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.update-task-select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; background: var(--white); color: var(--text-primary); margin-bottom: 8px; }
+.update-author-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.update-author-row input { flex: 1; min-width: 0; }
 .update-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
 .update-input-group { display: flex; flex-direction: column; gap: 10px; }
 .update-input-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; resize: vertical; min-height: 70px; }
@@ -941,10 +947,35 @@ body.users-bar-visible .dept-sidebar {
 }
 .tool-nav-btn:hover { background: var(--border-md); color: var(--text-primary); }
 
+/* Universal Device Responsiveness Matrix */
+@media (max-width: 992px) {
+  .dept-layout { grid-template-columns: 1fr; }
+  .dept-sidebar { position: static; width: 100%; overflow-x: auto; white-space: nowrap; padding: 12px; margin-bottom: 16px; border-radius: 12px; display: flex; gap: 12px; align-items: center; z-index: 100; }
+  .sidebar-section { display: inline-flex; border: none !important; margin: 0 !important; padding: 0 !important; align-items: center; }
+  .sidebar-section-label { display: none; } /* Hide large headers to save scrolling space */
+  .sidebar-item { min-height: auto; width: auto; padding: 8px 16px; border-radius: 24px; border: 1px solid var(--card-border); display: inline-flex; flex-shrink: 0; }
+  .stat-grid { grid-template-columns: repeat(3, 1fr); overflow-x: auto; padding-bottom: 8px; }
+  .pbi-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 768px) {
-  .tool-modal { max-width: 100%; max-height: 95vh; }
+  nav { flex-wrap: wrap; height: auto; min-height: var(--nav-h); padding: 12px 20px; gap: 12px; justify-content: space-between; }
+  .nav-brand span { display: none; } /* Hide "AFRICA" word on mobile */
+  .nav-tabs { order: 3; width: 100%; justify-content: center; overflow-x: auto; padding-bottom: 6px; }
+  .page { margin-top: 110px; padding-top: 12px; } /* Push content down safely below wrapped nav */
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .nav-right { gap: 8px; }
+  .admin-btn { padding: 6px 12px; }
+  .admin-btn span:not(.diag-badge-count) { display: none; } /* Hide Admin Name */
+  .tool-modal { max-width: 100%; border-radius: 0; max-height: 100vh; height: 100vh; }
   .report-type-grid { grid-template-columns: 1fr; }
   .tool-nav-btn .tool-nav-label { display: none; }
+  .floating-tools { left: 16px; bottom: 16px; }
+}
+
+@media (max-width: 480px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  .nav-project-btn { padding: 6px 12px; font-size: 11px; }
 }
 
 /* ── AUTH STYLES ── */
@@ -998,6 +1029,337 @@ body.users-bar-visible .dept-sidebar {
   font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
 .task-card.no-permission .task-status-controls { opacity: 0.3; pointer-events: none; }
+/* ══════════════════════════════════════════════════════
+   COMMERCIAL VELOCITY INDICATOR — CSS
+   ══════════════════════════════════════════════════════ */
+.cvi-panel {
+  margin-top: 20px;
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+/* ── Top accent bar colour per project ── */
+.cvi-panel[id="cvi-crossings"] { border-top: 3px solid var(--cx-color); }
+.cvi-panel[id="cvi-annexe"]    { border-top: 3px solid var(--annex-color); }
+
+/* ── Header ── */
+.cvi-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f4f4f5;
+}
+.cvi-header-left { display: flex; align-items: center; gap: 12px; }
+.cvi-icon-badge {
+  width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.cvi-icon-badge.cx   { background: var(--cx-color); }
+.cvi-icon-badge.annex { background: var(--annex-color); }
+.cvi-title    { font-size: 14px; font-weight: 700; color: #18181b; letter-spacing: -0.01em; }
+.cvi-subtitle { font-size: 11px; color: #71717a; font-weight: 500; margin-top: 2px; }
+
+.cvi-status-chip {
+  font-size: 10px; font-weight: 800; padding: 4px 12px;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.cvi-status-chip.critical { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.cvi-status-chip.warning  { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.cvi-status-chip.healthy  { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+.cvi-status-chip.neutral  { background: #f4f4f5; color: #52525b; border: 1px solid #e4e4e7; }
+
+/* ── KPI row ── */
+.cvi-kpi-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid #f4f4f5;
+}
+.cvi-kpi {
+  padding: 16px 18px;
+  border-right: 1px solid #f4f4f5;
+}
+.cvi-kpi:last-child { border-right: none; }
+.cvi-kpi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #71717a; margin-bottom: 6px; }
+.cvi-kpi-value {
+  font-size: 22px; font-weight: 400; font-family: 'DM Mono', monospace;
+  letter-spacing: -0.02em; color: #18181b; line-height: 1; margin-bottom: 4px;
+}
+.cvi-kpi-value.cvi-kpi-danger { color: var(--status-red); }
+.cvi-kpi-value.cvi-kpi-warn   { color: var(--status-orange); }
+.cvi-kpi-value.cvi-kpi-green  { color: var(--status-green); }
+.cvi-kpi-sub { font-size: 10px; color: #a1a1aa; line-height: 1.4; }
+
+/* ── Threshold / progress bar ── */
+.cvi-threshold-section { padding: 16px 20px 12px; border-bottom: 1px solid #f4f4f5; }
+.cvi-threshold-header  { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.cvi-threshold-label   { font-size: 11px; font-weight: 600; color: #52525b; }
+.cvi-threshold-pct     { font-size: 13px; font-weight: 800; font-family: 'DM Mono', monospace; color: #18181b; }
+
+.cvi-bar-wrap   { position: relative; padding-bottom: 4px; }
+.cvi-bar-track  { height: 10px; background: #f4f4f5; border-radius: 6px; overflow: visible; position: relative; }
+.cvi-bar-fill   {
+  height: 100%; border-radius: 6px;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+  position: absolute; top: 0; left: 0;
+}
+.cvi-bar-fill.cx    { background: linear-gradient(90deg, #2e7d32, #4caf50); }
+.cvi-bar-fill.annex { background: linear-gradient(90deg, #c62828, #ef5350); }
+.cvi-bar-fill.danger { background: linear-gradient(90deg, #b71c1c, #c62828) !important; }
+
+/* Threshold marker line */
+.cvi-bar-marker {
+  position: absolute; top: -4px; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; pointer-events: none;
+}
+.cvi-bar-marker::before {
+  content: ''; width: 2px; height: 18px;
+  background: #18181b; display: block;
+}
+.cvi-marker-label {
+  font-size: 9px; font-weight: 800; color: #18181b;
+  white-space: nowrap; margin-top: 2px; letter-spacing: 0.03em;
+}
+
+.cvi-bar-legend {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: #a1a1aa; margin-top: 6px;
+  font-weight: 600;
+}
+
+/* ── Balance trend chart ── */
+.cvi-chart-section  { padding: 16px 20px 12px; border-bottom: 1px solid #f4f4f5; }
+.cvi-chart-header   { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: #52525b; }
+.cvi-chart-legend   { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #71717a; font-weight: 600; }
+.cvi-leg-dot        { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.cvi-chart-wrap     { height: 160px; position: relative; }
+
+/* ── Verdict callout ── */
+.cvi-verdict {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 20px;
+  background: #fafafa;
+}
+.cvi-verdict-icon  { font-size: 16px; flex-shrink: 0; line-height: 1.5; }
+.cvi-verdict-text  { font-size: 12.5px; line-height: 1.65; color: #3f3f46; flex: 1; }
+.cvi-verdict-text strong { color: #18181b; }
+.cvi-verdict.critical { background: #fff8f8; border-top: 1px solid #fee2e2; }
+.cvi-verdict.warning  { background: #fffdf0; border-top: 1px solid #fde68a; }
+.cvi-verdict.healthy  { background: #f0fdf4; border-top: 1px solid #86efac; }
+
+/* ── Inflow drought callout strip ── */
+.cvi-drought-strip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; background: #fff1f1;
+  border-top: 1px solid #fecaca;
+  font-size: 11.5px; font-weight: 600; color: #991b1b;
+}
+
+@media (max-width: 768px) {
+  .cvi-kpi-row { grid-template-columns: repeat(2,1fr); }
+  .cvi-kpi:nth-child(2) { border-right: none; }
+  .cvi-kpi:nth-child(3) { border-top: 1px solid #f4f4f5; }
+  .cvi-kpi:nth-child(4) { border-right: none; border-top: 1px solid #f4f4f5; }
+  .cvi-chart-wrap { height: 130px; }
+}
+
+/* ══════════════════════════════════════════════════════
+   TREND INTELLIGENCE ENGINE — CSS
+   ══════════════════════════════════════════════════════ */
+
+/* ── Panel shell ── */
+.ti-panel {
+  margin-top: 28px;
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 20px -4px rgba(0,0,0,0.03);
+}
+.ti-panel::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--ti-accent, #7c3aed);
+  z-index: 2;
+}
+
+/* ── Header ── */
+.ti-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px;
+  background: #ffffff;
+  border-bottom: 1px solid #f4f4f5;
+  cursor: pointer; user-select: none;
+}
+.ti-header:hover { background: #fafafa; }
+.ti-header-left { display: flex; align-items: center; gap: 14px; }
+.ti-header-badge {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: #7c3aed;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ti-header-label { font-size: 14px; font-weight: 700; color: #18181b; letter-spacing: -0.01em; margin-bottom: 2px; }
+.ti-header-sub { font-size: 12px; color: #71717a; font-weight: 500; }
+.ti-header-right { display: flex; align-items: center; gap: 14px; }
+.ti-toggle { color: #a1a1aa; font-size: 10px; transition: transform 0.3s ease; }
+.ti-panel.ti-expanded .ti-toggle { transform: rotate(180deg); color: #18181b; }
+.ti-alert-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 800; padding: 3px 9px;
+  border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase;
+  background: #fef3c7; color: #92400e;
+  border: 1px solid #fde68a;
+}
+.ti-alert-badge.ti-critical { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+
+/* ── Body ── */
+.ti-body { display: none; }
+.ti-panel.ti-expanded .ti-body { display: block; animation: fadeUp 0.3s ease; }
+
+/* ── Section layout ── */
+.ti-section { padding: 20px 22px 0; }
+.ti-section-title {
+  font-size: 10px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.10em; color: #18181b; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.ti-section-title::after { content: ''; flex: 1; height: 1px; background: #f4f4f5; }
+
+/* ── Stat row ── */
+.ti-stat-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border: 1px solid #e4e4e7; border-radius: 6px;
+  margin-bottom: 20px; overflow: hidden;
+}
+.ti-stat { padding: 16px 18px; border-right: 1px solid #f4f4f5; }
+.ti-stat:last-child { border-right: none; }
+.ti-stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #71717a; margin-bottom: 6px; }
+.ti-stat-value { font-size: 28px; font-weight: 400; font-family: 'DM Mono', monospace; letter-spacing: -0.03em; color: #18181b; line-height: 1; margin-bottom: 4px; }
+.ti-stat-value.ti-danger { color: var(--status-red); }
+.ti-stat-value.ti-warning { color: var(--status-orange); }
+.ti-stat-value.ti-ok { color: var(--status-green); }
+.ti-stat-sub { font-size: 11px; color: #a1a1aa; }
+
+/* ── Digest digest panel (cross-session alerts) ── */
+.ti-digest {
+  margin: 0 22px 20px;
+  border: 1px solid #e4e4e7;
+  border-radius: 6px; overflow: hidden;
+}
+.ti-digest-empty {
+  padding: 20px 18px; font-size: 12px; color: #71717a; text-align: center;
+}
+
+/* ── Alert item rows ── */
+.ti-alert-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 18px; border-bottom: 1px solid #f4f4f5;
+}
+.ti-alert-item:last-child { border-bottom: none; }
+.ti-alert-icon-wrap {
+  width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.ti-alert-icon-wrap.recurring { background: #fef3c7; }
+.ti-alert-icon-wrap.velocity  { background: #dbeafe; }
+.ti-alert-icon-wrap.escalation { background: #fee2e2; }
+
+.ti-alert-content { flex: 1; min-width: 0; }
+.ti-alert-type {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #a1a1aa; margin-bottom: 3px;
+}
+.ti-alert-type.recurring { color: #92400e; }
+.ti-alert-type.velocity  { color: #1e40af; }
+.ti-alert-type.escalation { color: #991b1b; }
+.ti-alert-title { font-size: 13px; font-weight: 700; color: #18181b; margin-bottom: 3px; line-height: 1.4; }
+.ti-alert-detail { font-size: 12px; color: #71717a; line-height: 1.5; }
+.ti-alert-meta {
+  font-size: 10px; font-weight: 700; color: #a1a1aa;
+  white-space: nowrap; flex-shrink: 0; padding-top: 4px;
+}
+
+/* ── Velocity chart bars ── */
+.ti-velocity-list { padding: 0 22px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.ti-vel-row { display: flex; align-items: center; gap: 10px; }
+.ti-vel-label { font-size: 11px; font-weight: 600; color: #52525b; flex-shrink: 0; width: 60px; text-align: right; }
+.ti-vel-track { flex: 1; height: 6px; background: #f4f4f5; border-radius: 3px; overflow: hidden; }
+.ti-vel-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+.ti-vel-fill.improving { background: var(--status-green); }
+.ti-vel-fill.stable    { background: var(--status-blue); }
+.ti-vel-fill.declining { background: var(--status-orange); }
+.ti-vel-fill.stalled   { background: var(--status-red); }
+.ti-vel-count { font-size: 11px; font-family: 'DM Mono', monospace; color: #71717a; flex-shrink: 0; width: 36px; }
+
+/* ── Footer ── */
+.ti-footer {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 22px;
+  border-top: 1px solid #f4f4f5;
+  font-size: 11px; color: #a1a1aa;
+}
+
+/* ── Task card trend badges (inline on each task card) ── */
+.trend-badge-row {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px dashed rgba(0,0,0,0.07);
+}
+.trend-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 9.5px; font-weight: 700; padding: 2px 8px;
+  border-radius: var(--radius-pill); letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.trend-badge.recurring {
+  background: #fef3c7; color: #92400e;
+  border: 1px solid #fde68a;
+}
+.trend-badge.escalated {
+  background: #fee2e2; color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.trend-badge.chronic {
+  background: #ffd7d7; color: #7f1d1d;
+  border: 1px solid #f87171;
+}
+.trend-badge.improving {
+  background: #dcfce7; color: #14532d;
+  border: 1px solid #86efac;
+}
+.trend-badge.velocity-slow {
+  background: #fff7ed; color: #7c2d12;
+  border: 1px solid #fed7aa;
+}
+
+/* ── Time-grouped section headers in digest ── */
+.ti-time-section-head {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 10px 18px 6px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+.ti-time-section-head:first-child { border-top: none; }
+.ti-time-label {
+  font-size: 10px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #18181b;
+}
+.ti-time-sub {
+  font-size: 10px; color: #a1a1aa; font-weight: 500;
+}
+
+/* ── Resolved items slightly muted ── */
+.ti-alert-item.resolved-item { opacity: 0.7; }
+
+@media (max-width: 768px) {
+  .ti-stat-row { grid-template-columns: 1fr 1fr; }
+  .ti-stat-row .ti-stat:nth-child(3) { border-top: 1px solid #f4f4f5; grid-column: 1 / -1; }
+}
+
 /* ── AI CHATBOT PANEL ── */
 .chatbot-panel{display:none;position:fixed;bottom:80px;right:20px;z-index:2000;width:420px;max-width:96vw;height:560px;max-height:calc(100vh - 100px);background:#fff;border-radius:var(--radius);box-shadow:0 16px 48px rgba(0,0,0,0.2);flex-direction:column;overflow:hidden;border:1px solid var(--border);}
 .chatbot-panel.open{display:flex;animation:fadeInScale 0.2s ease;}
@@ -1137,6 +1499,85 @@ body.users-bar-visible .dept-sidebar {
     <div id="alert-crossings" class="alert-strip" style="display:none;"></div>
 
 <!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  COMMERCIAL VELOCITY INDICATOR — LAKOWE CROSSINGS   ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div class="cvi-panel" id="cvi-crossings">
+  <div class="cvi-header">
+    <div class="cvi-header-left">
+      <div class="cvi-icon-badge cx">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.95)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <div class="cvi-title">Account Balance Trend</div>
+        <div class="cvi-subtitle">Tracking the gap between sales inflow and value of sales (in millions)</div>
+      </div>
+    </div>
+    <div class="cvi-status-chip" id="cvi-cx-status-chip">—</div>
+  </div>
+
+  <!-- Key figures row -->
+  <div class="cvi-kpi-row">
+    <div class="cvi-kpi">
+      <div class="cvi-kpi-label">Current Balance</div>
+      <div class="cvi-kpi-value" id="cvi-cx-balance">—</div>
+      <div class="cvi-kpi-sub" id="cvi-cx-balance-sub">vs last session</div>
+    </div>
+    <div class="cvi-kpi">
+      <div class="cvi-kpi-label">Inflow This Period</div>
+      <div class="cvi-kpi-value" id="cvi-cx-inflow-delta">—</div>
+      <div class="cvi-kpi-sub" id="cvi-cx-inflow-sub">week-on-week</div>
+    </div>
+    <div class="cvi-kpi">
+      <div class="cvi-kpi-label">Civil Threshold Gap</div>
+      <div class="cvi-kpi-value cvi-kpi-danger" id="cvi-cx-gap">—</div>
+      <div class="cvi-kpi-sub">₦800M trigger remaining</div>
+    </div>
+    <div class="cvi-kpi">
+      <div class="cvi-kpi-label">Weeks at Current Pace</div>
+      <div class="cvi-kpi-value cvi-kpi-warn" id="cvi-cx-runway">—</div>
+      <div class="cvi-kpi-sub">to reach civil threshold</div>
+    </div>
+  </div>
+
+  <!-- Threshold progress bar -->
+  <div class="cvi-threshold-section">
+    <div class="cvi-threshold-header">
+      <span class="cvi-threshold-label">Progress to Civil Mobilisation (₦800M total inflow)</span>
+      <span class="cvi-threshold-pct" id="cvi-cx-threshold-pct">—%</span>
+    </div>
+    <div class="cvi-bar-wrap">
+      <div class="cvi-bar-track">
+        <div class="cvi-bar-fill cx" id="cvi-cx-bar" style="width:0%"></div>
+        <div class="cvi-bar-marker" id="cvi-cx-marker" style="left:100%">
+          <span class="cvi-marker-label">₦800M</span>
+        </div>
+      </div>
+    </div>
+    <div class="cvi-bar-legend">
+      <span>₦0</span><span id="cvi-cx-bar-current">Current</span><span>₦800M threshold</span>
+    </div>
+  </div>
+
+  <!-- Balance trend chart -->
+  <div class="cvi-chart-section">
+    <div class="cvi-chart-header">
+      <span>Account Balance Trend</span>
+      <div class="cvi-chart-legend">
+        <span class="cvi-leg-dot" style="background:#1b5e20"></span>Balance
+        <span class="cvi-leg-dot" style="background:#c62828;margin-left:12px"></span>Danger zone (&lt;₦50M)
+      </div>
+    </div>
+    <div class="cvi-chart-wrap"><canvas id="cvi-cx-chart"></canvas></div>
+  </div>
+
+  <!-- Verdict callout -->
+  <div class="cvi-verdict" id="cvi-cx-verdict">
+    <div class="cvi-verdict-icon">⚡</div>
+    <div class="cvi-verdict-text" id="cvi-cx-verdict-text">Sync data to generate commercial velocity analysis.</div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
 <!-- ║  PROJECT MILESTONES — LAKOWE CROSSINGS (KD P sheet) ║ -->
 <!-- ╚══════════════════════════════════════════════════════╝ -->
 <div class="milestones-panel" id="milestones-crossings">
@@ -1189,6 +1630,57 @@ body.users-bar-visible .dept-sidebar {
   </div>
 </div>
 
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  TREND INTELLIGENCE ENGINE — LAKOWE CROSSINGS        ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div class="ti-panel" id="ti-crossings" style="--ti-accent: var(--cx-color);">
+  <div class="ti-header" onclick="toggleTI('ti-crossings')">
+    <div class="ti-header-left">
+      <div class="ti-header-badge" style="background:var(--cx-color);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/></svg>
+      </div>
+      <div>
+        <span class="ti-header-label">Trend Intelligence</span>
+        <span class="ti-header-sub">Lakowe Crossings · Repeated Tasks · Velocity · Risk Escalation · Time-Grouped</span>
+      </div>
+    </div>
+    <div class="ti-header-right">
+      <span class="ti-alert-badge" id="ti-cx-badge" style="display:none;"></span>
+      <div class="ti-toggle">▼</div>
+    </div>
+  </div>
+  <div class="ti-body" id="ti-cx-body">
+    <!-- Stat summary row -->
+    <div class="ti-section">
+      <div class="ti-section-title">Cross-Session Summary</div>
+      <div class="ti-stat-row" id="ti-cx-stats">
+        <div class="ti-stat"><div class="ti-stat-label">Sessions Analysed</div><div class="ti-stat-value" id="ti-cx-sessions">—</div><div class="ti-stat-sub">Historical snapshots</div></div>
+        <div class="ti-stat"><div class="ti-stat-label">Repeated Tasks</div><div class="ti-stat-value ti-warning" id="ti-cx-recurring">—</div><div class="ti-stat-sub">Same task, multiple meetings</div></div>
+        <div class="ti-stat"><div class="ti-stat-label">Escalated Risks</div><div class="ti-stat-value ti-danger" id="ti-cx-escalated">—</div><div class="ti-stat-sub">Stuck or escalating</div></div>
+      </div>
+    </div>
+
+    <!-- Alert digest -->
+    <div class="ti-section">
+      <div class="ti-section-title">Intelligence Alerts</div>
+    </div>
+    <div class="ti-digest" id="ti-cx-digest">
+      <div class="ti-digest-empty">Sync data to generate trend analysis across sessions.</div>
+    </div>
+
+    <!-- Completion velocity per session -->
+    <div class="ti-section">
+      <div class="ti-section-title">Completion Velocity — Sessions</div>
+    </div>
+    <div class="ti-velocity-list" id="ti-cx-velocity"></div>
+
+    <div class="ti-footer">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span id="ti-cx-footer-text">Trend analysis runs across all available session snapshots. Refreshes on sync.</span>
+    </div>
+  </div>
+</div>
+
   </div><!-- /block-crossings -->
 
   <!-- ══ ANNEXE BLOCK ══ -->
@@ -1216,6 +1708,85 @@ body.users-bar-visible .dept-sidebar {
       </div>
     </div>
     <div id="alert-annexe" class="alert-strip" style="display:none;"></div>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  COMMERCIAL VELOCITY INDICATOR — LAKOWE ANNEXE      ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div class="cvi-panel" id="cvi-annexe">
+  <div class="cvi-header">
+    <div class="cvi-header-left">
+      <div class="cvi-icon-badge annex">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.95)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <div class="cvi-title">Account Balance Trend</div>
+        <div class="cvi-subtitle">Tracking the gap between sales inflow and value of sales (in millions)</div>
+      </div>
+    </div>
+    <div class="cvi-status-chip" id="cvi-annex-status-chip">—</div>
+  </div>
+
+  <!-- Key figures row -->
+  <div class="cvi-kpi-row">
+    <div class="cvi-kpi">
+      <div class="cvi-kpi-label">Current Balance</div>
+      <div class="cvi-kpi-value" id="cvi-annex-balance">—</div>
+      <div class="cvi-kpi-sub" id="cvi-annex-balance-sub">vs last session</div>
+    </div>
+    <div class="cvi-kpi">
+      <div class="cvi-kpi-label">Inflow This Period</div>
+      <div class="cvi-kpi-value" id="cvi-annex-inflow-delta">—</div>
+      <div class="cvi-kpi-sub" id="cvi-annex-inflow-sub">week-on-week</div>
+    </div>
+    <div class="cvi-kpi">
+      <div class="cvi-kpi-label">Collections Gap</div>
+      <div class="cvi-kpi-value cvi-kpi-warn" id="cvi-annex-gap">—</div>
+      <div class="cvi-kpi-sub">Sales value vs inflow received</div>
+    </div>
+    <div class="cvi-kpi">
+      <div class="cvi-kpi-label">Balance Runway</div>
+      <div class="cvi-kpi-value" id="cvi-annex-runway">—</div>
+      <div class="cvi-kpi-sub">weeks at ₦35M/week burn</div>
+    </div>
+  </div>
+
+  <!-- Collections gap progress bar -->
+  <div class="cvi-threshold-section">
+    <div class="cvi-threshold-header">
+      <span class="cvi-threshold-label">Inflow collected vs Total Value of Sales</span>
+      <span class="cvi-threshold-pct" id="cvi-annex-threshold-pct">—%</span>
+    </div>
+    <div class="cvi-bar-wrap">
+      <div class="cvi-bar-track">
+        <div class="cvi-bar-fill annex" id="cvi-annex-bar" style="width:0%"></div>
+        <div class="cvi-bar-marker" id="cvi-annex-marker" style="left:100%">
+          <span class="cvi-marker-label">Full collection</span>
+        </div>
+      </div>
+    </div>
+    <div class="cvi-bar-legend">
+      <span>₦0</span><span id="cvi-annex-bar-current">Current inflow</span><span>Value of Sales</span>
+    </div>
+  </div>
+
+  <!-- Balance trend chart -->
+  <div class="cvi-chart-section">
+    <div class="cvi-chart-header">
+      <span>Account Balance Trend</span>
+      <div class="cvi-chart-legend">
+        <span class="cvi-leg-dot" style="background:#D32F2F"></span>Balance
+        <span class="cvi-leg-dot" style="background:#c62828;margin-left:12px"></span>Danger zone (&lt;₦50M)
+      </div>
+    </div>
+    <div class="cvi-chart-wrap"><canvas id="cvi-annex-chart"></canvas></div>
+  </div>
+
+  <!-- Verdict callout -->
+  <div class="cvi-verdict" id="cvi-annex-verdict">
+    <div class="cvi-verdict-icon">⚡</div>
+    <div class="cvi-verdict-text" id="cvi-annex-verdict-text">Sync data to generate commercial velocity analysis.</div>
+  </div>
+</div>
 
 <!-- ╔══════════════════════════════════════════════════════╗ -->
 <!-- ║  PROJECT MILESTONES — LAKOWE ANNEXE (KD sheet)      ║ -->
@@ -1270,6 +1841,57 @@ body.users-bar-visible .dept-sidebar {
   </div>
 </div>
 
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  TREND INTELLIGENCE ENGINE — LAKOWE ANNEXE           ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div class="ti-panel" id="ti-annexe" style="--ti-accent: var(--annex-color);">
+  <div class="ti-header" onclick="toggleTI('ti-annexe')">
+    <div class="ti-header-left">
+      <div class="ti-header-badge" style="background:var(--annex-color);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/></svg>
+      </div>
+      <div>
+        <span class="ti-header-label">Trend Intelligence</span>
+        <span class="ti-header-sub">Lakowe Annexe · Repeated Tasks · Velocity · Risk Escalation · Time-Grouped</span>
+      </div>
+    </div>
+    <div class="ti-header-right">
+      <span class="ti-alert-badge" id="ti-annex-badge" style="display:none;"></span>
+      <div class="ti-toggle">▼</div>
+    </div>
+  </div>
+  <div class="ti-body" id="ti-annex-body">
+    <!-- Stat summary row -->
+    <div class="ti-section">
+      <div class="ti-section-title">Cross-Session Summary</div>
+      <div class="ti-stat-row" id="ti-annex-stats">
+        <div class="ti-stat"><div class="ti-stat-label">Sessions Analysed</div><div class="ti-stat-value" id="ti-annex-sessions">—</div><div class="ti-stat-sub">Historical snapshots</div></div>
+        <div class="ti-stat"><div class="ti-stat-label">Repeated Tasks</div><div class="ti-stat-value ti-warning" id="ti-annex-recurring">—</div><div class="ti-stat-sub">Same task, multiple meetings</div></div>
+        <div class="ti-stat"><div class="ti-stat-label">Escalated Risks</div><div class="ti-stat-value ti-danger" id="ti-annex-escalated">—</div><div class="ti-stat-sub">Stuck or escalating</div></div>
+      </div>
+    </div>
+
+    <!-- Alert digest -->
+    <div class="ti-section">
+      <div class="ti-section-title">Intelligence Alerts</div>
+    </div>
+    <div class="ti-digest" id="ti-annex-digest">
+      <div class="ti-digest-empty">Sync data to generate trend analysis across sessions.</div>
+    </div>
+
+    <!-- Completion velocity per session -->
+    <div class="ti-section">
+      <div class="ti-section-title">Completion Velocity — Sessions</div>
+    </div>
+    <div class="ti-velocity-list" id="ti-annex-velocity"></div>
+
+    <div class="ti-footer">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span id="ti-annex-footer-text">Trend analysis runs across all available session snapshots. Refreshes on sync.</span>
+    </div>
+  </div>
+</div>
+
   </div><!-- /block-annexe -->
 
 </div><!-- /dash-container -->
@@ -1316,19 +1938,23 @@ body.users-bar-visible .dept-sidebar {
         </div>
       </div>
       <div id="dynamic-dept-container" style="display:none;">
-        <div class="dept-history-bar" id="history-bar"></div>
         <div class="dept-header">
-          <div class="dept-header-text">
-            <h2 id="dynamic-dept-title">Department</h2>
-            <p>Active tasks and deliverables · <span id="viewing-date-label">Current</span></p>
-            <span id="dynamic-dept-badge" class="nav-badge" style="margin-top:6px;display:inline-block;">Project</span>
+          <div class="dept-header-left">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <h2 id="dynamic-dept-title" style="margin: 0; font-size: 24px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px;">Department</h2>
+              <span id="dynamic-dept-badge" class="nav-badge">Project</span>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">Active tasks and deliverables · <span id="viewing-date-label">Current</span></p>
           </div>
-          <div class="dept-controls">
-            <button class="sync-btn" onclick="syncWithGoogleSheet()" title="Fetch Latest Tasks">
-              <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg>
-              <span class="sync-btn-text">Sync</span>
-            </button>
-            <label class="show-done-toggle"><input type="checkbox" id="show-done-toggle" onchange="renderCurrentDept()"> Show completed</label>
+          <div class="dept-header-right">
+            <div class="dept-history-bar" id="history-bar"></div>
+            <div class="dept-controls">
+              <label class="show-done-toggle"><input type="checkbox" id="show-done-toggle" onchange="renderCurrentDept()"> Show completed</label>
+              <button class="sync-btn" onclick="syncWithGoogleSheet()" title="Fetch Latest Tasks">
+                <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg>
+                <span class="sync-btn-text">Sync</span>
+              </button>
+            </div>
           </div>
         </div>
         <div class="filter-tabs" id="filter-tabs">
@@ -1344,9 +1970,14 @@ body.users-bar-visible .dept-sidebar {
           <h3 id="team-updates-heading">Team Updates & Pre-Meeting Notes</h3>
           <div id="updates-list" class="updates-list"></div>
           <div class="update-input-group">
+            <select id="new-update-task-link" class="update-task-select">
+              <option value="">📌 Link to a task (optional)</option>
+            </select>
             <textarea id="new-update-text" placeholder="Type your pre-meeting update or note here..."></textarea>
-            <input type="text" id="new-update-author" placeholder="Your Name (optional)">
-            <button onclick="submitTeamUpdate()">Submit Update</button>
+            <div class="update-author-row">
+              <input type="text" id="new-update-author" placeholder="Your Name (auto-filled if logged in)" readonly style="background:var(--bg);color:var(--text-muted);cursor:default;">
+              <button onclick="submitTeamUpdate()">Submit Update</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1359,22 +1990,19 @@ body.users-bar-visible .dept-sidebar {
   <div class="diag-header">
     <div style="display:flex; align-items:center; gap:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Sheet Diagnostics</div>
     <div style="display:flex; gap:6px; align-items:center;">
-      <button class="sync-btn" onclick="syncWithGoogleSheet()" title="Sync with Google Sheets" style="padding:8px 12px; font-size:12px;">
-        <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg>
-        <span class="sync-btn-text">Sync</span>
+      <button class="sync-btn" onclick="syncWithGoogleSheet()" title="Sync with Google Sheets" style="padding:6px 8px; font-size:12px;">
+        <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg>
       </button>
-      <button class="tool-nav-btn" onclick="openReminderModal()" title="Send Task Reminders" style="padding:8px 12px; font-size:12px;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M15 17v1a3 3 0 0 1-6 0v-1"/></svg>
-        <span class="tool-nav-label">Remind</span>
+      <button class="tool-nav-btn" onclick="openReminderModal()" title="Send Task Reminders" style="padding:6px 8px; font-size:12px; display:flex; align-items:center; justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M15 17v1a3 3 0 0 1-6 0v-1"/></svg>
       </button>
-      <button class="tool-nav-btn" onclick="openReportModal()" title="Generate Monthly Report" style="padding:8px 12px; font-size:12px;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        <span class="tool-nav-label">Report</span>
+      <button class="tool-nav-btn" onclick="openReportModal()" title="Generate Monthly Report" style="padding:6px 8px; font-size:12px; display:flex; align-items:center; justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       </button>
-      <button class="diag-minimize-btn" onclick="minimizeDiagPanel()" title="Minimize" style="padding:8px 12px; font-size:12px; background:none; border:none; color:inherit; cursor:pointer;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <button class="diag-minimize-btn" onclick="minimizeDiagPanel()" title="Minimize" style="padding:6px 8px; font-size:12px; background:none; border:none; color:inherit; cursor:pointer;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
       </button>
-      <div class="diag-header-close" onclick="closeDiagPanel()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+      <div class="diag-header-close" onclick="closeDiagPanel()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
     </div>
   </div>
   <div class="diag-body" id="diag-body"><div class="diag-empty">Sync data to see sheet diagnostics</div></div>
@@ -1588,6 +2216,28 @@ function initFirebase() {
       _fbDb   = firebase.database();
       _fbReady = true;
 
+      // Listen for metric updates and paint the DOM instantly
+      _fbDb.ref('metrics').on('value', snap => {
+        window._firebaseMetrics = snap.val() || {};
+        
+        if (currentProject) {
+          const sessionToView = (viewingSessionDate === 'current' || !viewingSessionDate) 
+            ? (availableSessions[currentProject]?.[0] || 'latest') 
+            : viewingSessionDate;
+            
+          const data = window._firebaseMetrics[currentProject]?.[sessionToView];
+          if (data) {
+            const pfx = currentProject === 'Crossings' ? 'cx' : 'annex';
+            setMetric(`val-${pfx}-inflow`, data.inflow);
+            setMetric(`val-${pfx}-sales`, data.sales);
+            setMetric(`val-${pfx}-balance`, data.balance);
+            setMetric(`val-${pfx}-units`, data.units);
+            setMetric(`val-${pfx}-offers`, data.offers);
+            applyPriorityColors();
+          }
+        }
+      });
+      
       _fbDb.ref('status_overrides').on('value', snap => {
         const fbOverrides = snap.val() || {};
         const local = getStatusOverrides();
@@ -1612,6 +2262,10 @@ function initFirebase() {
               Object.entries(sessionsOrUpdates).forEach(([sessionKey, pushItems]) => {
                 const arr = Object.values(pushItems).sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
                 try { localStorage.setItem('fb_dept:' + proj + ':' + dept + ':' + sessionKey, JSON.stringify(arr)); } catch(e){}
+              // Live-refresh the updates panel if this is the currently viewed dept/project
+              if (proj === currentProject && dept === currentDept) {
+                renderUpdatesList();
+              }
               });
             }
           });
@@ -1642,6 +2296,8 @@ function initFirebase() {
         }
         // ── Activate presence now that we know the user ──
         if (!_presenceRef) _initPresence();
+        // ── Auto-fill author name now that we have user identity ──
+        autoFillAuthorName();
       };
 
       console.log('[Firebase DB] Listeners attached ✓');
@@ -1915,6 +2571,32 @@ let availableSessions = { Crossings: [], Annexe: [] };
 let sheetDiag = {};
 let sessionTargets = {}; // keyed by 'proj:session' → array of HTML strings
 
+  // ── UNIFIED METRIC EXTRACTION DICTIONARY ──
+const METRIC_PATTERNS = {
+  inflow: /(?:total\s+)?(?:sales\s+)?(?:inflow|received)(?:\s+to\s+date)?[\s:\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:n|N|mn|MN)?)/i,
+  sales: /(?:total\s+)?value\s+of\s+sales[\s:\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:n|N|mn|MN)?)/i,
+  balance: /(?:account\s+)?bal(?:ance)?[\s:\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:n|N|mn|MN)?)/i,
+  units: /(?:sales|units\s*sold|no\.?\s*of\s*sales)[\s:\-]+(\d{1,4})\b|\b(\d{1,4})\s+units/i,
+  offers: /(?:active\s*)?offer(?:s| letters?)?[\s:\-]+(\d{1,4})\b|\b(\d{1,4})\s*(?:active\s*)?offer/i
+};
+
+function parseExtractedMetric(matchResult, isCurrency) {
+  if (!matchResult) return null;
+  let val = matchResult[1] || matchResult[2]; 
+  if (!val) return null;
+  
+  if (isCurrency) {
+    let raw = val.trim().toUpperCase().replace(/[, ]/g, '');
+    raw = raw.replace(/BN$/, 'B').replace(/MN$/, 'M');
+    if (!raw.startsWith('₦')) raw = raw.replace(/^N(?=\d)/, '₦');
+    if (!raw.startsWith('₦')) raw = '₦' + raw;
+    return raw;
+  }
+  return val.trim();
+}
+
+window._firebaseMetrics = {}; // Global cache for instant reads
+
 // ── TOP-LEVEL DEPT NORMALIZATION MAP (referenced by both processSheet and loadSeedData) ──
 const DEPT_NORMALIZE_MAP = {
   'ipd': 'IPD', 'pmu': 'IPD', 'pmo': 'IPD',
@@ -1969,22 +2651,7 @@ function loadSeedData() {
   // Extract metrics immediately from seed Operations rows
   (function() {
     ['Crossings','Annexe'].forEach(proj => {
-      const latest = availableSessions[proj]?.[0]; if (!latest) return;
-      const pfx = proj==='Crossings'; let offerFound=false;
-      taskDatabase.filter(t=>t.project===proj&&t.session===latest&&/operations|fincon/i.test(t.dept)).forEach(t=>{
-        const txt=(t.action||'')+' '+(t.explanation||'');
-        if (!/[₦N][\d,]+|sales[-:\s]+\d|\d+\s*units|offer letter/i.test(txt)) return;
-        let m;
-        m=txt.match(/inflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
-        if(m){let v=m[1].trim().toUpperCase().replace(/MN$/,'M').replace(/^N(?=\d)/,'₦');if(!v.startsWith('₦'))v='₦'+v;document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent=v;}
-        m=txt.match(/value of sales[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-        if(m){let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦');if(!v.startsWith('₦'))v='₦'+v;document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent=v;}
-        m=txt.match(/account balance[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-        if(m){let v=m[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦');if(!v.startsWith('₦'))v='₦'+v;document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent=v;}
-        m=txt.match(/sales[:\s\-]+(\d{1,4})/i)||txt.match(/(\d{1,4})\s+units/i);
-        if(m)document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent=m[1];
-        if(!offerFound){m=txt.match(/offer letters?[:\s\-]+(\d{1,4})/i)||txt.match(/active offer[:\s\-]+(\d{1,4})/i);if(m){document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent=m[1];offerFound=true;}}
-      });
+      
     });
   })();
   // Update UI
@@ -1997,6 +2664,11 @@ function loadSeedData() {
   renderOverduePanels();
   updateLandingPageMetrics();
   if (currentDept) renderCurrentDept();
+  // Run Trend Intelligence on seed data (deferred so UI renders first)
+  setTimeout(function() {
+    try { runAndRenderTrend('Crossings'); } catch(e) {}
+    try { runAndRenderTrend('Annexe'); } catch(e) {}
+  }, 600);
 }
 
 
@@ -2117,17 +2789,61 @@ function submitForgotPassword() {
   closeAdminModal();
 }
 
+function populateTaskLinkDropdown(tasks) {
+  const sel = document.getElementById('new-update-task-link');
+  if (!sel) return;
+  const prev = sel.value;
+  // Show ongoing (ontrack, delayed, onhold) tasks as options
+  const linkable = (tasks || []).filter(t => t.status !== 'achieved');
+  sel.innerHTML = '<option value="">📌 Link to a task (optional)</option>' +
+    linkable.map(t => {
+      const icon = t.status === 'delayed' ? '🔴' : t.status === 'onhold' ? '🟡' : '🟢';
+      const label = (t.action || '').substring(0, 70) + (t.action && t.action.length > 70 ? '…' : '');
+      const val = (t.action || '').substring(0, 100);
+      return `<option value="${val.replace(/"/g,'&quot;')}">${icon} ${label}</option>`;
+    }).join('');
+  // Restore previous selection if still valid
+  if (prev) sel.value = prev;
+}
+
+function autoFillAuthorName() {
+  const nameEl = document.getElementById('new-update-author');
+  if (!nameEl) return;
+  const user = _resolveUpdater();
+  if (user.name && user.name !== 'Unknown') {
+    nameEl.value = user.name;
+    nameEl.readOnly = true;
+    nameEl.style.background = 'var(--bg)';
+    nameEl.style.color = 'var(--text-muted)';
+  } else {
+    nameEl.readOnly = false;
+    nameEl.style.background = '';
+    nameEl.style.color = '';
+    nameEl.placeholder = 'Your Name (optional)';
+  }
+}
+
 function submitTeamUpdate() {
   const text = document.getElementById('new-update-text').value.trim();
-  const author = document.getElementById('new-update-author').value.trim() || 'Anonymous';
   if (!text) return;
+
+  // Use logged-in user name; fall back to the name field; then 'Anonymous'
+  const resolvedUser = _resolveUpdater();
+  const nameField = document.getElementById('new-update-author');
+  const author = (resolvedUser.name && resolvedUser.name !== 'Unknown')
+    ? resolvedUser.name
+    : (nameField ? nameField.value.trim() || 'Anonymous' : 'Anonymous');
+
+  // Linked task (optional)
+  const taskLinkEl = document.getElementById('new-update-task-link');
+  const linkedTask = taskLinkEl ? taskLinkEl.value : '';
 
   // Determine the session key this update belongs to
   const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
     ? viewingSessionDate
     : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
 
-  const update = { text, author, timestamp: new Date().toISOString(), session: sessionKey };
+  const update = { text, author, timestamp: new Date().toISOString(), session: sessionKey, linkedTask };
 
   if (_fbReady && _fbDb) {
     _fbDb.ref('dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey).push(update)
@@ -2138,7 +2854,10 @@ function submitTeamUpdate() {
   let updates = JSON.parse(localStorage.getItem(key) || '[]');
   updates.push(update);
   localStorage.setItem(key, JSON.stringify(updates));
+
+  // Clear only the text and task link; keep name field in case user submits multiple
   document.getElementById('new-update-text').value = '';
+  if (taskLinkEl) taskLinkEl.value = '';
   renderUpdatesList();
 }
 function renderUpdatesList() {
@@ -2181,7 +2900,13 @@ function renderUpdatesList() {
     return;
   }
   list.innerHTML = [...updates].reverse().map(u =>
-    `<div class="update-item"><div class="update-meta"><strong>${u.author||'Anonymous'}</strong> \u2014 ${new Date(u.timestamp).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div><div style="white-space:pre-wrap;word-break:break-word;">${u.text}</div></div>`
+    `<div class="update-item">
+      <div class="update-meta">
+        <strong>${u.author||'Anonymous'}</strong> \u2014 ${new Date(u.timestamp).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
+        ${u.linkedTask ? `<span class="update-task-tag">📌 ${u.linkedTask}</span>` : ''}
+      </div>
+      <div style="white-space:pre-wrap;word-break:break-word;">${u.text}</div>
+    </div>`
   ).join('');
 }
 
@@ -2256,7 +2981,20 @@ async function syncWithGoogleSheet() {
     // ── Reset PI + milestones so they regenerate with fresh data ──
     _piGenerated = { Crossings: false, Annexe: false };
     _milestonesLoaded = { Crossings: false, Annexe: false };
-    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept(); populateSessionPicker(); if(_dashboardSession!=='latest') refreshDashboardForSession(); renderDynamicCharts(); updateLandingPageMetrics();
+    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept(); populateSessionPicker(); if(_dashboardSession!=='latest') refreshDashboardForSession(); renderDynamicCharts(); updateLandingPageMetrics(); setTimeout(renderAllCVIs, 200);
+    // 25002500 Run Trend Intelligence Engine 25002500
+    setTimeout(function() {
+      try { runAndRenderTrend('Crossings'); } catch(e) { console.warn('[TI] Crossings:', e); }
+      try { runAndRenderTrend('Annexe'); } catch(e) { console.warn('[TI] Annexe:', e); }
+      if (currentProject) {
+        const pfx = currentProject === 'Crossings' ? 'cx' : 'annex';
+        const result = _tiCache[currentProject];
+        if (result && (result.totalRepeated + result.totalEscalated) > 0) {
+          const panel = document.getElementById('ti-' + pfx);
+          if (panel && !panel.classList.contains('ti-expanded')) panel.classList.add('ti-expanded');
+        }
+      }
+    }, 400);
   } catch (error) { console.error('Error syncing:', error); } finally { document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.remove('syncing')); }
 }
 
@@ -2363,7 +3101,7 @@ function processSheet(rows, proj, sheetName, isLatest) {
   // Initialize a global chart metric store for this sheet
   window._chartMetrics = window._chartMetrics || {};
   window._chartMetrics[proj] = window._chartMetrics[proj] || {};
-  window._chartMetrics[proj][sheetName] = { inflow: null, balance: null };
+  window._chartMetrics[proj][sheetName] = { inflow: null, salesValue: null, balance: null };
 
   for (let i = startRow; i < rows.length; i++) {
     const c = rows[i];
@@ -2412,59 +3150,72 @@ function processSheet(rows, proj, sheetName, isLatest) {
     }
 
     // ── METRIC EXTRACTION FROM OPERATIONS ──
-    if (isLatest && /operations|fincon/i.test(lastDept)) {
-        const actionText = action + ' ' + explanationText;
-        
-        function extractLabeled(text, labelPatterns) {
-          for (const pat of labelPatterns) {
-            const rx = new RegExp(pat + '[:\\s\\-]+([₦N]?\\s*[\\d,]+\\.?\\d*\\s*[BMKbmk]?(?:mn|MN|Mn)?)', 'i');
-            const m = text.match(rx);
-            if (m) {
-              let raw = m[1].trim().replace(/,/g,'').toUpperCase().replace(/MN$/,'M');
-              if (!raw.startsWith('₦')) raw = raw.replace(/^N(?=\d)/, '₦');
-              if (!raw.startsWith('₦')) raw = '₦' + raw;
-              return raw;
-            }
-          }
-          return null;
+if (/operations|fincon/i.test(lastDept)) {
+    // CROSSINGS: all metrics are packed into the action text as one sentence.
+    // ANNEXE: metrics appear as sub-rows with empty action; the value is in the
+    //         resultToAchieve (Result) column, e.g. "Total Inflow - ₦6.45Bn".
+    //         We therefore always include the result column so both projects work.
+    const resultText = String(c[colMap.result] || '').trim();
+    const actionText = action + ' ' + explanationText + ' ' + resultText;
+
+    function extractLabeled(text, labelPatterns) {
+      for (const pat of labelPatterns) {
+        const rx = new RegExp(pat + '(?:[\\s\\w]*?)[:\\s\\-]*([₦N]?\\s*[\\d,]+\\.?\\d*\\s*[BMKbmk]?(?:n|mn|MN|Mn)?)\\b', 'i');
+        const m = text.match(rx);
+        if (m) {
+          let raw = m[1].trim().replace(/,/g,'').toUpperCase();
+          // Normalise "BN" → "B", "MN" → "M" suffix
+          raw = raw.replace(/BN$/, 'B').replace(/MN$/, 'M');
+          if (!raw.startsWith('₦')) raw = raw.replace(/^N(?=\d)/, '₦');
+          if (!raw.startsWith('₦')) raw = '₦' + raw;
+          return raw;
         }
-
-        function extractLabeledCount(text, labelPatterns) {
-          for (const pat of labelPatterns) {
-            let m = text.match(new RegExp(pat + '[:\\s\\-]+(\\d{1,4})\\b', 'i'));
-            if (m) return m[1];
-            m = text.match(new RegExp('(\\d{1,4})\\s+' + pat, 'i'));
-            if (m) return m[1];
-          }
-          return null;
-        }
-
-        const hasMetricData = /[₦N][\d,]+|\bsales[-:\s]+\d|\d+\s*units|\d+\s*offer/i.test(actionText);
-
-        if (hasMetricData) {
-          const inflow = extractLabeled(actionText, ['inflow', 'total inflow']);
-          if (inflow) setMetric(proj === 'Crossings' ? 'val-cx-inflow' : 'val-annex-inflow', inflow);
-
-          const units = extractLabeledCount(actionText, ['sales', 'units sold', 'no\\.?\\s*of\\s*sales']);
-          if (units) setMetric(proj === 'Crossings' ? 'val-cx-units' : 'val-annex-units', units);
-
-          const salesVal = extractLabeled(actionText, ['value of sales', 'tvs']);
-          if (salesVal) setMetric(proj === 'Crossings' ? 'val-cx-sales' : 'val-annex-sales', salesVal);
-
-          const balance = extractLabeled(actionText, ['account balance', 'account bal', 'bal(?!lard|lot|c)']);
-          if (balance) setMetric(proj === 'Crossings' ? 'val-cx-balance' : 'val-annex-balance', balance);
-
-          if (!operationsOfferFound) {
-            const offers = extractLabeledCount(actionText, ['offer letters?', 'active offer', 'offer letter']);
-            if (offers !== null) { setMetric(proj==='Crossings'?'val-cx-offers':'val-annex-offers', offers); operationsOfferFound = true; }
-          }
-
-          // ── POPULATE _chartMetrics FOR HISTORICAL CHARTS ──
-          // Placed here (inside the Operations block) so action/explanationText are guaranteed defined
-          if (inflow) window._chartMetrics[proj][sheetName].inflow = parseNairaToM(inflow) / 1000;
-          if (balance) window._chartMetrics[proj][sheetName].balance = parseNairaToM(balance) / 100;
-        }
+      }
+      return null;
     }
+
+    function extractLabeledCount(text, labelPatterns) {
+      for (const pat of labelPatterns) {
+        let m = text.match(new RegExp(pat + '[:\\s\\-]+(\\d{1,4})\\b', 'i'));
+        if (m) return m[1];
+        m = text.match(new RegExp('(\\d{1,4})\\s+' + pat, 'i'));
+        if (m) return m[1];
+      }
+      return null;
+    }
+
+    // For Annexe sub-rows the action is empty but resultText has the value —
+    // so we test the full combined text, not just action alone.
+    const hasMetricData = /[₦N][\d,]+|\bsales[-:\s]+\d|\d+\s*units|\d+\s*offer/i.test(actionText);
+
+    if (hasMetricData) {
+      const inflow = parseExtractedMetric(actionText.match(METRIC_PATTERNS.inflow), true);
+      const salesVal = parseExtractedMetric(actionText.match(METRIC_PATTERNS.sales), true);
+      const balance = parseExtractedMetric(actionText.match(METRIC_PATTERNS.balance), true);
+      const units = parseExtractedMetric(actionText.match(METRIC_PATTERNS.units), false);
+      const offers = parseExtractedMetric(actionText.match(METRIC_PATTERNS.offers), false);
+
+      // Save chart metrics locally for the chart engine (Inflow vs Value of Sales)
+      if (inflow)   window._chartMetrics[proj][sheetName].inflow     = parseNairaToM(inflow);
+      if (salesVal) window._chartMetrics[proj][sheetName].salesValue = parseNairaToM(salesVal);
+      if (balance)  window._chartMetrics[proj][sheetName].balance    = parseNairaToM(balance);
+
+      // Write to Firebase (Firebase handles DOM updates via the listener)
+      if (_fbReady && _fbDb) {
+        const updates = {};
+        if (inflow)   updates.inflow   = inflow;
+        if (salesVal) updates.sales    = salesVal;
+        if (balance)  updates.balance  = balance;
+        if (units)    updates.units    = units;
+        if (offers)   updates.offers   = offers;
+
+        if (Object.keys(updates).length > 0) {
+          updates.updatedAt = firebase.database.ServerValue.TIMESTAMP;
+          _fbDb.ref(`metrics/${proj}/${sheetName}`).update(updates);
+        }
+      }
+    }
+  } // end if (operations|fincon)
     
     // ── TASK VERIFICATION ──
     if (!action || action.length < 4) continue;
@@ -2604,7 +3355,7 @@ function buildHistoryBar() {
   }
   bar.innerHTML = monthRow + dateRow;
 }
-function formatSheetName(sheetName) { return sheetName.replace(/^([a-z]{3})\s*(\d+)/i, (_, m, d) => m.charAt(0).toUpperCase() + m.slice(1).toLowerCase() + ' ' + d.padStart(2,'0')); }
+function formatSheetName(sheetName) { return sheetName.replace(/^([a-z]{3,9})\s*(\d+)/i, (_, m, d) => m.substring(0,3).charAt(0).toUpperCase() + m.substring(0,3).slice(1).toLowerCase() + ' ' + d.padStart(2,'0')); }
 function expandMonth(m) { const sessions = availableSessions[currentProject] || []; const monthSessions = sessions.filter(s => s.toLowerCase().startsWith(m)); if (monthSessions.length >= 1) switchSession(monthSessions[0]); }
 function switchSession(val) {
   viewingSessionDate = val; buildHistoryBar(); const dateLabel = document.getElementById('viewing-date-label');
@@ -2634,7 +3385,7 @@ function renderCurrentDept() {
   // Note: achieved tasks are always visible so users can revert accidental status changes
   if (currentFilter !== 'all') filtered = filtered.filter(t => t.status === currentFilter);
   const list = document.getElementById('dynamic-tasks-list');
-  if (filtered.length === 0) { list.innerHTML = `<div class="empty-state"><h3>No tasks found</h3><p>Try changing your filter or hit "Sync" to fetch latest data.</p></div>`; renderUpdatesList(); return; }
+  if (filtered.length === 0) { list.innerHTML = `<div class="empty-state"><h3>No tasks found</h3><p>Try changing your filter or hit "Sync" to fetch latest data.</p></div>`; renderUpdatesList(); populateTaskLinkDropdown(tasks); autoFillAuthorName(); return; }
   const isHistory = viewingSessionDate !== 'current';
   const groupedByStatus = { ontrack: [], delayed: [], onhold: [], update: [], achieved: [] };
   filtered.forEach(t => { let s = t.status || 'ontrack'; if (!groupedByStatus[s]) s = 'ontrack'; groupedByStatus[s].push(t); });
@@ -2690,7 +3441,9 @@ function renderCurrentDept() {
     const expClass = cfg.expanded ? 'expanded' : '';
     finalHTML += `<div class="status-accordion ${expClass}"><div class="status-header" onclick="this.parentElement.classList.toggle('expanded')"><div style="display:flex; align-items:center; gap:8px;"><span>${cfg.title} Tasks</span><span class="nav-badge" style="background:var(--border-md); color:var(--text-primary);">${groupTasks.length}</span></div><span class="status-toggle-icon">▼</span></div><div class="status-tasks-wrapper">${tasksHTML}</div></div>`;
   });
-  list.innerHTML = finalHTML; renderUpdatesList();
+  list.innerHTML = finalHTML; renderUpdatesList(); populateTaskLinkDropdown(tasks); autoFillAuthorName();
+  // Inject trend badges after render
+  setTimeout(function() { try { injectTrendBadges(currentProject); } catch(e){} }, 50);
 }
 // ── Status change confirmation system ──
 let _pendingStatusId = null;
@@ -2793,13 +3546,18 @@ function selectProject(proj) {
   document.getElementById('panel-placeholder').style.display = ''; document.getElementById('dynamic-dept-container').style.display = 'none'; document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
   updateTargetHeaders(); updateSidebarCounts(); applyPriorityColors(); renderAlertStrips(); renderOverduePanels(); rebuildMobilePills(); _dashboardSession='latest'; populateSessionPicker(); refreshDashboardForSession(); _dashboardSession='latest'; populateSessionPicker(); refreshDashboardForSession();
   piAutoExpand(proj);
+  // Re-render Trend Intelligence panel for the selected project (use cached result if available)
+  if (_tiCache[proj]) renderTrendPanel(proj, _tiCache[proj]);
+  else setTimeout(function() { try { runAndRenderTrend(proj); } catch(e){} }, 500);
+  // Render Commercial Velocity Indicator for selected project
+  setTimeout(function() { try { renderCVI(proj); } catch(e) { console.warn('[CVI]', e); } }, 300);
   applyDeptTabLocks();
 }
 function updateDashboardDates() {
   const monthNames = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
   ['Crossings','Annexe'].forEach(proj => {
     const sessions = availableSessions[proj]; if (!sessions || sessions.length === 0) return; const latest = sessions[0];
-    const m = latest.match(/^([a-z]{3})\s*(\d+)/i); if (!m) return; const mon = monthNames[m[1].toLowerCase()] || m[1]; const day = parseInt(m[2]);
+    const m = latest.match(/^([a-z]{3,9})\s*(\d+)/i); if (!m) return; const monKey = m[1].substring(0,3).toLowerCase(); const mon = monthNames[monKey] || m[1].charAt(0).toUpperCase() + m[1].substring(1,3).toLowerCase(); const day = parseInt(m[2]);
     const dateStr = `Jan 5 – ${mon} ${day}, 2026`; const elId = proj === 'Crossings' ? 'ph-date-cx' : 'ph-date-annex'; const el = document.getElementById(elId); if (el) el.textContent = dateStr;
   });
 }
@@ -3023,11 +3781,9 @@ function toggleMilestones(id) {
 let _milestonesLoaded = { Crossings: false, Annexe: false };
 
 async function fetchAndRenderMilestones() {
-  // Fetch both workbooks in parallel — they're already in memory from syncWithGoogleSheet
-  // but we need specific tabs (KD P for Crossings, KD for Annexe) that aren't in the
-  // date-session filter, so we re-fetch the same workbook URLs and pull those tabs.
+  // Corrected tabPatterns: Crossings uses "KD P", Annexe uses "KD"
   const jobs = [
-    { proj: 'Crossings', url: SHEET_CROSSINGS, tabPattern: /^KD$/i, hasActual: false, contentEl: 'ms-cx-content', loadEl: 'ms-cx-loading', accentVar: '--cx-color' },
+    { proj: 'Crossings', url: SHEET_CROSSINGS, tabPattern: /^KD P$/i, hasActual: false, contentEl: 'ms-cx-content', loadEl: 'ms-cx-loading', accentVar: '--cx-color' },
     { proj: 'Annexe',    url: SHEET_ANNEXE,    tabPattern: /^KD$/i,      hasActual: true,  contentEl: 'ms-annex-content', loadEl: 'ms-annex-loading', accentVar: '--annex-color' }
   ];
 
@@ -3036,14 +3792,13 @@ async function fetchAndRenderMilestones() {
       const buf = await fetch(job.url).then(r => r.arrayBuffer());
       const wb  = XLSX.read(buf, { type: 'array', cellDates: true });
 
-      // Find the right tab — try exact then fallback to partial
+      // Find the right tab
       let sheetName = wb.SheetNames.find(n => job.tabPattern.test(n.trim()));
       if (!sheetName) {
-        // Try broader match
         sheetName = wb.SheetNames.find(n => /KD/i.test(n.trim()) && (job.hasActual ? !/P$/i.test(n) : /P$/i.test(n)));
       }
       if (!sheetName) {
-        document.getElementById(job.loadEl).innerHTML = `<span style="color:var(--status-orange)">⚠ "${job.proj === 'Crossings' ? 'KD P' : 'KD'}" tab not found in sheet. Available tabs: ${wb.SheetNames.join(', ')}</span>`;
+        document.getElementById(job.loadEl).innerHTML = `<span style="color:var(--status-orange)">⚠ Tab matching "${job.proj === 'Crossings' ? 'KD P' : 'KD'}" not found. Available: ${wb.SheetNames.join(', ')}</span>`;
         return;
       }
 
@@ -3058,40 +3813,43 @@ async function fetchAndRenderMilestones() {
 }
 
 function renderMilestonesPanel(rows, job) {
-  // 1. ROBUST EXTRACTION LOGIC
   let projected = 0;
   let actual = 0;
 
-  // Use Regex to find "Last Update" even if there are colons or weird casing
+  // 1. EXTRACT OVERALL TIMELINE / TOP-LEVEL VARIANCE
   const updateRow = rows.find(r => r && r.some && r.some(cell => /Last Update|Overall/i.test(String(cell))));
 
   if (updateRow) {
-      // Extract all cells containing '%' and parse them into clean numbers
-      const percentages = updateRow
-          .map(cell => String(cell))
-          .filter(cell => cell.includes('%'))
-          .map(cell => parseFloat(cell.replace(/[^0-9.-]+/g, '')))
-          .filter(n => !isNaN(n));
-
-      if (job.proj === 'Annexe') {
-          projected = percentages[0] || 0;
-          actual = percentages[1] || 0;
-      } else {
-          projected = percentages[0] || 0;
+      const values = [];
+      for (let i = 1; i < updateRow.length; i++) {
+          const cell = updateRow[i];
+          if (typeof cell === 'number' && cell <= 2) {
+              values.push(cell * 100);
+          } else if (typeof cell === 'string' && cell.includes('%')) {
+              const n = parseFloat(cell.replace(/[^0-9.-]+/g, ''));
+              if (!isNaN(n)) values.push(n);
+          }
+      }
+      
+      if (job.hasActual) { // Annexe
+          projected = values[0] || 0;
+          actual = values[1] || 0;
+      } else { // Crossings KD P only has progress to date
+          projected = values[0] || 0; 
       }
   }
 
-  // 2. DOM RENDERING (GAP ANALYSIS UI)
   const panel = document.getElementById(job.contentEl);
   if (!panel) return;
 
+  // 2. RENDER SUMMARY CARDS
   let html = `
       <div style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
           <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Timeline Variance</h3>
       </div>
       <div class="milestones-body" style="padding: 0;">`;
 
-  if (job.proj === 'Annexe') {
+  if (job.hasActual) {
       const gap = projected - actual;
       const gapColor = gap > 0 ? 'var(--status-red)' : 'var(--status-green)';
       const gapBg = gap > 0 ? 'var(--status-red-bg)' : 'var(--status-green-bg)';
@@ -3106,7 +3864,7 @@ function renderMilestonesPanel(rows, job) {
               <div class="progress-container" style="margin-bottom: 16px;">
                   <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
                       <span style="color: var(--text-muted);">Projected Plan</span>
-                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected}%</span>
+                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected.toFixed(1)}%</span>
                   </div>
                   <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;">
                       <div style="background: var(--status-orange); width: ${projected}%; height: 100%; border-radius: 4px;"></div>
@@ -3116,7 +3874,7 @@ function renderMilestonesPanel(rows, job) {
               <div class="progress-container">
                   <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
                       <span style="color: var(--text-muted);">Actual Progress</span>
-                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${actual}%</span>
+                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${actual.toFixed(1)}%</span>
                   </div>
                   <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;">
                       <div style="background: var(--status-green); width: ${actual}%; height: 100%; border-radius: 4px;"></div>
@@ -3125,63 +3883,69 @@ function renderMilestonesPanel(rows, job) {
           </div>
       `;
   } else {
-      // Crossings (Projected Only)
       html += `
           <div class="gap-analysis-card" style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
               <div style="display: flex; justify-content: space-between; margin-bottom: 16px; align-items: center;">
-                  <span style="font-weight: 800; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Deficit / Surplus</span>
-                  <span style="color: var(--text-muted); font-size: 11px; font-style: italic;">(Actuals offline)</span>
+                  <span style="font-weight: 800; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Project Progress</span>
+                  <span style="color: var(--status-blue); background: var(--status-blue-bg); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 800; border: 1px solid var(--status-blue-border)">${projected.toFixed(1)}% to date</span>
               </div>
               
               <div class="progress-container">
                   <div style="display:flex; justify-content: space-between; font-size: 11px; font-weight:700; text-transform:uppercase; margin-bottom: 6px;">
-                      <span style="color: var(--text-muted);">Projected Plan</span>
-                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected}%</span>
+                      <span style="color: var(--text-muted);">Progress to Date</span>
+                      <span style="color: var(--text-primary); font-family: 'DM Mono', monospace; font-size: 13px;">${projected.toFixed(1)}%</span>
                   </div>
                   <div style="background: var(--border-md); height: 8px; border-radius: 4px; overflow: hidden;">
-                      <div style="background: var(--status-orange); width: ${projected}%; height: 100%; border-radius: 4px;"></div>
+                      <div style="background: var(--status-blue); width: ${projected}%; height: 100%; border-radius: 4px;"></div>
                   </div>
               </div>
           </div>
       `;
   }
-
   html += `</div>`;
 
-  // 3. DETAILED MILESTONE TABLE GENERATION
+  // 3. UNIFIED TABLE PARSER (Dynamically maps columns based on sheet headers)
   const milestones = [];
-  
-  // Auto-detect columns based on the header row in the sheet
-  let colName = 1, colProj = 4, colAct = 5, colDate = 3, colStatus = 2;
-  const headerRow = rows.find(r => r && r.some && r.some(c => /Activity|Milestone/i.test(String(c))));
-  
+  let colName = 1, colStatus = 2, colProj = 5, colAct = 6, colDate = 3; 
+
+  const headerRow = rows.find(r => r && r.some && r.some(c => /ACTION|Activity/i.test(String(c))));
+
   if (headerRow) {
-    colName = headerRow.findIndex(c => /Activity|Milestone|Description/i.test(String(c)));
-    colProj = headerRow.findIndex(c => /Projected|Plan/i.test(String(c)));
-    colAct = headerRow.findIndex(c => /Actual/i.test(String(c)));
-    colDate = headerRow.findIndex(c => /Date|Target/i.test(String(c)));
-    colStatus = headerRow.findIndex(c => /Status/i.test(String(c)));
+    colName = headerRow.findIndex(c => /ACTION|Activity/i.test(String(c)));
+    colStatus = headerRow.findIndex(c => /STATUS/i.test(String(c)));
+    colProj = headerRow.findIndex(c => /PROJECTED/i.test(String(c)));
+    colAct = headerRow.findIndex(c => /PROGRESS TO DATE/i.test(String(c)));
+    colDate = headerRow.findIndex(c => /COMPLETION|END/i.test(String(c)));
+    
     if (colName === -1) colName = 1;
+    if (colStatus === -1) colStatus = 2;
   }
 
   for (let r = 0; r < rows.length; r++) {
     const row = rows[r];
     if (!row || row.every(c => !c)) continue;
 
-    const name = String(row[colName] || '').trim();
+    const name = String(row[colName] || row[1] || '').trim();
     if (!name || name.length < 3) continue;
     if (/^(action|status|last update|construction|progress|lakowe|overall|actual|target|legend|road progress)/i.test(name)) continue;
 
-    const projPct = parsePct(colProj >= 0 ? row[colProj] : null);
-    const actPct  = (job.hasActual && colAct >= 0) ? parsePct(row[colAct]) : null;
-    const dateStr = formatMilestoneDate(colDate >= 0 ? row[colDate] : null);
-    const status  = String(colStatus >= 0 ? row[colStatus] : '').trim();
-
-    if (projPct === null && actPct === null && !status) continue;
-    milestones.push({ name, dateStr, projPct, actPct, status });
+    const status = String(colStatus >= 0 ? row[colStatus] : '').trim();
+    
+    if (job.hasActual) { // Annexe
+       let projPct = parsePct(colProj >= 0 ? row[colProj] : null);
+       let actPct = parsePct(colAct >= 0 ? row[colAct] : null);
+       let dateStr = formatMilestoneDate(colDate >= 0 ? row[colDate] : null);
+       
+       if (projPct === null && actPct === null && !status) continue;
+       milestones.push({ name, dateStr, projPct, actPct, status });
+    } else { // Crossings
+       // KD P has "PROGRESS TO DATE". Map to projPct so the single-bar UI renders correctly
+       let actPct = parsePct(colAct >= 0 ? row[colAct] : null);
+       if (actPct === null && !status) continue;
+       milestones.push({ name, dateStr: '', projPct: actPct, actPct: null, status });
+    }
   }
 
-  // Inject Table HTML if tasks are found
   if (milestones.length > 0) {
     html += '<div class="milestone-table-wrap" style="margin-top:20px;"><table class="milestone-table"><thead><tr>';
     html += '<th>Milestone / Activity</th>';
@@ -3190,31 +3954,30 @@ function renderMilestonesPanel(rows, job) {
     html += '</tr></thead><tbody>';
 
     milestones.forEach(m => {
-      const gap = (job.hasActual && m.actPct !== null && m.projPct !== null) ? (m.actPct - m.projPct) : null;
-      const gapClass = gap === null ? 'nodata' : (gap < -5 ? 'behind' : gap > 5 ? 'ahead' : 'ontrack');
-      const gapLabel = gap === null ? '&#8212;' : (gap >= 0 ? '+' + gap.toFixed(1) + 'pp' : gap.toFixed(1) + 'pp');
-      const barClass = job.hasActual ? gapClass : (m.projPct === null ? 'ontrack' : m.projPct >= 90 ? 'ahead' : m.projPct >= 40 ? 'ontrack' : 'behind');
-      
-      let statusColor = 'var(--text-secondary)';
-      if (/complet|done/i.test(m.status)) statusColor = 'var(--status-green)';
-      else if (/ongoing|in.?progress/i.test(m.status)) statusColor = 'var(--status-blue)';
-      else if (/delayed|off.?track|behind/i.test(m.status)) statusColor = 'var(--status-red)';
-
-      html += '<tr><td class="ms-name">' + escHtml(m.name) + '</td>';
-      
       if (job.hasActual) {
+        const gap = (m.actPct !== null && m.projPct !== null) ? (m.actPct - m.projPct) : null;
+        const gapClass = gap === null ? 'nodata' : (gap < -5 ? 'behind' : gap > 5 ? 'ahead' : 'ontrack');
+        const gapLabel = gap === null ? '&#8212;' : (gap >= 0 ? '+' + gap.toFixed(1) + 'pp' : gap.toFixed(1) + 'pp');
+        
+        html += '<tr><td class="ms-name">' + escHtml(m.name) + '</td>';
         html += '<td class="ms-date" style="color:var(--text-muted);white-space:nowrap">' + (m.dateStr || '&#8212;') + '</td>';
         const pw = m.projPct !== null ? m.projPct : 0;
-        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap"><div class="ms-bar-track"><div class="ms-bar-proj" style="width:${pw}%"></div></div></div><span class="ms-pct" style="color:var(--text-muted);flex-shrink:0">${m.projPct !== null ? m.projPct + '%' : '&#8212;'}</span></div></td>`;
+        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap"><div class="ms-bar-track"><div class="ms-bar-proj" style="width:${pw}%"></div></div></div><span class="ms-pct" style="color:var(--text-muted);flex-shrink:0">${m.projPct !== null ? m.projPct.toFixed(0) + '%' : '&#8212;'}</span></div></td>`;
         const aw = m.actPct !== null ? m.actPct : 0;
-        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap"><div class="ms-bar-track"><div class="ms-bar-actual ${barClass}" style="width:${aw}%"></div></div></div><span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0">${m.actPct !== null ? m.actPct + '%' : '&#8212;'}</span></div></td>`;
-        html += `<td><span class="ms-gap ${gapClass}">${gapLabel}</span></td>`;
+        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap"><div class="ms-bar-track"><div class="ms-bar-actual ${gapClass}" style="width:${aw}%"></div></div></div><span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0">${m.actPct !== null ? m.actPct.toFixed(0) + '%' : '&#8212;'}</span></div></td>`;
+        html += `<td><span class="ms-gap ${gapClass}">${gapLabel}</span></td></tr>`;
       } else {
-        html += `<td style="font-size:11px;font-weight:600;color:${statusColor}">${escHtml(m.status)}</td>`;
+        let statusColor = 'var(--text-secondary)';
+        if (/complet|done/i.test(m.status)) statusColor = 'var(--status-green)';
+        else if (/ongoing|in.?progress/i.test(m.status)) statusColor = 'var(--status-blue)';
+        else if (/delayed|off.?track|behind/i.test(m.status)) statusColor = 'var(--status-red)';
+
+        html += '<tr><td class="ms-name">' + escHtml(m.name) + '</td>';
+        html += `<td style="font-size:11px;font-weight:700;color:${statusColor};white-space:nowrap">${escHtml(m.status)}</td>`;
         const pw = m.projPct !== null ? m.projPct : 0;
-        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap" style="flex:1"><div class="ms-bar-track"><div class="ms-bar-actual ${barClass}" style="width:${pw}%"></div></div></div><span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0;min-width:32px;text-align:right">${m.projPct !== null ? m.projPct + '%' : '&#8212;'}</span></div></td>`;
+        const barClass = m.projPct === null ? 'ontrack' : m.projPct >= 100 ? 'ahead' : m.projPct >= 40 ? 'ontrack' : 'behind';
+        html += `<td><div style="display:flex;align-items:center;gap:8px"><div class="ms-bar-wrap" style="flex:1"><div class="ms-bar-track"><div class="ms-bar-actual ${barClass}" style="width:${pw}%"></div></div></div><span class="ms-pct" style="color:var(--text-secondary);flex-shrink:0;min-width:32px;text-align:right">${m.projPct !== null ? m.projPct.toFixed(0) + '%' : '&#8212;'}</span></div></td></tr>`;
       }
-      html += '</tr>';
     });
     html += '</tbody></table></div>';
   }
@@ -3224,24 +3987,34 @@ function renderMilestonesPanel(rows, job) {
   panel.style.display = 'block';
   _milestonesLoaded[job.proj] = true;
 }
-  
+
 function parsePct(val) {
   if (val === '' || val === null || val === undefined) return null;
+  if (typeof val === 'number') {
+      if (val > 1000) return null; // Reject Excel dates
+      return val <= 1 ? val * 100 : val;
+  }
   const s = String(val).replace('%','').trim();
+  if (/^[a-zA-Z]/.test(s)) return null; 
   const n = parseFloat(s);
   if (isNaN(n)) return null;
-  // If the value is 0–1 range (decimal), multiply by 100
-  return n > 1 ? n : n * 100;
+  return n <= 1 ? n * 100 : n;
 }
 
 function formatMilestoneDate(val) {
   if (!val) return '';
   if (val instanceof Date) return val.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  if (typeof val === 'number') {
+      if (val > 20000 && val < 60000) {
+          const d = new Date((val - 25569) * 86400 * 1000);
+          return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+      }
+      return '';
+  }
   const s = String(val).trim();
-  // Try parse as date string
   const d = new Date(s);
   if (!isNaN(d.getTime()) && s.length > 4) return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  return s; // Return as-is (e.g. "Q3 2026", "Jun 2026")
+  return s; 
 }
 
 function escHtml(s) {
@@ -3508,8 +4281,462 @@ function piAutoExpand(proj) {
 
 
 // ╔══════════════════════════════════════════════════════════════════╗
-// ║  MAILING LIST DATA                                               ║
+// ║  TREND INTELLIGENCE ENGINE v2                                     ║
+// ║  Time-grouped · Absent = Resolved · Plain English · PM-grade      ║
 // ╚══════════════════════════════════════════════════════════════════╝
+
+// ── Similarity: are two task action strings the same task? ──
+function tiTaskSimilarity(a, b) {
+  if (!a || !b) return 0;
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+  const na = norm(a), nb = norm(b);
+  if (na === nb) return 1.0;
+  const ta = new Set(na.split(' ').filter(w => w.length > 3));
+  const tb = new Set(nb.split(' ').filter(w => w.length > 3));
+  const inter = new Set([...ta].filter(x => tb.has(x)));
+  const union = new Set([...ta, ...tb]);
+  return union.size === 0 ? 0 : inter.size / union.size;
+}
+
+// ── Parse session name to sortable date ──
+function tiSessionToDate(name) {
+  const p = parseSheetName(name);
+  if (!p) return null;
+  return new Date(2026, p.month - 1, p.day);
+}
+
+// ── Count weeks a task has been running without resolution ──
+function tiWeeksOpen(firstSess, latestSess) {
+  const d1 = tiSessionToDate(firstSess), d2 = tiSessionToDate(latestSess);
+  if (!d1 || !d2) return null;
+  return Math.round(Math.abs(d2 - d1) / (7 * 24 * 60 * 60 * 1000));
+}
+
+// ── Core engine ──
+function runTrendAnalysis(proj) {
+  const overrides = getStatusOverrides();
+
+  // Sessions sorted oldest → newest
+  const sessions = [...(availableSessions[proj] || [])].sort((a, b) => {
+    const da = tiSessionToDate(a), db = tiSessionToDate(b);
+    if (!da || !db) return 0;
+    return da - db;
+  });
+
+  if (sessions.length < 2) return null;
+
+  const sessionMaps = sessions.map(sess => {
+    const tasks = taskDatabase
+      .filter(t => t.project === proj && t.session === sess)
+      .map(t => ({ ...t, status: overrides[taskId(t)] || t.status }));
+    return { sess, tasks };
+  });
+
+  const latestSess = sessions[sessions.length - 1];
+  const prevSess   = sessions[sessions.length - 2];
+  const latestTasks = (sessionMaps[sessionMaps.length - 1] || {}).tasks || [];
+  const prevTasks   = (sessionMaps[sessionMaps.length - 2] || {}).tasks || [];
+
+  // ═══════════════════════════════════════════════
+  // 1. BUILD CANONICAL TASK CHAIN
+  // Track each unique task across all sessions it appeared in.
+  // If a task was present in session N but absent in session N+1, treat it as resolved.
+  // ═══════════════════════════════════════════════
+  const taskChain = {}; // normalized key → { action, dept, firstSess, lastSess, sessionsPresent, lastStatus, wasAbsent }
+
+  sessionMaps.forEach(({ sess, tasks }, si) => {
+    tasks.forEach(t => {
+      const normKey = t.action.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim().substring(0, 90);
+      let matched = false;
+      for (const key of Object.keys(taskChain)) {
+        if (tiTaskSimilarity(key, normKey) >= 0.44) {
+          const chain = taskChain[key];
+          chain.sessionsPresent.push(sess);
+          chain.lastSess = sess;
+          chain.lastStatus = t.status;
+          chain.lastDept = t.dept;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        taskChain[normKey] = {
+          action: t.action, dept: t.dept, firstSess: sess, lastSess: sess,
+          sessionsPresent: [sess], lastStatus: t.status, lastDept: t.dept
+        };
+      }
+    });
+  });
+
+  // Mark tasks that disappeared from the latest session as implicitly resolved
+  Object.values(taskChain).forEach(chain => {
+    // If the task was present in a previous session but NOT in the latest one
+    chain.wasAbsent = chain.sessionsPresent.length >= 1 && !chain.sessionsPresent.includes(latestSess);
+    // If absent AND never explicitly achieved → treat as resolved
+    chain.implicitlyResolved = chain.wasAbsent && chain.lastStatus !== 'achieved';
+    // Weeks the task was in the system
+    chain.weeksOpen = tiWeeksOpen(chain.firstSess, chain.lastSess);
+  });
+
+  // ═══════════════════════════════════════════════
+  // 2. REPEATED TASK DETECTION
+  // A task is "repeated" if it appeared in ≥2 sessions AND is still present (not absent, not achieved)
+  // ═══════════════════════════════════════════════
+  const repeated = Object.values(taskChain).filter(c =>
+    c.sessionsPresent.length >= 2 &&
+    !c.wasAbsent &&
+    c.lastStatus !== 'achieved'
+  ).sort((a, b) => b.sessionsPresent.length - a.sessionsPresent.length);
+
+  // ═══════════════════════════════════════════════
+  // 3. RESOLVED THIS SESSION (absent from latest but present before)
+  // ═══════════════════════════════════════════════
+  const resolvedByAbsence = Object.values(taskChain).filter(c =>
+    c.implicitlyResolved && c.sessionsPresent.length >= 2
+  );
+
+  // ═══════════════════════════════════════════════
+  // 4. RISK ESCALATION
+  // ═══════════════════════════════════════════════
+  const delayedCount = {};
+  sessionMaps.forEach(({ sess, tasks }) => {
+    tasks.filter(t => t.status === 'delayed' || (isOverdue(t) && t.status !== 'achieved')).forEach(t => {
+      const key = (t.dept + '__' + t.action).substring(0, 100);
+      if (!delayedCount[key]) delayedCount[key] = { action: t.action, dept: t.dept, sessions: [] };
+      delayedCount[key].sessions.push(sess);
+    });
+  });
+
+  const chronic   = Object.values(delayedCount).filter(e => e.sessions.length >= 3);
+  const escalated = Object.values(delayedCount).filter(e => e.sessions.length === 2 && e.sessions.includes(latestSess));
+
+  // New first-time delays this session
+  const newDelayed = latestTasks.filter(t => {
+    if (t.status !== 'delayed' && !isOverdue(t)) return false;
+    const prevSeen = sessionMaps.slice(0, -1).some(({ tasks }) =>
+      tasks.some(pt => tiTaskSimilarity(pt.action, t.action) >= 0.44 && (pt.status === 'delayed' || isOverdue(pt)))
+    );
+    return !prevSeen;
+  });
+
+  // ═══════════════════════════════════════════════
+  // 5. VELOCITY — improved: count absent tasks as resolved (positive contribution)
+  // ═══════════════════════════════════════════════
+  const velocityData = sessionMaps.map(({ sess, tasks }, si) => {
+    const achieved = tasks.filter(t => t.status === 'achieved').length;
+    // Count tasks that existed in this session but not in the next (implicitly resolved)
+    let absentNextCount = 0;
+    if (si < sessionMaps.length - 1) {
+      const nextTasks = sessionMaps[si + 1].tasks;
+      tasks.forEach(t => {
+        if (t.status === 'achieved') return;
+        const stillPresent = nextTasks.some(nt => tiTaskSimilarity(nt.action, t.action) >= 0.44);
+        if (!stillPresent) absentNextCount++;
+      });
+    }
+    const total = tasks.length;
+    const resolvedTotal = achieved + absentNextCount;
+    const pct = total > 0 ? Math.round((resolvedTotal / total) * 100) : 0;
+    const delayed = tasks.filter(t => t.status === 'delayed' || isOverdue(t)).length;
+    return { sess, total, achieved, absentNextCount, resolvedTotal, delayed, pct };
+  });
+
+  let velocityTrend = 'stable';
+  if (velocityData.length >= 2) {
+    const last = velocityData[velocityData.length - 1].pct;
+    const prev = velocityData[velocityData.length - 2].pct;
+    if (last > prev + 8) velocityTrend = 'improving';
+    else if (last < prev - 8) velocityTrend = 'declining';
+    else if (last < 12) velocityTrend = 'stalled';
+  }
+
+  // ═══════════════════════════════════════════════
+  // 6. TIME BUCKETING for digest grouping
+  // Recent = only in latest 1–2 sessions
+  // Ongoing = 3–4 sessions
+  // Long-standing = 5+ sessions
+  // ═══════════════════════════════════════════════
+  function timeBucket(sessCount) {
+    if (sessCount >= 5) return 'longstanding';
+    if (sessCount >= 3) return 'ongoing';
+    return 'recent';
+  }
+
+  // ═══════════════════════════════════════════════
+  // 7. TREND BADGES for task cards
+  // ═══════════════════════════════════════════════
+  const trendBadgeMap = {};
+  latestTasks.forEach(t => {
+    const tid = taskId(t);
+    const badges = [];
+    const normKey = t.action.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim().substring(0, 90);
+
+    // Repeated?
+    const matchedRepeated = repeated.find(r =>
+      tiTaskSimilarity(r.action.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim().substring(0,90), normKey) >= 0.44
+    );
+    if (matchedRepeated) {
+      const n = matchedRepeated.sessionsPresent.length;
+      const wks = matchedRepeated.weeksOpen;
+      const wkLabel = wks !== null ? ` · ${wks}w` : '';
+      badges.push({ type: n >= 5 ? 'chronic' : 'recurring', label: `🔁 Repeated ${n}×${wkLabel}` });
+    }
+
+    // Chronic / escalated delay?
+    const delKey = (t.dept + '__' + t.action).substring(0, 100);
+    if (delayedCount[delKey]) {
+      const dc = delayedCount[delKey].sessions.length;
+      if (dc >= 3) badges.push({ type: 'escalated', label: `🚨 Stuck · ${dc}× delayed` });
+      else if (dc >= 2) badges.push({ type: 'escalated', label: `⚠ Delayed again · ${dc}×` });
+    }
+
+    if (badges.length) trendBadgeMap[tid] = badges;
+  });
+
+  return {
+    proj, sessions, sessionMaps, latestSess, prevSess, latestTasks, prevTasks,
+    repeated, resolvedByAbsence,
+    velocityData, velocityTrend,
+    escalated, chronic, newDelayed,
+    trendBadgeMap, timeBucket,
+    totalSessions: sessions.length,
+    totalRepeated: repeated.length,
+    totalEscalated: chronic.length + escalated.length,
+    totalResolvedByAbsence: resolvedByAbsence.length
+  };
+}
+
+// ── Store trend analysis results per project ──
+const _tiCache = { Crossings: null, Annexe: null };
+
+function runAndRenderTrend(proj) {
+  try {
+    const result = runTrendAnalysis(proj);
+    _tiCache[proj] = result;
+    if (result) renderTrendPanel(proj, result);
+  } catch(e) {
+    console.warn('[TrendIntelligence] Error for', proj, e);
+  }
+}
+
+function renderTrendPanel(proj, result) {
+  const pfx = proj === 'Crossings' ? 'cx' : 'annex';
+
+  // ── Stats ──
+  const sessEl = document.getElementById(`ti-${pfx}-sessions`);
+  const recEl  = document.getElementById(`ti-${pfx}-recurring`);
+  const escEl  = document.getElementById(`ti-${pfx}-escalated`);
+  if (sessEl) sessEl.textContent = result.totalSessions;
+  if (recEl)  recEl.textContent  = result.totalRepeated;
+  if (escEl)  escEl.textContent  = result.totalEscalated;
+
+  // ── Header badge ──
+  const badgeEl = document.getElementById(`ti-${pfx}-badge`);
+  if (badgeEl) {
+    const total = result.totalRepeated + result.totalEscalated;
+    if (total > 0) {
+      badgeEl.style.display = 'inline-flex';
+      badgeEl.textContent = total + ' alerts';
+      badgeEl.className = 'ti-alert-badge' + (result.totalEscalated > 0 ? ' ti-critical' : '');
+    } else {
+      badgeEl.style.display = 'none';
+    }
+  }
+
+  // ── Digest: time-grouped alerts ──
+  const digestEl = document.getElementById(`ti-${pfx}-digest`);
+  if (digestEl) {
+
+    // Helper: render one alert row
+    function alertRow(iconWrapClass, icon, typeClass, typeLabel, title, detail, meta) {
+      return `<div class="ti-alert-item">
+        <div class="ti-alert-icon-wrap ${iconWrapClass}">${icon}</div>
+        <div class="ti-alert-content">
+          <div class="ti-alert-type ${typeClass}">${typeLabel}</div>
+          <div class="ti-alert-title">${escHtml(title.substring(0, 120))}</div>
+          <div class="ti-alert-detail">${detail}</div>
+        </div>
+        <div class="ti-alert-meta">${meta}</div>
+      </div>`;
+    }
+
+    // Helper: section divider
+    function sectionHead(label, sublabel) {
+      return `<div class="ti-time-section-head"><span class="ti-time-label">${label}</span><span class="ti-time-sub">${sublabel}</span></div>`;
+    }
+
+    // ── Collect all alerts with time bucket ──
+    const allAlerts = [];
+
+    // Chronic stuck tasks (5+ sessions delayed)
+    result.chronic.sort((a,b) => b.sessions.length - a.sessions.length).slice(0, 6).forEach(entry => {
+      const n = entry.sessions.length;
+      const wks = tiWeeksOpen(entry.sessions[0], entry.sessions[entry.sessions.length-1]);
+      const bucket = result.timeBucket(n);
+      allAlerts.push({ bucket, priority: 0, html: alertRow(
+        'escalation', '🚨', 'escalation',
+        `Stuck Task — ${n} meetings, ${wks !== null ? wks + ' weeks' : 'multiple weeks'}`,
+        entry.action,
+        `<strong>${escHtml(entry.dept)}</strong> · This item has been flagged as delayed or overdue at <strong>${n} separate meetings</strong>: ${entry.sessions.map(s => formatSheetName(s)).join(' → ')}. This is no longer a follow-up item — it needs a formal decision or a named person to unblock it.`,
+        `${n}× delayed`
+      )});
+    });
+
+    // Escalating (2× delayed including latest)
+    result.escalated.slice(0, 4).forEach(entry => {
+      allAlerts.push({ bucket: 'recent', priority: 1, html: alertRow(
+        'escalation', '⚠️', 'escalation',
+        'Delayed Again This Session',
+        entry.action,
+        `<strong>${escHtml(entry.dept)}</strong> · Was delayed before and came back delayed this session: ${entry.sessions.map(s => formatSheetName(s)).join(' → ')}. Act before it becomes a long-running item.`,
+        `${entry.sessions.length}× flagged`
+      )});
+    });
+
+    // Repeated unresolved (not already in chronic/escalated)
+    result.repeated.filter(r =>
+      !result.chronic.find(c => tiTaskSimilarity(c.action, r.action) >= 0.44) &&
+      !result.escalated.find(e => tiTaskSimilarity(e.action, r.action) >= 0.44)
+    ).slice(0, 8).forEach(r => {
+      const n = r.sessionsPresent.length;
+      const wks = r.weeksOpen;
+      const bucket = result.timeBucket(n);
+      const sessStr = r.sessionsPresent.map(s => formatSheetName(s)).join(' → ');
+      allAlerts.push({ bucket, priority: 2, html: alertRow(
+        'recurring', '🔁', 'recurring',
+        `Task repeated ${n} times — not yet closed`,
+        r.action,
+        `<strong>${escHtml(r.lastDept || r.dept)}</strong> · This task has appeared at <strong>${n} meetings</strong>${wks !== null ? ` over ${wks} weeks` : ''}: ${sessStr}. It is still open (status: ${r.lastStatus}). If this is genuinely in progress, it may need a sub-task breakdown or an owner update. If it is stuck, it needs escalation.`,
+        `${n} sessions${wks !== null ? ' · ' + wks + 'w' : ''}`
+      )});
+    });
+
+    // New delays this session
+    result.newDelayed.slice(0, 3).forEach(t => {
+      allAlerts.push({ bucket: 'recent', priority: 3, html: alertRow(
+        'velocity', '📍', 'velocity',
+        `New delay — first time flagged this session`,
+        t.action,
+        `<strong>${escHtml(t.dept)}</strong> · This is the first time this item has been flagged as delayed or overdue. Due: ${t.due}. Catch it now before it becomes a pattern.`,
+        'New this session'
+      )});
+    });
+
+    // Resolved by absence (tasks that dropped out of the sheet — treated as done)
+    result.resolvedByAbsence.slice(0, 5).forEach(r => {
+      const n = r.sessionsPresent.length;
+      allAlerts.push({ bucket: 'resolved', priority: 10, html: alertRow(
+        'velocity', '✅', 'velocity',
+        `Closed — no longer on the agenda`,
+        r.action,
+        `<strong>${escHtml(r.lastDept || r.dept)}</strong> · This task appeared at ${n} meeting${n > 1 ? 's' : ''} and was removed from the sheet after ${formatSheetName(r.lastSess)} without being marked achieved — treated as resolved. Last known status: ${r.lastStatus}.`,
+        'Implicitly closed'
+      )});
+    });
+
+    // Velocity summary card
+    const vd = result.velocityData;
+    if (vd.length >= 2) {
+      const last = vd[vd.length - 1], prev = vd[vd.length - 2];
+      const diff = last.pct - prev.pct;
+      const trendLabel = diff > 0 ? `↑ Up ${diff} points` : diff < 0 ? `↓ Down ${Math.abs(diff)} points` : '→ Unchanged';
+      const trendClass = diff > 5 ? 'velocity' : diff < -5 ? 'escalation' : 'velocity';
+      const trendIcon = diff > 5 ? '📈' : diff < -5 ? '📉' : '📊';
+      const verdict = result.velocityTrend === 'stalled'
+        ? 'Delivery pace is critically low across the board — very few tasks are being closed at each meeting.'
+        : result.velocityTrend === 'declining'
+        ? 'Fewer tasks are being resolved compared to the previous session. Check what is blocking closure.'
+        : result.velocityTrend === 'improving'
+        ? 'More tasks are being closed than in the previous session — positive direction.'
+        : 'Delivery pace is broadly consistent with the previous session.';
+      allAlerts.push({ bucket: 'recent', priority: 4, html: alertRow(
+        'velocity', trendIcon, trendClass,
+        `Delivery rate this session: ${last.pct}% — ${trendLabel}`,
+        `${formatSheetName(last.sess)}: ${last.resolvedTotal} tasks closed out of ${last.total} (${last.achieved} explicitly achieved + ${last.absentNextCount} dropped from next session)`,
+        `Previous session (${formatSheetName(prev.sess)}): ${prev.pct}%. ${verdict}`,
+        `${last.pct}% rate`
+      )});
+    }
+
+    // ── Render grouped by time bucket ──
+    const bucketOrder = ['longstanding', 'ongoing', 'recent', 'resolved'];
+    const bucketMeta = {
+      longstanding: { label: 'Long-Standing Issues', sub: '5+ sessions · needs executive decision' },
+      ongoing:      { label: 'Ongoing Items',          sub: '3–4 sessions · watch closely' },
+      recent:       { label: 'This Session',            sub: 'new flags and current velocity' },
+      resolved:     { label: 'Closed Since Last Meeting', sub: 'absent from latest sheet — treated as resolved' }
+    };
+
+    let html = '';
+    bucketOrder.forEach(bucket => {
+      const items = allAlerts.filter(a => a.bucket === bucket).sort((a,b) => a.priority - b.priority);
+      if (!items.length) return;
+      const meta = bucketMeta[bucket];
+      html += sectionHead(meta.label, meta.sub);
+      items.forEach(item => { html += item.html; });
+    });
+
+    if (!html) {
+      html = '<div class="ti-digest-empty">✓ No patterns detected across current sessions. Continue monitoring.</div>';
+    }
+    digestEl.innerHTML = html;
+  }
+
+  // ── Velocity chart — newest first ──
+  const velEl = document.getElementById(`ti-${pfx}-velocity`);
+  if (velEl && result.velocityData.length) {
+    const displayData = [...result.velocityData].reverse();
+    const maxPct = Math.max(...displayData.map(v => v.pct), 10);
+    let html = displayData.map(v => {
+      const fillClass = v.pct >= 50 ? 'improving' : v.pct >= 25 ? 'stable' : v.pct >= 10 ? 'declining' : 'stalled';
+      const width = Math.max(2, Math.round((v.pct / maxPct) * 100));
+      const tooltip = `${v.achieved} explicit + ${v.absentNextCount} dropped`;
+      return `<div class="ti-vel-row" title="${tooltip}">
+        <div class="ti-vel-label">${formatSheetName(v.sess)}</div>
+        <div class="ti-vel-track"><div class="ti-vel-fill ${fillClass}" style="width:${width}%"></div></div>
+        <div class="ti-vel-count">${v.pct}%</div>
+      </div>`;
+    }).join('');
+    velEl.innerHTML = html;
+  }
+
+  // ── Footer timestamp ──
+  const ftEl = document.getElementById(`ti-${pfx}-footer-text`);
+  if (ftEl) {
+    const now = new Date();
+    ftEl.textContent = `Trend intelligence across ${result.totalSessions} sessions · Tasks absent from latest sheet are treated as resolved · ${now.toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'})} ${now.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'})}`;
+  }
+}
+
+function toggleTI(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('ti-expanded');
+}
+
+// ── Inject trend badges into rendered task cards ──
+function injectTrendBadges(proj) {
+  const result = _tiCache[proj];
+  if (!result || !result.trendBadgeMap) return;
+  const latest = availableSessions[proj] && availableSessions[proj][0];
+  const tasks = taskDatabase.filter(t => t.project === proj && t.session === latest);
+
+  tasks.forEach(t => {
+    const tid = taskId(t);
+    const badges = result.trendBadgeMap[tid];
+    if (!badges || !badges.length) return;
+    const cardEl = document.getElementById('card-' + tid);
+    if (!cardEl) return;
+    if (cardEl.querySelector('.trend-badge-row')) return;
+    const row = document.createElement('div');
+    row.className = 'trend-badge-row';
+    row.innerHTML = badges.map(b => `<span class="trend-badge ${b.type}">${b.label}</span>`).join('');
+    const top = cardEl.querySelector('.step-card-top');
+    if (top) cardEl.insertBefore(row, top);
+    else cardEl.appendChild(row);
+  });
+}
+
+// ╔══════════════════════════════════════════════════════════════════╝
 const MAILING_LIST = {
   Crossings: {
     Design:     ['dcs_nigeria@mixtafrica.com','a.arokodare@mixtafrica.com','c.uwadiale@mixtafrica.com','a.uwuigbe@mixtafrica.com'],
@@ -4450,25 +5677,6 @@ document.addEventListener('click', function(e) {
 // ═══════════════════════════════════════════════════════
 // SESSION PICKER — drives all dashboard tiles per date
 // ═══════════════════════════════════════════════════════
-// ── Update Landing Page Buttons ──
-function updateLandingPageMetrics() {
-  ['Crossings', 'Annexe'].forEach(proj => {
-    const pfx = proj === 'Crossings' ? 'cx' : 'annex';
-    
-    const finalInflow = document.getElementById(`val-${pfx}-inflow`).textContent;
-    const finalUnits = document.getElementById(`val-${pfx}-units`).textContent;
-    
-    const subtitleId = proj === 'Crossings' ? 'landing-cx-subtitle' : 'landing-annex-subtitle';
-    const el = document.getElementById(subtitleId);
-    if (el) {
-      if (finalInflow.includes('Syncing')) {
-        el.textContent = 'Syncing live data...';
-      } else {
-        el.textContent = `${finalUnits} units · ${finalInflow} inflow`;
-      }
-    }
-  });
-}
   let _dashboardSession = 'latest';
 
 function populateSessionPicker() {
@@ -4504,38 +5712,13 @@ function refreshDashboardForSession() {
   const proj = currentProject;
   const pfx = proj === 'Crossings';
 
-  function extractSessionMetrics(targetSession) {
-    let m = {};
-    let offerFound = false;
-    taskDatabase.filter(t => t.project === proj && t.session === targetSession && /operations|fincon/i.test(t.dept)).forEach(t => {
-      const txt = (t.action||'') + ' ' + (t.explanation||'');
-      if (!/[₦N][\d,]+|\bsales[-:\s]+\d|\d+\s*units|offer letter/i.test(txt)) return;
-      
-      let match;
-      match = txt.match(/\binflow[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?(?:mn|MN)?)/i);
-      if (match) { let v=match[1].trim().toUpperCase().replace(/MN$/,'M').replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; m.inflow=v; }
-      
-      match = txt.match(/value of sales[:\s\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-      if (match) { let v=match[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; m.sales=v; }
-      
-      match = txt.match(/account bal(?:ance)?[\s:\-]+([₦N]?\s*[\d,.]+\s*[BMKbmk]?)/i);
-      if (match) { let v=match[1].trim().toUpperCase().replace(/^N(?=\d)/,'₦'); if(!v.startsWith('₦'))v='₦'+v; m.balance=v; }
-      
-      match = txt.match(/\bsales[:\s\-]+(\d{1,4})\b/i) || txt.match(/\b(\d{1,4})\s+units/i);
-      if (match) m.units = match[1];
-      
-      if (!offerFound) {
-        match = txt.match(/(\d{1,4})\s*(?:active\s*)?offer letters?/i) || txt.match(/(?:active\s*)?offer letters?[\s:\-]+(\d{1,4})\b/i);
-        if (match) { m.offers = match[1]; offerFound = true; }
-      }
-    });
-    return m;
-  }
-
   const latestSession = availableSessions[proj][0];
-  const selectedMetrics = extractSessionMetrics(session);
-  const latestMetrics = extractSessionMetrics(latestSession);
+  
+  // Pull directly from our Firebase cache safely
+  const selectedMetrics = (window._firebaseMetrics && window._firebaseMetrics[proj]) ? window._firebaseMetrics[proj][session] || {} : {};
+  const latestMetrics = (window._firebaseMetrics && window._firebaseMetrics[proj]) ? window._firebaseMetrics[proj][latestSession] || {} : {};
 
+  // Fallbacks: Use selected -> then latest -> then '...'
   const finalInflow = selectedMetrics.inflow || latestMetrics.inflow || '...';
   const finalUnits = selectedMetrics.units || latestMetrics.units || '...';
   const finalSales = selectedMetrics.sales || latestMetrics.sales || '...';
@@ -4562,10 +5745,11 @@ function refreshDashboardForSession() {
   renderOverduePanels();
   if (availableSessions[proj][0] === session && session !== realFirst) availableSessions[proj].shift();
 
-  const m2 = session.match(/^([a-z]{3})\s*(\d+)/i);
+  const m2 = session.match(/^([a-z]{3,9})\s*(\d+)/i);
   if (m2) {
     const mn = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
-    const mon = mn[m2[1].toLowerCase()] || m2[1];
+    const monKey = m2[1].substring(0,3).toLowerCase();
+    const mon = mn[monKey] || m2[1].charAt(0).toUpperCase() + m2[1].substring(1,3).toLowerCase();
     const el = document.getElementById(pfx ? 'ph-date-cx' : 'ph-date-annex');
     if (el) el.textContent = 'Jan 5 \u2013 ' + mon + ' ' + parseInt(m2[2]) + ', 2026';
   }
@@ -4607,67 +5791,622 @@ function updateLandingPageMetrics() {
 let annexChartInstance = null;
 let cxChartInstance = null;
 
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  COMMERCIAL VELOCITY INDICATOR ENGINE                            ║
+// ║  Balance trajectory · Inflow pace · Threshold · Verdict          ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+let _cviCxChart = null;
+let _cviAnnexChart = null;
+
+// Known balance data per session (sourced from meeting notes & ops reports)
+// Values in ₦M. Fills gaps where _chartMetrics has no balance data.
+const CVI_BALANCE_LEGACY = {
+  Crossings: {
+    'Jan 5':   433,  'Jan 12':  330,  'Jan 19':  280,  'Jan 26':  240,
+    'Feb 02':  200,  'Feb 09':  175,  'Feb 16':  140,  'Feb 23':  120,
+    'Mar 02':  105,  'Mar 09':   99,  'Mar 16':   99,  'Mar 23':   99,
+    'Mar 30':   99,  'Apr 2':   113,  'Apr 7':    99,  'Apr 13':   99,
+    'Apr 20':   40,  'Apr 27':   40,  'May 4':   62.4, 'May 11':  62.4,
+    'May 18':  62.4, 'May 25':  70,   'June 1':  70
+  },
+  Annexe: {
+    'Jan 5':  120,  'Jan 8':  120,  'Jan 12':  65,   'Jan 15':  65,
+    'Jan 22':  65,  'Jan 26':  65,  'Jan 29':  90,   'Feb 02':  90,
+    'Feb 05':  85,  'Feb 09':  11,  'Feb 12':  11,   'Feb 16':  11,
+    'Feb 23':  20,  'Feb 26':  25,  'Mar 02':  30,   'Mar 05':  35,
+    'Mar 09':  40,  'Mar 12':  40,  'Mar 16':  45,   'Mar 23':  55,
+    'Mar 26':  55,  'Mar 30':  55,  'Apr 02':  55,   'Apr 07':  55,
+    'Apr 09':  55,  'Apr 13':  55,  'Apr 16':  55,   'Apr 20':  55,
+    'Apr 23':  55,  'Apr 27':  68,  'Apr 30':  68,   'May 4':  67.96,
+    'May 7':  67.96,'May 11': 80,   'May 14':  80,   'May 18':  90,
+    'May 21':  90,  'May 25':  95,  'June 1':  100
+  }
+};
+
+// Crossings civil mobilisation threshold (₦M total inflow)
+const CX_CIVIL_THRESHOLD = 800;
+// Annexe burn rate (₦M/week)
+const ANNEX_BURN_RATE = 35;
+
+function getCviBalance(proj, sess) {
+  // First check live _chartMetrics
+  const live = window._chartMetrics && window._chartMetrics[proj] && window._chartMetrics[proj][sess];
+  if (live && live.balance && live.balance > 0) return live.balance;
+  // Fall back to legacy
+  return (CVI_BALANCE_LEGACY[proj] && CVI_BALANCE_LEGACY[proj][sess]) || null;
+}
+
+function getCviInflow(proj, sess) {
+  const live = window._chartMetrics && window._chartMetrics[proj] && window._chartMetrics[proj][sess];
+  if (live && live.inflow && live.inflow > 0) return live.inflow;
+  if (window.renderDynamicCharts && typeof legacyData !== 'undefined' && legacyData[proj] && legacyData[proj][sess]) {
+    return legacyData[proj][sess].inflow || null;
+  }
+  return null;
+}
+
+function fmtM(val) {
+  if (val === null || val === undefined) return '—';
+  if (val >= 1000) return '₦' + (val/1000).toFixed(2) + 'B';
+  return '₦' + val.toFixed(1) + 'M';
+}
+
+function renderCVI(proj) {
+  if (typeof Chart === 'undefined') return;
+  const pfx = proj === 'Crossings' ? 'cx' : 'annex';
+  const isCx = proj === 'Crossings';
+  const accentColor = isCx ? '#1b5e20' : '#D32F2F';
+
+  // ── 1. Build ordered session list (oldest → newest) ──
+  const allSessions = Object.keys(CVI_BALANCE_LEGACY[proj]);
+  const liveSessions = [...(availableSessions[proj] || [])].reverse();
+  const merged = [...new Set([...allSessions, ...liveSessions])];
+
+  // Sort chronologically using parseSheetName
+  merged.sort((a, b) => {
+    const pa = parseSheetName(a), pb = parseSheetName(b);
+    if (!pa || !pb) return 0;
+    return (pa.month * 100 + pa.day) - (pb.month * 100 + pb.day);
+  });
+
+  // Build balance + inflow series
+  const balanceSeries = [], inflowSeries = [], labels = [];
+  let lastBal = null, lastInflow = null;
+  merged.forEach(sess => {
+    const b = getCviBalance(proj, sess);
+    const inf = getCviInflow(proj, sess);
+    if (b !== null) lastBal = b;
+    if (inf !== null) lastInflow = inf;
+    if (lastBal !== null) {
+      balanceSeries.push(lastBal);
+      inflowSeries.push(lastInflow || 0);
+      labels.push(formatSheetName(sess));
+    }
+  });
+
+  if (!balanceSeries.length) return;
+
+  // ── 2. Derive key metrics from the two most-recent data points ──
+  const currentBal  = balanceSeries[balanceSeries.length - 1];
+  const prevBal     = balanceSeries.length > 1 ? balanceSeries[balanceSeries.length - 2] : currentBal;
+  const balDelta    = currentBal - prevBal;
+
+  const currentInflow = inflowSeries[inflowSeries.length - 1] || 0;
+  const prevInflow    = inflowSeries.length > 1 ? inflowSeries[inflowSeries.length - 2] : currentInflow;
+  const inflowDelta   = currentInflow - prevInflow;
+
+  // ── 3. Project-specific derived values ──
+  let gapValue, runwayValue, barPct, barCurrentLabel, verdictHtml, statusText, statusClass;
+  let droughtStrip = '';
+
+  if (isCx) {
+    // Crossings: gap to ₦800M civil threshold
+    const gap = Math.max(0, CX_CIVIL_THRESHOLD - currentInflow);
+    gapValue = fmtM(gap);
+    barPct = Math.min(100, Math.round((currentInflow / CX_CIVIL_THRESHOLD) * 100));
+    barCurrentLabel = fmtM(currentInflow) + ' inflow';
+
+    // Weekly inflow pace (average over recent sessions with movement)
+    const recentInflowDeltas = [];
+    for (let i = Math.max(1, inflowSeries.length - 8); i < inflowSeries.length; i++) {
+      const d = inflowSeries[i] - inflowSeries[i-1];
+      if (d > 0) recentInflowDeltas.push(d);
+    }
+    const avgWeeklyInflow = recentInflowDeltas.length
+      ? recentInflowDeltas.reduce((a, b) => a + b, 0) / recentInflowDeltas.length
+      : 0;
+
+    const weeksToThreshold = avgWeeklyInflow > 0 ? Math.ceil(gap / avgWeeklyInflow) : null;
+    runwayValue = weeksToThreshold !== null ? weeksToThreshold + 'w' : '∞';
+
+    // Inflow drought detection: count sessions with zero movement
+    let droughtSessions = 0;
+    for (let i = inflowSeries.length - 1; i > 0; i--) {
+      if (inflowSeries[i] <= inflowSeries[i-1]) droughtSessions++;
+      else break;
+    }
+
+    // Status
+    if (currentBal < 50) { statusText = '⚠ Critical'; statusClass = 'critical'; }
+    else if (gap === 0)  { statusText = '✓ Threshold Met'; statusClass = 'healthy'; }
+    else if (weeksToThreshold !== null && weeksToThreshold <= 12) { statusText = 'In Range'; statusClass = 'warning'; }
+    else { statusText = 'Off Track'; statusClass = 'critical'; }
+
+    // Verdict
+    const paceStr = avgWeeklyInflow > 0 ? `₦${avgWeeklyInflow.toFixed(0)}M/week average inflow` : 'no recent inflow movement';
+    const etsStr  = weeksToThreshold ? `at this pace, the ₦800M civil works trigger will be reached in approximately <strong>${weeksToThreshold} weeks</strong>` : `<strong>the ₦800M civil works trigger cannot be reached at the current pace</strong>`;
+    const balStr  = balDelta < 0 ? `Account balance fell by <strong>${fmtM(Math.abs(balDelta))}</strong> since last session.` : balDelta > 0 ? `Account balance rose by <strong>${fmtM(balDelta)}</strong> since last session.` : `Account balance unchanged since last session.`;
+    verdictHtml = `${balStr} With <strong>${fmtM(gap)}</strong> remaining to the civil mobilisation threshold and ${paceStr}, ${etsStr}. Main civil infrastructure work remains locked until this threshold is crossed.`;
+    if (droughtSessions >= 4) {
+      droughtStrip = `<div class="cvi-drought-strip">🔴 Inflow drought: no new collections recorded for ${droughtSessions} consecutive sessions. Civil works mobilisation is not progressing.</div>`;
+    }
+  } else {
+    // Annexe: collections gap (Value of Sales vs Inflow)
+    const salesVal = (() => {
+      // Try live _chartMetrics (most recent session)
+      const recentLive = liveSessions[liveSessions.length - 1];
+      const live = window._chartMetrics && window._chartMetrics[proj] && window._chartMetrics[proj][recentLive];
+      if (live && live.salesValue && live.salesValue > 0) return live.salesValue;
+      // Fall back to legacyData (exposed as window._cviLegacySalesRef)
+      if (window._cviLegacySalesRef && window._cviLegacySalesRef[proj]) {
+        const ref = window._cviLegacySalesRef[proj];
+        // Walk merged from end to find last non-null salesValue
+        for (let i = merged.length - 1; i >= 0; i--) {
+          const d = ref[merged[i]];
+          if (d && d.salesValue && d.salesValue > 0) return d.salesValue;
+        }
+      }
+      return null;
+    })();
+
+    const collectionsGap = salesVal ? Math.max(0, salesVal - currentInflow) : null;
+    gapValue = collectionsGap !== null ? fmtM(collectionsGap) : '—';
+    barPct = salesVal ? Math.min(100, Math.round((currentInflow / salesVal) * 100)) : 0;
+    barCurrentLabel = fmtM(currentInflow) + ' collected';
+
+    // Runway at burn rate
+    const runwayWks = currentBal > 0 ? (currentBal / ANNEX_BURN_RATE).toFixed(1) : '< 0.5';
+    runwayValue = runwayWks + 'w';
+
+    // Status
+    if (currentBal < 50)      { statusText = '⚠ Critical'; statusClass = 'critical'; }
+    else if (currentBal < 100){ statusText = 'Low Balance'; statusClass = 'warning'; }
+    else                       { statusText = 'Stable';      statusClass = 'healthy'; }
+
+    // Verdict
+    const balStr = balDelta < 0 ? `Account balance fell by <strong>${fmtM(Math.abs(balDelta))}</strong> since last session — burn rate exceeds collections.`
+      : balDelta > 0 ? `Account balance rose by <strong>${fmtM(balDelta)}</strong> since last session.`
+      : `Account balance unchanged since last session.`;
+    const gapStr = collectionsGap !== null ? `The outstanding collections gap is <strong>${fmtM(collectionsGap)}</strong> — money committed in sales but not yet received.` : '';
+    verdictHtml = `${balStr} Current balance gives approximately <strong>${runwayWks} weeks</strong> of runway at ₦${ANNEX_BURN_RATE}M/week contractor burn rate. ${gapStr} Collections acceleration is the primary lever to sustain site momentum.`;
+  }
+
+  // ── 4. Paint KPI tiles ──
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+
+  const balClass = currentBal < 50 ? 'cvi-kpi-danger' : currentBal < 100 ? 'cvi-kpi-warn' : 'cvi-kpi-green';
+  const balEl = document.getElementById(`cvi-${pfx}-balance`);
+  if (balEl) { balEl.textContent = fmtM(currentBal); balEl.className = `cvi-kpi-value ${balClass}`; }
+
+  const balSubEl = document.getElementById(`cvi-${pfx}-balance-sub`);
+  if (balSubEl) {
+    if (balDelta < 0) { balSubEl.textContent = `↓ ${fmtM(Math.abs(balDelta))} vs prev`; balSubEl.style.color = 'var(--status-red)'; }
+    else if (balDelta > 0) { balSubEl.textContent = `↑ ${fmtM(balDelta)} vs prev`; balSubEl.style.color = 'var(--status-green)'; }
+    else { balSubEl.textContent = 'No change vs prev'; balSubEl.style.color = ''; }
+  }
+
+  const inflowDeltaEl = document.getElementById(`cvi-${pfx}-inflow-delta`);
+  if (inflowDeltaEl) {
+    inflowDeltaEl.textContent = inflowDelta > 0 ? '+' + fmtM(inflowDelta) : inflowDelta < 0 ? fmtM(inflowDelta) : 'Flat';
+    inflowDeltaEl.className = `cvi-kpi-value ${inflowDelta > 0 ? 'cvi-kpi-green' : inflowDelta < 0 ? 'cvi-kpi-danger' : ''}`;
+  }
+
+  const inflowSubEl = document.getElementById(`cvi-${pfx}-inflow-sub`);
+  if (inflowSubEl) inflowSubEl.textContent = `Total: ${fmtM(currentInflow)}`;
+
+  setEl(`cvi-${pfx}-gap`, gapValue);
+  setEl(`cvi-${pfx}-runway`, runwayValue);
+  setEl(`cvi-${pfx}-threshold-pct`, barPct + '%');
+  setEl(`cvi-${pfx}-bar-current`, barCurrentLabel);
+
+  const barEl = document.getElementById(`cvi-${pfx}-bar`);
+  if (barEl) {
+    barEl.style.width = barPct + '%';
+    if (currentBal < 50) barEl.classList.add('danger');
+    else barEl.classList.remove('danger');
+  }
+
+  // Status chip
+  const chipEl = document.getElementById(`cvi-${pfx}-status-chip`);
+  if (chipEl) { chipEl.textContent = statusText; chipEl.className = `cvi-status-chip ${statusClass}`; }
+
+  // Verdict
+  const verdictEl = document.getElementById(`cvi-${pfx}-verdict`);
+  const verdictTxtEl = document.getElementById(`cvi-${pfx}-verdict-text`);
+  if (verdictEl)    verdictEl.className = `cvi-verdict ${statusClass}`;
+  if (verdictTxtEl) verdictTxtEl.innerHTML = verdictHtml;
+
+  // Drought strip
+  const panelEl = document.getElementById(`cvi-${pfx}`);
+  if (panelEl) {
+    let existing = panelEl.querySelector('.cvi-drought-strip');
+    if (existing) existing.remove();
+    if (droughtStrip) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = droughtStrip;
+      panelEl.insertBefore(tmp.firstChild, panelEl.querySelector('.cvi-verdict'));
+    }
+  }
+
+  // ── 5. Balance trend chart ──
+  const canvasId = `cvi-${pfx}-chart`;
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+
+  const chartRef = isCx ? '_cviCxChart' : '_cviAnnexChart';
+  if (window[chartRef]) { try { window[chartRef].destroy(); } catch(e){} }
+
+  // Thin the label set for readability (show at most 16)
+  const step = labels.length > 16 ? Math.ceil(labels.length / 16) : 1;
+  const thinLabels = labels.map((l, i) => i % step === 0 ? l : '');
+
+  // Build danger zone annotation (horizontal band)
+  const dangerZone = 50; // ₦50M
+
+  // Point colours: red if below danger zone
+  const pointColors = balanceSeries.map(v => v < dangerZone ? '#c62828' : accentColor);
+  const borderColors = balanceSeries.map(v => v < dangerZone ? '#c62828' : accentColor);
+
+  // Segment colour: draw line red when balance is below 50M
+  function segmentColor(ctx) {
+    const v1 = balanceSeries[ctx.p0DataIndex];
+    const v2 = balanceSeries[ctx.p1DataIndex];
+    return (v1 < dangerZone || v2 < dangerZone) ? '#c62828' : accentColor;
+  }
+
+  window[chartRef] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: thinLabels,
+      datasets: [
+        {
+          label: 'Account Balance (₦M)',
+          data: balanceSeries,
+          borderColor: accentColor,
+          segment: { borderColor: segmentColor },
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: balanceSeries.map((v, i) => {
+            // Show point only at key transitions or endpoints
+            const isLast = i === balanceSeries.length - 1;
+            const isDrop = i > 0 && balanceSeries[i] < dangerZone && balanceSeries[i-1] >= dangerZone;
+            const isRise = i > 0 && balanceSeries[i] >= dangerZone && balanceSeries[i-1] < dangerZone;
+            return (isLast || isDrop || isRise) ? 5 : (balanceSeries.length > 30 ? 0 : 2);
+          }),
+          pointBackgroundColor: pointColors,
+          pointBorderColor: borderColors,
+          tension: 0.3,
+          fill: false
+        },
+        // Danger threshold reference line
+        {
+          label: 'Danger zone (₦50M)',
+          data: Array(balanceSeries.length).fill(dangerZone),
+          borderColor: 'rgba(198,40,40,0.35)',
+          borderWidth: 1.5,
+          borderDash: [5, 4],
+          pointRadius: 0,
+          fill: {
+            target: 'origin',
+            above: 'rgba(198,40,40,0)',
+            below: 'rgba(198,40,40,0.07)'
+          },
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.datasetIndex === 1) return null;
+              return `Balance: ${fmtM(ctx.parsed.y)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#999', font: { size: 9, weight: '600' }, maxRotation: 45, autoSkip: false },
+          grid: { display: false }
+        },
+        y: {
+          ticks: {
+            color: '#999', font: { size: 9 },
+            callback: v => fmtM(v)
+          },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          min: 0
+        }
+      }
+    }
+  });
+}
+
+// Call both CVIs
+function renderAllCVIs() {
+  try { renderCVI('Crossings'); } catch(e) { console.warn('[CVI] Crossings:', e); }
+  try { renderCVI('Annexe'); } catch(e) { console.warn('[CVI] Annexe:', e); }
+}
+
 function renderDynamicCharts() {
   if (typeof Chart === 'undefined') return;
 
+  // THE HYBRID OVERRIDE: Tracking Inflow vs Value of Sales (Gap in Receivables)
+  // Hoisted to renderDynamicCharts scope so both getChartMetrics AND buildChartData can see it.
+  // All values are in Millions (e.g., 1.3B = 1300)
+  const legacyData = window._cviLegacySalesRef = {
+    'Crossings': {
+      'Sept 29':  { inflow: 380, salesValue: 683 },
+      'Sept 29 -':{ inflow: 380, salesValue: 683 },
+      'Oct 6':    { inflow: 455, salesValue: 683.3 },
+      'Oct 13':   { inflow: 455, salesValue: 683.3 },
+      'Oct 13 B': { inflow: 455, salesValue: 683.3 },
+      'Oct 20 ':  { inflow: 455, salesValue: 683.3 },
+      'Oct 23':   { inflow: 455, salesValue: 683.3 },
+      'Oct 27':   { inflow: 455, salesValue: 683.3 },
+      'Nov 3':    { inflow: 455, salesValue: 683.3 },
+      'Nov 10':   { inflow: 531.8, salesValue: 683.3 },
+      'Nov 17':   { inflow: 531.8, salesValue: 683.3 },
+      'Nov 20':   { inflow: 531.8, salesValue: 683.3 },
+      'Nov 25':   { inflow: 531.8, salesValue: 683.3 },
+      'Dec 1':    { inflow: 531.8, salesValue: 683.3 },
+      'Dec 8':    { inflow: 607.5, salesValue: 683.3 },
+      'Dec 15':   { inflow: 607.5, salesValue: 904 },
+      'Dec 22':   { inflow: 607.5, salesValue: 904 },
+      'Jan 5':    { inflow: 1050, salesValue: 1848 },
+      'Jan 12':   { inflow: 1179, salesValue: 2202 },
+      'Jan 19':   { inflow: 1300, salesValue: 2202 },
+      'Jan 26':   { inflow: 1300, salesValue: 2202 },
+      'Feb 02':   { inflow: 1300, salesValue: 2202 },
+      'Feb 09':   { inflow: 1415, salesValue: 2202 },
+      'Feb 16':   { inflow: 1415, salesValue: 2202 },
+      'Feb 23':   { inflow: 1415, salesValue: 2202 },
+      'Mar 02':   { inflow: 1415, salesValue: 2202 },
+      'Mar 09':   { inflow: 1415, salesValue: 2202 },
+      'Mar 16':   { inflow: 1415, salesValue: 2200 },
+      'Mar 23':   { inflow: 1680, salesValue: 2070 },
+      'Mar 30':   { inflow: 1720, salesValue: 2070 },
+      'Apr 2':    { inflow: 1720, salesValue: 2070 },
+      'Apr 7':    { inflow: 1720, salesValue: 2070 },
+      'Apr 13':   { inflow: 1720, salesValue: 2070 },
+      'Apr 20':   { inflow: 1720, salesValue: 2070 },
+      'Apr 27':   { inflow: 1720, salesValue: 2070 },
+      'May 4':    { inflow: 1720, salesValue: 2070 },
+      'May 11':   { inflow: 1720, salesValue: 2000 },
+      'May 18':   { inflow: 1720, salesValue: 2070 },
+      'May 25':   { inflow: 1760, salesValue: 2170 },
+      'June 1':   { inflow: 1760, salesValue: 2170 }
+    },
+    'Annexe': {
+      'Jun 24':  { inflow: 4400, salesValue: 6150 },
+      'Jun 26':  { inflow: 4420, salesValue: 6150 },
+      'Jun 30':  { inflow: 4430, salesValue: 6150 },
+      'Jul 3':   { inflow: 4500, salesValue: 6280 },
+      'Jul 8':   { inflow: 4500, salesValue: 6280 },
+      'Jul 16':  { inflow: 4800, salesValue: 6280 },
+      'Jul 17':  { inflow: 4800, salesValue: 6280 },
+      'Jul 22':  { inflow: 4800, salesValue: 6280 },
+      'Jul 24':  { inflow: 4500, salesValue: 6280 },
+      'Jul 29':  { inflow: 4640, salesValue: 6380 },
+      'Jul 31':  { inflow: 4790, salesValue: 6380 },
+      'August':  { inflow: 4790, salesValue: 6380 },
+      'Aug 4':   { inflow: 4790, salesValue: 6380 },
+      'Aug 11':  { inflow: 4800, salesValue: 6380 },
+      'Aug 12':  { inflow: 4800, salesValue: 6380 },
+      'Aug 19':  { inflow: 4900, salesValue: 6420 },
+      'Aug 21':  { inflow: 4900, salesValue: 6420 },
+      'Aug 25':  { inflow: 5000, salesValue: 6420 },
+      'Aug 28':  { inflow: 5020, salesValue: 6420 },
+      'Sept 2':  { inflow: 5070, salesValue: 6420 },
+      'Sept 8':  { inflow: 5070, salesValue: 6420 },
+      'Sept 11': { inflow: 5070, salesValue: 6420 },
+      'Sept 15': { inflow: 5090, salesValue: 6600 },
+      'Sept 18': { inflow: 5200, salesValue: 6800 },
+      'Sept22':  { inflow: 5200, salesValue: 6800 },
+      'Sept 25': { inflow: 5200, salesValue: 6800 },
+      'Sept 29': { inflow: 5300, salesValue: 6800 },
+      'Oct 2':   { inflow: 5340, salesValue: 6950 },
+      'Oct 6':   { inflow: 5340, salesValue: 6950 },
+      'Oct 9':   { inflow: 5430, salesValue: 6950 },
+      'Oct 13':  { inflow: 5430, salesValue: 6950 },
+      'Oct 20':  { inflow: 5440, salesValue: 6950 },
+      'Oct 23':  { inflow: 5420, salesValue: 6850 },
+      'Oct 27':  { inflow: 5420, salesValue: 6850 },
+      'Oct 30':  { inflow: 5420, salesValue: 6850 },
+      'Nov 3':   { inflow: 5480, salesValue: 6850 },
+      'Nov 6':   { inflow: 5480, salesValue: 6850 },
+      'Nov 10':  { inflow: 5480, salesValue: 6850 },
+      'Nov 13':  { inflow: 5480, salesValue: 6850 },
+      'Nov 17':  { inflow: 5500, salesValue: 6850 },
+      'Nov 20':  { inflow: 5500, salesValue: 6850 },
+      'Nov 25':  { inflow: 5500, salesValue: 6850 },
+      'Nov 27':  { inflow: 5500, salesValue: 6850 },
+      'Dec 1':   { inflow: 5700, salesValue: 6900 },
+      'Dec 4':   { inflow: 5750, salesValue: 6900 },
+      'Dec 8':   { inflow: 5750, salesValue: 6900 },
+      'Dec 15':  { inflow: 5870, salesValue: 6900 },
+      'Dec 18':  { inflow: 5870, salesValue: 6900 },
+      'Dec 22':  { inflow: 5870, salesValue: 6900 },
+      'Jan 5':   { inflow: 5970, salesValue: 6900 },
+      'Jan 8':   { inflow: 5970, salesValue: 6900 },
+      'Jan 12':  { inflow: 5140, salesValue: 6910 },
+      'Jan 15':  { inflow: 5970, salesValue: 6910 },
+      'Jan 19':  { inflow: 5970, salesValue: 6910 },
+      'Jan 22':  { inflow: 5970, salesValue: 6910 },
+      'Jan 26':  { inflow: 5970, salesValue: 6910 },
+      'Jan 29':  { inflow: 6100, salesValue: 6910 },
+      'Feb 02':  { inflow: 6100, salesValue: 6910 },
+      'Feb 05':  { inflow: 6100, salesValue: 6840 },
+      'Feb 09':  { inflow: 6100, salesValue: 6840 },
+      'Feb 12':  { inflow: 6100, salesValue: 6840 },
+      'Feb 16':  { inflow: 6100, salesValue: 6840 },
+      'Feb 23':  { inflow: 6110, salesValue: 6840 },
+      'Feb 26':  { inflow: 6120, salesValue: 6850 },
+      'Mar 02':  { inflow: 6140, salesValue: 6850 },
+      'Mar 05':  { inflow: 6150, salesValue: 6850 },
+      'Mar 09':  { inflow: 6170, salesValue: 6840 },
+      'Mar 12':  { inflow: 6170, salesValue: 6840 },
+      'Mar 16':  { inflow: 6250, salesValue: 6840 },
+      'Mar 23':  { inflow: 6270, salesValue: 6890 },
+      'Mar 26':  { inflow: 6270, salesValue: 6890 },
+      'Mar 30':  { inflow: 6270, salesValue: 6890 },
+      'Apr 02':  { inflow: 6270, salesValue: 6890 },
+      'Apr 07':  { inflow: 6270, salesValue: 6890 },
+      'Apr 09':  { inflow: 6270, salesValue: 6890 },
+      'Apr 13':  { inflow: 6270, salesValue: 6890 },
+      'Apr 16':  { inflow: 6270, salesValue: 6890 },
+      'Apr 20':  { inflow: 6270, salesValue: 6890 },
+      'Apr 23':  { inflow: 6270, salesValue: 6890 },
+      'Apr 27':  { inflow: 6270, salesValue: 6890 },
+      'Apr 30':  { inflow: 6350, salesValue: 6890 },
+      'May 4':   { inflow: 6450, salesValue: 7030 },
+      'May 7':   { inflow: 6450, salesValue: 7030 },
+      'May 11':  { inflow: 6450, salesValue: 7030 },
+      'May 14':  { inflow: 6450, salesValue: 7030 },
+      'May 18':  { inflow: 6590, salesValue: 7160 },
+      'May 21':  { inflow: 6639, salesValue: 7160 },
+      'May 25':  { inflow: 6639, salesValue: 7167 },
+      'June 1':  { inflow: 6639, salesValue: 7267 }
+    }
+  };
+
   function getChartMetrics(proj, session) {
+    if (legacyData[proj] && legacyData[proj][session]) {
+      return legacyData[proj][session];
+    }
     if (window._chartMetrics && window._chartMetrics[proj] && window._chartMetrics[proj][session]) {
       return window._chartMetrics[proj][session];
     }
-    return { inflow: null, balance: null };
+    return { inflow: null, salesValue: null };
   }
 
   function buildChartData(proj) {
-    let sessions = [...(availableSessions[proj] || [])].reverse();
-    let labels = [], inflowData = [], balanceData = [];
-    let rawMetrics = sessions.map(s => getChartMetrics(proj, s));
+    let liveSessions = [...(availableSessions[proj] || [])].reverse();
     
-    let firstInf = rawMetrics.find(m => m.inflow !== null)?.inflow || 0;
-    let firstBal = rawMetrics.find(m => m.balance !== null)?.balance || 0;
+    // Merge legacy dates that aren't in the live sheets
+    let legacyKeys = Object.keys(legacyData[proj] || {});
+    let fullSessions = [];
+    legacyKeys.forEach(k => {
+      if (!liveSessions.includes(k)) fullSessions.push(k);
+    });
+    fullSessions = fullSessions.concat(liveSessions);
+
+    let labels = [], inflowData = [], salesValueData = [];
+    let rawMetrics = fullSessions.map(s => getChartMetrics(proj, s));
+    
+    let firstInf = rawMetrics.find(m => m.inflow !== null && m.inflow > 0)?.inflow || 0;
+    let firstSales = rawMetrics.find(m => m.salesValue !== null && m.salesValue > 0)?.salesValue || 0;
     
     let lastInf = firstInf;
-    let lastBal = firstBal;
+    let lastSales = firstSales;
     
     rawMetrics.forEach((m, i) => {
-      labels.push(formatSheetName(sessions[i]));
-      if (m.inflow !== null) lastInf = m.inflow;
-      if (m.balance !== null) lastBal = m.balance;
+      labels.push(formatSheetName(fullSessions[i]));
+      
+      if (m.inflow !== null && m.inflow > 0) {
+        if (lastInf === 0 || m.inflow >= lastInf * 0.2) {
+          lastInf = m.inflow;
+        }
+      }
+      if (m.salesValue !== null && m.salesValue > 0) {
+        if (lastSales === 0 || m.salesValue >= lastSales * 0.2) {
+          lastSales = m.salesValue;
+        }
+      }
+      
       inflowData.push(lastInf);
-      balanceData.push(lastBal);
+      salesValueData.push(lastSales);
     });
-    return { labels, inflowData, balanceData };
+    return { labels, inflowData, salesValueData };
   }
 
-  const gridC = 'rgba(0,0,0,0.06)', textC = '#999';
-  const baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11, weight: '700', family: 'DM Sans' }, color: textC, boxWidth: 14, padding: 12 } } }, scales: { x: { ticks: { color: textC, font: { size: 10, weight: '600' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } }, y: { ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC } } } };
+  const baseOpts = { 
+    responsive: true, 
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false // Enables the vertical crosshair spanning both lines
+    },
+    plugins: { 
+      legend: { 
+        display: true, position: 'bottom', 
+        labels: { font: { size: 12, weight: '700', family: "'DM Sans', sans-serif" }, color: '#1a73e8', usePointStyle: true, boxWidth: 8, padding: 20 } 
+      },
+      tooltip: {
+        backgroundColor: '#ffffff', titleColor: '#202124', bodyColor: '#5f6368', borderColor: '#dadce0', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
+        titleFont: { size: 13, weight: 'bold', family: "'DM Sans', sans-serif" },
+        bodyFont: { size: 12, weight: 'bold', family: "'DM Sans', sans-serif" },
+        boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+        callbacks: {
+          label: function(ctx) { return ' : ₦' + (ctx.parsed.y / 1000).toFixed(2) + 'B'; }
+        }
+      }
+    }, 
+    scales: { 
+      x: { 
+        ticks: { color: '#80868b', font: { size: 11, weight: '600' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, 
+        grid: { display: false } 
+      }, 
+      y: { 
+        ticks: { color: '#80868b', font: { size: 11, weight: '600' }, callback: function(value) { return '₦' + (value / 1000).toFixed(1) + 'B'; } }, 
+        grid: { color: '#EAEBEE', drawBorder: false } 
+      } 
+    } 
+  };
 
+  // RENDER ANNEXE CHART
   const annData = buildChartData('Annexe');
+  const annRadius = annData.labels.length > 40 ? 0 : (annData.labels.length > 20 ? 1 : 4);
+
   const ctxAnnexe = document.getElementById('c1');
   if (ctxAnnexe && annData.labels.length) {
     if (annexChartInstance) annexChartInstance.destroy();
     annexChartInstance = new Chart(ctxAnnexe, {
       type: 'line', 
       data: { labels: annData.labels, datasets: [ 
-        { label: 'Inflow (₦B)', data: annData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4, yAxisID: 'y' }, 
-        { label: 'Balance (₦100M)', data: annData.balanceData, borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.05)', borderWidth: 2, pointRadius: 2.5, pointBackgroundColor: '#1565c0', fill: false, tension: 0.4, borderDash: [4, 3], yAxisID: 'y1' } 
+        { label: 'Value of Sales', data: annData.salesValueData, borderColor: '#1a73e8', backgroundColor: 'transparent', borderWidth: 2, pointRadius: annRadius, pointBackgroundColor: '#1a73e8', pointBorderColor: '#fff', pointHoverRadius: 6, fill: false, tension: 0.1, borderDash: [4, 4] },
+        { label: 'Total Inflow', data: annData.inflowData, borderColor: '#d93025', backgroundColor: 'rgba(217,48,37,0.05)', borderWidth: 2, pointRadius: annRadius, pointBackgroundColor: '#d93025', pointBorderColor: '#fff', pointHoverRadius: 6, fill: true, tension: 0.1 } 
       ]},
-      options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, position: 'left' }, y1: { ...baseOpts.scales.y, position: 'right', grid: { display: false } } } }
+      options: baseOpts
     });
   }
 
+  // RENDER CROSSINGS CHART
   const cxData = buildChartData('Crossings');
+  const cxRadius = cxData.labels.length > 40 ? 0 : (cxData.labels.length > 20 ? 1 : 4);
+
   const ctxCx = document.getElementById('c3');
   if (ctxCx && cxData.labels.length) {
     if (cxChartInstance) cxChartInstance.destroy();
     cxChartInstance = new Chart(ctxCx, {
       type: 'line', 
       data: { labels: cxData.labels, datasets: [ 
-        { label: 'Inflow (₦B)', data: cxData.inflowData, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.08)', borderWidth: 2.5, pointRadius: 2.5, pointBackgroundColor: '#2e7d32', fill: true, tension: 0.4 } 
+        { label: 'Value of Sales', data: cxData.salesValueData, borderColor: '#1a73e8', backgroundColor: 'transparent', borderWidth: 2, pointRadius: cxRadius, pointBackgroundColor: '#1a73e8', pointBorderColor: '#fff', pointHoverRadius: 6, fill: false, tension: 0.1, borderDash: [4, 4] },
+        { label: 'Total Inflow', data: cxData.inflowData, borderColor: '#d93025', backgroundColor: 'rgba(217,48,37,0.05)', borderWidth: 2, pointRadius: cxRadius, pointBackgroundColor: '#d93025', pointBorderColor: '#fff', pointHoverRadius: 6, fill: true, tension: 0.1 } 
       ]},
       options: baseOpts
     });
   }
-}
+
+} // end renderDynamicCharts
 
 // ═══════════════════════════════════════════════════════
 // AI PROJECT CHATBOT
@@ -4829,13 +6568,10 @@ window.onload = function () {
           const meta = chart.getDatasetMeta(i); if (meta.hidden) return; const lastIdx = ds.data.length - 1; if (lastIdx < 0) return;
           const pt = meta.data[lastIdx]; const val = ds.data[lastIdx]; if (val == null) return;
           
-          let label; 
-          if (ds.label && (ds.label.includes('Inflow') || ds.label.includes('₦B'))) { 
-            label = '₦' + val.toFixed(2) + 'B'; 
-          } else { 
-            let bVal = (val * 100).toFixed(1);
-            label = '₦' + (bVal.endsWith('.0') ? bVal.slice(0, -2) : bVal) + 'M'; 
-          }
+          let label;
+// Divide the raw millions value by 1000 to get billions
+let bVal = (val / 1000).toFixed(2);
+label = '₦' + (bVal.endsWith('.00') ? bVal.slice(0, -3) : bVal) + 'Bn';
           
           ctx.save(); 
           ctx.font = 'bold 10px DM Mono, monospace'; 
@@ -4855,7 +6591,7 @@ window.onload = function () {
     };
     Chart.register(lastPointPlugin);
     
-    setTimeout(renderDynamicCharts, 500);
+    setTimeout(renderDynamicCharts, 500); setTimeout(renderAllCVIs, 700);
 
   } catch(e) {
     console.warn('Chart initialisation failed:', e);
@@ -5044,6 +6780,16 @@ window.onAuthGateSignedIn = window.onAuthGateSignedIn || function(user, access) 
     }
   }
 };
+
+// ── SAFETY UNLOCK — prevents permanent freeze if dashboard-auth.js fails silently ──
+// If auth-locked is still present after 8 seconds, force-remove it.
+// This surfaces the login screen even when Firebase or the auth script errors out.
+window._authSafetyTimer = setTimeout(function() {
+  if (document.body && document.body.classList.contains('auth-locked')) {
+    console.warn('[AUTH] Safety timeout fired — dashboard-auth.js may have failed. Force-unlocking body.');
+    document.body.classList.remove('auth-locked');
+  }
+}, 8000);
 </script>
 <script src="dashboard-auth.js"></script>
 <script src="dashboard-pi-engine.js"></script>
