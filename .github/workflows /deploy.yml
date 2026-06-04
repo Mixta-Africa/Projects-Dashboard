@@ -59,10 +59,7 @@ jobs:
           grep -q '__GH_WORKFLOW_TOKEN__' index.html && echo "WARNING: GH_WORKFLOW_TOKEN not injected" || echo "✓ GH_WORKFLOW_TOKEN injected"
           grep -q '__ADMIN_PASSWORD__'    index.html && echo "WARNING: ADMIN_PASSWORD not injected"    || echo "✓ ADMIN_PASSWORD injected"
 
-      - name: Setup GitHub Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload site to Pages
+      - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
