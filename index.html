@@ -2116,6 +2116,7 @@ body.users-bar-visible .dept-sidebar {
         <button class="sidebar-item" onclick="showDept(this,'Crossings','MCC')">MCC <span class="dept-count">0</span></button>
         <button class="sidebar-item" onclick="showDept(this,'Crossings','Legal')">Legal <span class="dept-count">0</span></button>
         <button class="sidebar-item" onclick="showDept(this,'Crossings','General')">General <span class="dept-count">0</span></button>
+        <button class="sidebar-item" onclick="showDept(this,'Crossings','Collections')">Collections <span class="dept-count">0</span></button>
       </div>
       <div class="sidebar-section" id="sidebar-annexe" style="display:none;">
         <div class="sidebar-section-label annexe">Lakowe Annexe</div>
@@ -2128,6 +2129,7 @@ body.users-bar-visible .dept-sidebar {
         <button class="sidebar-item annexe-btn" onclick="showDept(this,'Annexe','MCC')">MCC <span class="dept-count">0</span></button>
         <button class="sidebar-item annexe-btn" onclick="showDept(this,'Annexe','Sales')">Sales <span class="dept-count">0</span></button>
         <button class="sidebar-item annexe-btn" onclick="showDept(this,'Annexe','Legal')">Legal <span class="dept-count">0</span></button>
+        <button class="sidebar-item annexe-btn" onclick="showDept(this,'Annexe','Collections')">Collections <span class="dept-count">0</span></button>
       </div>
     </div>
     <div class="dept-main">
@@ -2812,6 +2814,9 @@ const USER_ROLES = {
   // ── TELEMARKETING — appears in both projects ──
   'm.apuh@mixtafrica.com':        { name: 'M. Apuh',         dept: 'Telemarketing', project: 'Both',  role: 'editor' },
 
+  // ── COLLECTIONS — appears in both projects ──
+  'o.odumade@mixtafrica.com':        { name: 'O. Odumade',         dept: 'Collections', project: 'Both',  role: 'editor' },
+
   // ── Legacy placeholder logins (kept for backward compat) ──
   'admin@mixta.ng':               { name: 'Admin',           dept: null,          project: 'Both',      role: 'admin'  },
 };
@@ -3231,6 +3236,7 @@ const DEPT_NORMALIZE_MAP = {
   'general': 'General', 'amc': 'AMC',
   'da': 'DA', 'mrs h': 'Mrs H', 'risk': 'Risk',
   'financial planning': 'Financial Planning',
+  'Collections': 'collections',
 };
 
 
@@ -4232,8 +4238,8 @@ function renderDiagPanel() {
 
 function renderAdminUpdatesFeed() {
   const ALL_DEPTS = {
-    Crossings: ['Design','Costing','AMC','IPD','Landscape','Operations','Fincon','Sales','MCC','Legal','General'],
-    Annexe: ['Design','Costing','IPD','Operations','Fincon','Telemarketing','MCC','Sales','Legal']
+    Crossings: ['Design','Costing','AMC','IPD','Landscape','Operations','Fincon','Sales','MCC','Legal','General', 'Collections'],
+    Annexe: ['Design','Costing','IPD','Operations','Fincon','Telemarketing','MCC','Sales','Legal', 'Collections']
   };
 
   let allUpdates = [];
@@ -5390,6 +5396,7 @@ const MAILING_LIST = {
     Legal:      ['legal@mixtafrica.com'],
     FINCON:     ['mixta_fincon@mixtafrica.com'],
     Operations: ['realestateoperations_nigeria@mixtafrica.com'],
+    Collections:['o.odumade@mixtafrica.com'],
   },
   Annexe: {
     Design:        ['dcs_nigeria@mixtafrica.com'],
@@ -5401,7 +5408,8 @@ const MAILING_LIST = {
     Legal:         ['legal@mixtafrica.com'],
     FINCON:        ['mixta_fincon@mixtafrica.com'],
     Operations:    ['realestateoperations_nigeria@mixtafrica.com'],
-    Telemarketing: ['m.apuh@mixtafrica.com']
+    Telemarketing: ['m.apuh@mixtafrica.com'],
+    Collections:['o.odumade@mixtafrica.com']
   }
 };
 
