@@ -421,36 +421,71 @@ body.users-bar-visible .dept-sidebar {
 .btn-onhold:hover { background: var(--status-grey); color: white; }
 .team-updates-section { margin-top: 30px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
 .team-updates-section h3 { font-size: 14px; font-weight: 800; margin-bottom: 14px; color: var(--text-primary); }
-.updates-list { max-height: 250px; overflow-y: auto; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
-.update-item { background: var(--bg); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; border-left: 3px solid var(--active-theme-color, var(--cx-color)); }
+.updates-list { max-height: 420px; overflow-y: auto; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; padding: 4px 2px; }
 
-/* ── Media attach row (in the form) ── */
-.update-media-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+/* ── Chat bubble rows ── */
+.chat-row { display: flex; gap: 10px; align-items: flex-end; }
+.chat-row.mine  { flex-direction: row-reverse; }
+.chat-row.mine .chat-bubble  { background: var(--active-theme-color, var(--cx-color)); color: #fff; border-bottom-right-radius: 4px; }
+.chat-row.mine .chat-bubble .chat-meta { color: rgba(255,255,255,0.75); }
+.chat-row.mine .chat-bubble .update-task-tag { background: rgba(255,255,255,0.25); color: #fff; }
+.chat-row.theirs { flex-direction: row; }
+.chat-row.theirs .chat-bubble { background: var(--bg); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+
+/* Avatar circle */
+.chat-avatar { width: 30px; height: 30px; min-width: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; letter-spacing: -0.02em; flex-shrink: 0; }
+
+/* Bubble */
+.chat-bubble { max-width: 75%; padding: 10px 13px; border-radius: 14px; font-size: 13px; line-height: 1.5; position: relative; }
+.chat-meta { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.chat-text { white-space: pre-wrap; word-break: break-word; }
+
+/* Quoted reply preview */
+.chat-quote { border-left: 3px solid rgba(0,0,0,0.15); padding: 5px 8px; margin-bottom: 7px; border-radius: 4px; font-size: 11px; opacity: 0.8; background: rgba(0,0,0,0.05); }
+.chat-row.mine .chat-quote { border-left-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); }
+
+/* Media grid inside bubble */
+.chat-media-grid { display: grid; gap: 4px; margin-top: 8px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+.chat-media-grid img { width: 100%; height: 100px; object-fit: cover; border-radius: 6px; cursor: pointer; display: block; }
+.chat-media-grid iframe { width: 100%; height: 110px; border: none; border-radius: 6px; display: block; }
+.chat-media-link { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: inherit; text-decoration: underline; margin-top: 4px; }
+
+/* Reply + admin delete row */
+.chat-actions { display: flex; gap: 8px; margin-top: 6px; align-items: center; }
+.chat-reply-btn { background: none; border: none; font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; gap: 4px; }
+.chat-reply-btn:hover { color: var(--active-theme-color, var(--cx-color)); }
+.chat-delete-btn { background: none; border: none; font-size: 11px; color: var(--brand-red); cursor: pointer; padding: 0; opacity: 0.7; }
+.chat-delete-btn:hover { opacity: 1; }
+.chat-media-del-btn { background: none; border: none; font-size: 10px; color: var(--brand-red); cursor: pointer; padding: 2px 4px; opacity: 0.7; }
+.chat-media-del-btn:hover { opacity: 1; }
+
+/* ── Input area ── */
+.update-input-group { display: flex; flex-direction: column; gap: 8px; }
+.update-task-select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; background: var(--white); color: var(--text-primary); }
+.update-input-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; resize: vertical; min-height: 70px; box-sizing: border-box; }
+.update-author-row { display: flex; gap: 8px; align-items: center; }
+.update-author-row input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; }
+.update-author-row button { padding: 10px 20px; background: var(--active-theme-color, var(--cx-color)); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; transition: opacity 0.2s; font-family: inherit; font-size: 13px; white-space: nowrap; }
+.update-author-row button:disabled { opacity: 0.5; cursor: default; }
+.update-author-row button:hover:not(:disabled) { opacity: 0.85; }
+
+/* Reply-to preview strip above input */
+.reply-preview-strip { display: none; background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--active-theme-color, var(--cx-color)); border-radius: var(--radius-sm); padding: 7px 10px; font-size: 11px; color: var(--text-muted); position: relative; }
+.reply-preview-strip.active { display: block; }
+.reply-preview-strip strong { color: var(--text-primary); }
+.reply-preview-strip .cancel-reply { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text-muted); line-height: 1; }
+
+/* Media attach row */
+.update-media-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .update-media-label { display: inline-flex; align-items: center; gap: 6px; background: var(--brand-grey-light); border: 1px solid var(--border); color: var(--text-secondary); border-radius: var(--radius-sm); padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
 .update-media-label:hover { background: var(--border-md); color: var(--text-primary); }
-.update-media-filename { font-size: 11px; color: var(--text-muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#update-media-clear { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; padding: 2px 4px; line-height: 1; }
-#update-media-clear:hover { color: var(--brand-red); }
+.media-file-chips { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
+.media-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--border-md); border-radius: 20px; padding: 2px 8px; font-size: 10px; color: var(--text-secondary); }
+.media-chip button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 11px; padding: 0; line-height: 1; }
+.media-chip button:hover { color: var(--brand-red); }
 
-/* ── Media preview (inside update items) ── */
-.update-media-preview { margin-top: 10px; }
-.update-media-preview img { max-width: 100%; max-height: 260px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: block; cursor: pointer; object-fit: cover; }
-.update-media-preview iframe { width: 100%; height: 220px; border: 1px solid var(--border); border-radius: var(--radius-sm); display: block; }
-.update-media-uploading { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 8px; }
-.update-media-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; font-size: 11px; font-weight: 700; color: var(--active-theme-color, var(--cx-color)); text-decoration: none; }
-.update-media-link:hover { text-decoration: underline; }
-.update-media-delete-btn { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; background: rgba(211,47,47,0.08); border: 1px solid rgba(211,47,47,0.2); color: var(--brand-red); border-radius: 4px; padding: 3px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
-.update-media-delete-btn:hover { background: rgba(211,47,47,0.18); }
-.update-task-tag { display: inline-block; margin-left: 8px; background: var(--active-theme-color, var(--cx-color)); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; vertical-align: middle; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.update-task-select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; background: var(--white); color: var(--text-primary); margin-bottom: 8px; }
-.update-author-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
-.update-author-row input { flex: 1; min-width: 0; }
-.update-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
-.update-input-group { display: flex; flex-direction: column; gap: 10px; }
-.update-input-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; resize: vertical; min-height: 70px; }
+.update-task-tag { display: inline-block; margin-left: 6px; background: var(--active-theme-color, var(--cx-color)); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; vertical-align: middle; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .update-input-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; }
-.update-input-group button { align-self: flex-start; padding: 10px 20px; background: var(--active-theme-color, var(--cx-color)); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; transition: opacity 0.2s; font-family: inherit; font-size: 13px; }
-.update-input-group button:hover { opacity: 0.85; }
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; color: var(--text-muted); background: var(--white); border: 1px dashed var(--border-md); border-radius: var(--radius); }
 .empty-state h3 { font-size: 16px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 700; }
 .empty-state p { font-size: 13px; }
@@ -461,17 +496,38 @@ body.users-bar-visible .dept-sidebar {
 .mobile-dept-pill.active-annex { background: var(--annex-color); border-color: var(--annex-color); color: white; }
 .mobile-dept-pill .pill-count { background: rgba(255,255,255,0.25); color: inherit; font-size: 9px; padding: 1px 6px; border-radius: var(--radius-pill); }
 .mobile-dept-pill:not(.active-cx):not(.active-annex) .pill-count { background: var(--brand-grey-light); color: var(--text-muted); }
-.diag-panel { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000; width: 380px; max-width: 96vw; background: #1a1a2e; color: #e0e0e0; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: 'DM Mono', monospace; font-size: 11px; overflow: hidden; }
-.diag-panel.open { display: block; animation: fadeInScale 0.2s ease; }
-.diag-panel.open.minimized .diag-body { display: none; }
+/* ══ ADMIN PANEL ══════════════════════════════════════════════════════════════ */
+.diag-panel { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000; width: 420px; max-width: 96vw; background: #1a1a2e; color: #e0e0e0; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); font-family: 'DM Mono', monospace; font-size: 11px; overflow: hidden; }
+.diag-panel.open { display: flex; flex-direction: column; animation: fadeInScale 0.2s ease; }
+.diag-panel.open.minimized .diag-panel-content { display: none; }
 .diag-panel.open.minimized { border-radius: 8px; }
 .diag-minimize-btn svg { transition: transform 0.25s; }
 .diag-panel.minimized .diag-minimize-btn svg { transform: rotate(180deg); }
 @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-.diag-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: #16213e; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #90caf9; }
-.diag-header-close { cursor: pointer; padding: 4px; opacity: 0.7; transition: opacity 0.2s; }
+
+/* Header */
+.diag-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #16213e; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #90caf9; flex-shrink: 0; }
+.diag-header-left { display: flex; align-items: center; gap: 8px; }
+.diag-header-right { display: flex; gap: 4px; align-items: center; }
+.diag-icon-btn { background: none; border: none; color: #90caf9; cursor: pointer; padding: 5px; border-radius: 4px; display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: opacity 0.15s, background 0.15s; }
+.diag-icon-btn:hover { opacity: 1; background: rgba(255,255,255,0.08); }
+.diag-header-close { cursor: pointer; padding: 5px; opacity: 0.7; transition: opacity 0.2s; display: flex; align-items: center; color: #90caf9; }
 .diag-header-close:hover { opacity: 1; }
-.diag-body { max-height: 320px; overflow-y: auto; padding: 12px 14px; }
+
+/* Tab bar */
+.diag-tabs { display: flex; background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+.diag-tab { flex: 1; padding: 9px 6px; background: none; border: none; color: #546e7a; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 10px; font-family: 'DM Mono', monospace; font-weight: 700; border-bottom: 2px solid transparent; transition: all 0.15s; position: relative; }
+.diag-tab:hover { color: #90caf9; background: rgba(255,255,255,0.03); }
+.diag-tab.active { color: #90caf9; border-bottom-color: #90caf9; background: rgba(144,202,249,0.05); }
+.diag-tab-badge { position: absolute; top: 5px; right: 6px; background: #ef5350; color: #fff; font-size: 8px; font-weight: 800; padding: 1px 4px; border-radius: 8px; line-height: 1.4; display: none; }
+.diag-tab-badge.show { display: block; }
+
+/* Panel content area */
+.diag-panel-content { max-height: 400px; overflow-y: auto; }
+.diag-tab-pane { display: none; padding: 12px 14px; }
+.diag-tab-pane.active { display: block; }
+
+/* Sheet diag (existing styles preserved) */
 .diag-sheet { margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; }
 .diag-sheet:last-child { border-bottom: none; margin-bottom: 0; }
 .diag-sheet-name { color: #90caf9; font-weight: 700; margin-bottom: 4px; font-size: 11px; }
@@ -481,6 +537,77 @@ body.users-bar-visible .dept-sidebar {
 .diag-err { color: #ef9a9a; margin-bottom: 2px; font-size: 10px; }
 .diag-ok { color: #81c784; margin-bottom: 2px; }
 .diag-empty { color: #546e7a; text-align: center; padding: 20px; font-size: 11px; }
+
+/* Health check cards */
+.health-section { margin-bottom: 12px; }
+.health-section-title { color: #546e7a; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.health-card { background: rgba(255,255,255,0.03); border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; border-left: 3px solid #546e7a; }
+.health-card.ok { border-left-color: #81c784; }
+.health-card.warn { border-left-color: #ffb74d; }
+.health-card.err { border-left-color: #ef5350; }
+.health-card.checking { border-left-color: #546e7a; }
+.health-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+.health-card-name { font-weight: 700; color: #cdd9e5; font-size: 11px; }
+.health-card-status { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.health-card.ok .health-card-status { color: #81c784; }
+.health-card.warn .health-card-status { color: #ffb74d; }
+.health-card.err .health-card-status { color: #ef5350; }
+.health-card.checking .health-card-status { color: #546e7a; }
+.health-plain { font-size: 11px; color: #b0bec5; margin-bottom: 3px; line-height: 1.5; }
+.health-tech { font-size: 9px; color: #546e7a; line-height: 1.5; margin-top: 3px; word-break: break-all; }
+.health-tech summary { cursor: pointer; color: #546e7a; }
+.health-tech summary:hover { color: #78909c; }
+.health-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.health-btn { background: rgba(144,202,249,0.1); border: 1px solid rgba(144,202,249,0.2); color: #90caf9; border-radius: 4px; padding: 5px 10px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'DM Mono', monospace; transition: background 0.15s; display: flex; align-items: center; gap: 4px; }
+.health-btn:hover { background: rgba(144,202,249,0.18); }
+.health-btn.danger { background: rgba(239,83,80,0.1); border-color: rgba(239,83,80,0.2); color: #ef9a9a; }
+.health-btn.danger:hover { background: rgba(239,83,80,0.2); }
+.health-btn:disabled { opacity: 0.4; cursor: default; }
+.health-spinner { width: 10px; height: 10px; border: 2px solid rgba(144,202,249,0.3); border-top-color: #90caf9; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Error log */
+.log-entry { padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.log-entry:last-child { border-bottom: none; }
+.log-entry-header { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+.log-badge { font-size: 8px; font-weight: 800; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; }
+.log-badge.error { background: rgba(239,83,80,0.25); color: #ef9a9a; }
+.log-badge.warn  { background: rgba(255,183,77,0.2); color: #ffb74d; }
+.log-badge.info  { background: rgba(129,199,132,0.2); color: #81c784; }
+.log-time { font-size: 9px; color: #546e7a; }
+.log-system { font-size: 9px; color: #78909c; font-weight: 700; }
+.log-plain { font-size: 10px; color: #b0bec5; }
+.log-tech { font-size: 9px; color: #546e7a; margin-top: 2px; word-break: break-all; }
+.log-empty { color: #546e7a; text-align: center; padding: 24px; font-size: 11px; }
+.log-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.log-count { font-size: 10px; color: #546e7a; }
+
+/* Admin updates feed */
+.admin-feed-section { margin-top: 0; }
+.admin-feed-proj-label { color: #90caf9; font-weight: 700; font-size: 11px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.admin-feed-item { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.admin-feed-item:last-child { border-bottom: none; }
+.admin-feed-meta { color: #546e7a; font-size: 9px; margin-bottom: 2px; }
+.admin-feed-author { color: #90caf9; font-weight: 700; }
+.admin-feed-text { color: #cdd9e5; font-size: 10px; line-height: 1.5; word-break: break-word; }
+.admin-feed-empty { color: #546e7a; font-size: 10px; padding: 8px 0; }
+.admin-feed-refresh { background: rgba(144,202,249,0.1); border: 1px solid rgba(144,202,249,0.2); color: #90caf9; border-radius: 4px; padding: 3px 8px; font-size: 9px; cursor: pointer; font-family: 'DM Mono', monospace; }
+
+/* ══ ADMIN WARNING BANNER (admin-only, floating) ════════════════════════════ */
+#admin-warning-banner { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1200; min-width: 300px; max-width: 560px; background: #1a1a2e; border: 1px solid rgba(239,83,80,0.4); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); font-family: 'DM Sans', sans-serif; overflow: hidden; }
+#admin-warning-banner.show { display: block; animation: fadeInScale 0.2s ease; }
+.banner-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.banner-item:last-child { border-bottom: none; }
+.banner-dot { width: 8px; height: 8px; min-width: 8px; border-radius: 50%; margin-top: 4px; }
+.banner-dot.err  { background: #ef5350; }
+.banner-dot.warn { background: #ffb74d; }
+.banner-text { flex: 1; }
+.banner-title { font-size: 12px; font-weight: 700; color: #e0e0e0; }
+.banner-sub { font-size: 10px; color: #78909c; margin-top: 1px; }
+.banner-dismiss { background: none; border: none; color: #546e7a; cursor: pointer; font-size: 14px; padding: 0 2px; line-height: 1; flex-shrink: 0; }
+.banner-dismiss:hover { color: #90caf9; }
+
+/* ══ ADMIN LOGIN MODAL ═══════════════════════════════════════════════════════ */
 .admin-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .admin-modal { background: #fff; padding: 28px; border-radius: var(--radius); width: 90%; max-width: 320px; box-shadow: var(--shadow-md); text-align: center; font-family: 'DM Sans', sans-serif; }
 .admin-modal h3 { margin-bottom: 8px; font-weight: 800; font-size: 18px; color: var(--text-primary); }
@@ -2231,23 +2358,27 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
           <h3 id="team-updates-heading">Team Updates & Pre-Meeting Notes</h3>
           <div id="updates-list" class="updates-list"></div>
           <div class="update-input-group">
+            <!-- Reply-to preview strip -->
+            <div class="reply-preview-strip" id="reply-preview-strip">
+              Replying to <strong id="reply-preview-author"></strong>: <span id="reply-preview-text"></span>
+              <button class="cancel-reply" onclick="cancelReply()" title="Cancel reply">✕</button>
+            </div>
             <select id="new-update-task-link" class="update-task-select">
               <option value="">📌 Link to a task (optional)</option>
             </select>
-            <textarea id="new-update-text" placeholder="Type your pre-meeting update or note here..."></textarea>
-            <!-- Media attach -->
+            <textarea id="new-update-text" placeholder="Type your update or reply here..."></textarea>
+            <!-- Multi-file attach -->
             <div class="update-media-row">
-              <label class="update-media-label" for="new-update-media" title="Attach image or video (max 50 MB)">
+              <label class="update-media-label" for="new-update-media" title="Attach images or videos (max 50 MB each)">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                Attach Photo / Video
+                Attach Photos / Videos
               </label>
-              <input type="file" id="new-update-media" accept="image/*,video/*" style="display:none;" onchange="onMediaFileSelected(this)">
-              <span id="update-media-filename" class="update-media-filename"></span>
-              <button id="update-media-clear" onclick="clearMediaAttachment()" style="display:none;" title="Remove attachment">&#x2715;</button>
+              <input type="file" id="new-update-media" accept="image/*,video/*" multiple style="display:none;" onchange="onMediaFilesSelected(this)">
+              <div class="media-file-chips" id="media-file-chips"></div>
             </div>
             <div class="update-author-row">
               <input type="text" id="new-update-author" placeholder="Your Name (auto-filled if logged in)" readonly style="background:var(--bg);color:var(--text-muted);cursor:default;">
-              <button onclick="submitTeamUpdate()">Submit Update</button>
+              <button id="submit-update-btn" onclick="submitTeamUpdate()">Submit Update</button>
             </div>
           </div>
         </div>
@@ -2495,29 +2626,106 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
 
 </div>
 
+<!-- ══ ADMIN WARNING BANNER (admin-only) ══ -->
+<div id="admin-warning-banner"></div>
+
 <div class="diag-panel" id="diag-panel">
+  <!-- Header -->
   <div class="diag-header">
-    <div style="display:flex; align-items:center; gap:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Sheet Diagnostics</div>
-    <div style="display:flex; gap:6px; align-items:center;">
-      <button class="sync-btn" onclick="syncWithGoogleSheet()" title="Sync with Google Sheets" style="padding:6px 8px; font-size:12px;">
-        <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg>
+    <div class="diag-header-left">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Admin Panel
+    </div>
+    <div class="diag-header-right">
+      <!-- Sync -->
+      <button class="diag-icon-btn" onclick="syncWithGoogleSheet()" title="Sync Sheets">
+        <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 22v-6h6"/></svg>
       </button>
-      <button class="tool-nav-btn" onclick="openReminderModal()" title="Send Task Reminders" style="padding:6px 8px; font-size:12px; display:flex; align-items:center; justify-content:center;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M15 17v1a3 3 0 0 1-6 0v-1"/></svg>
+      <!-- Reminders -->
+      <button class="diag-icon-btn" onclick="openReminderModal()" title="Send Reminders">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M15 17v1a3 3 0 0 1-6 0v-1"/></svg>
       </button>
-      <button class="tool-nav-btn" onclick="openReportModal()" title="Generate Monthly Report" style="padding:6px 8px; font-size:12px; display:flex; align-items:center; justify-content:center;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <!-- Report -->
+      <button class="diag-icon-btn" onclick="openReportModal()" title="Monthly Report">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       </button>
-      <button class="tool-nav-btn" onclick="openMgmtPanel()" title="Manage Users & Departments" style="padding:6px 8px; font-size:12px; display:flex; align-items:center; justify-content:center; gap:4px;">
-        ⚙ <span style="font-size:10px;font-weight:800;">Manage</span>
+      <!-- Manage -->
+      <button class="diag-icon-btn" onclick="openMgmtPanel()" title="Manage Users & Depts">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </button>
-      <button class="diag-minimize-btn" onclick="minimizeDiagPanel()" title="Minimize" style="padding:6px 8px; font-size:12px; background:none; border:none; color:inherit; cursor:pointer;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <!-- Minimize -->
+      <button class="diag-icon-btn diag-minimize-btn" onclick="minimizeDiagPanel()" title="Minimize">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <div class="diag-header-close" onclick="closeDiagPanel()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+      <!-- Close -->
+      <div class="diag-header-close" onclick="closeDiagPanel()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
     </div>
   </div>
-  <div class="diag-body" id="diag-body"><div class="diag-empty">Sync data to see sheet diagnostics</div></div>
+
+  <!-- Tab bar — icon only -->
+  <div class="diag-tabs">
+    <!-- Sheets -->
+    <button class="diag-tab active" id="dtab-sheets" onclick="switchDiagTab('sheets')" title="Sheet Diagnostics">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="diag-tab-badge" id="dtab-sheets-badge"></span>
+    </button>
+    <!-- Health -->
+    <button class="diag-tab" id="dtab-health" onclick="switchDiagTab('health')" title="System Health">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span class="diag-tab-badge" id="dtab-health-badge"></span>
+    </button>
+    <!-- Log -->
+    <button class="diag-tab" id="dtab-log" onclick="switchDiagTab('log')" title="Error Log">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span class="diag-tab-badge" id="dtab-log-badge"></span>
+    </button>
+    <!-- Updates feed -->
+    <button class="diag-tab" id="dtab-feed" onclick="switchDiagTab('feed')" title="Team Updates Feed">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+  </div>
+
+  <!-- Content panes -->
+  <div class="diag-panel-content">
+    <!-- Sheets pane (existing) -->
+    <div class="diag-tab-pane active" id="dpane-sheets">
+      <div id="diag-body"><div class="diag-empty">Sync data to see sheet diagnostics</div></div>
+    </div>
+
+    <!-- Health pane -->
+    <div class="diag-tab-pane" id="dpane-health">
+      <div id="health-body"><div class="diag-empty">Click "Run Check" to test all systems</div></div>
+      <div class="health-actions">
+        <button class="health-btn" id="health-run-btn" onclick="runHealthCheck()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Run Check
+        </button>
+        <button class="health-btn" id="health-fulltest-btn" onclick="runFullEndToEndTest()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Full E2E Test
+        </button>
+      </div>
+    </div>
+
+    <!-- Error log pane -->
+    <div class="diag-tab-pane" id="dpane-log">
+      <div class="log-controls">
+        <span class="log-count" id="log-count-label">0 entries</span>
+        <button class="health-btn danger" onclick="clearErrorLog()">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Clear Log
+        </button>
+      </div>
+      <div id="error-log-body"><div class="log-empty">No errors logged yet.</div></div>
+    </div>
+
+    <!-- Updates feed pane -->
+    <div class="diag-tab-pane" id="dpane-feed">
+      <div id="admin-feed-body"><div class="diag-empty">Loading updates…</div></div>
+    </div>
+  </div>
 </div>
 
 <div class="admin-modal-overlay" id="admin-modal">
@@ -3664,6 +3872,7 @@ function submitAdmin() {
   }
   if (pwd === correctPwd) {
     diagUnlocked = true;
+    _startPassiveMonitor();
     closeAdminModal();
     renderDiagPanel();
     document.getElementById('diag-panel').classList.add('open');
@@ -3725,70 +3934,145 @@ function autoFillAuthorName() {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// CHAT UPDATES SYSTEM
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Avatar colour palette — deterministic per author name
+const AVATAR_PALETTE = ['#1565C0','#6A1B9A','#2E7D32','#E65100','#00838F','#AD1457','#4527A0','#558B2F','#37474F','#6D4C41'];
+function _avatarColor(name) {
+  let h = 0;
+  for (let i = 0; i < (name||'').length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
+}
+function _initials(name) {
+  const parts = (name||'?').trim().split(/\s+/);
+  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+}
+
+// Reply state
+let _replyingTo = null; // { timestamp, author, text }
+
+function setReply(timestamp, author, text) {
+  _replyingTo = { timestamp, author, text };
+  const strip = document.getElementById('reply-preview-strip');
+  const authorEl = document.getElementById('reply-preview-author');
+  const textEl   = document.getElementById('reply-preview-text');
+  if (strip)    strip.classList.add('active');
+  if (authorEl) authorEl.textContent = author;
+  if (textEl)   textEl.textContent   = text.length > 80 ? text.slice(0, 80) + '…' : text;
+  document.getElementById('new-update-text').focus();
+}
+
+function cancelReply() {
+  _replyingTo = null;
+  const strip = document.getElementById('reply-preview-strip');
+  if (strip) strip.classList.remove('active');
+}
+
+// ── Pending media files (array, cleared on dept switch) ──
+let _pendingMediaFiles = []; // array of File objects
+
+function onMediaFilesSelected(input) {
+  const MAX = 50 * 1024 * 1024;
+  const chipsEl = document.getElementById('media-file-chips');
+  Array.from(input.files).forEach(file => {
+    if (file.size > MAX) { alert(file.name + ' is too large (' + (file.size/1024/1024).toFixed(1) + ' MB). Max 50 MB per file.'); return; }
+    if (_pendingMediaFiles.length >= 6) { alert('Maximum 6 files per update.'); return; }
+    _pendingMediaFiles.push(file);
+  });
+  input.value = ''; // reset so same file can be re-added if needed
+  _renderMediaChips();
+}
+
+function _renderMediaChips() {
+  const chipsEl = document.getElementById('media-file-chips');
+  if (!chipsEl) return;
+  chipsEl.innerHTML = _pendingMediaFiles.map((f, i) =>
+    `<span class="media-chip">${f.name.length > 22 ? f.name.slice(0,20)+'…' : f.name}
+      <button onclick="_removeMediaFile(${i})" title="Remove">✕</button>
+    </span>`
+  ).join('');
+}
+
+function _removeMediaFile(idx) {
+  _pendingMediaFiles.splice(idx, 1);
+  _renderMediaChips();
+}
+
+function _clearMediaState() {
+  _pendingMediaFiles = [];
+  const chipsEl = document.getElementById('media-file-chips');
+  if (chipsEl) chipsEl.innerHTML = '';
+  const input = document.getElementById('new-update-media');
+  if (input) input.value = '';
+}
+
+// ── Submit ──
 function submitTeamUpdate() {
   const text = document.getElementById('new-update-text').value.trim();
   if (!text) return;
 
-  // Use logged-in user name; fall back to the name field; then 'Anonymous'
   const resolvedUser = _resolveUpdater();
   const nameField = document.getElementById('new-update-author');
   const author = (resolvedUser.name && resolvedUser.name !== 'Unknown')
     ? resolvedUser.name
     : (nameField ? nameField.value.trim() || 'Anonymous' : 'Anonymous');
 
-  // Linked task (optional)
+  // Store poster email for admin reply targeting
+  const authorEmail = (currentUser && currentUser.email) ? currentUser.email : null;
+
   const taskLinkEl = document.getElementById('new-update-task-link');
   const linkedTask = taskLinkEl ? taskLinkEl.value : '';
 
-  // Determine the session key this update belongs to
   const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
     ? viewingSessionDate
     : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
 
-  // ── If a file is pending, upload it first, then save ──
-  const mediaFile = _pendingMediaFile;
-  if (mediaFile) {
-    // Show uploading state
-    const submitBtn = document.querySelector('.update-author-row button');
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Uploading…'; }
+  const replyRef = _replyingTo ? { timestamp: _replyingTo.timestamp, author: _replyingTo.author, preview: _replyingTo.text.slice(0, 120) } : null;
 
-    uploadMediaToGAS(mediaFile, currentProject, currentDept)
-      .then(mediaData => {
-        const media = {
-          fileId:   mediaData.fileId,
-          fileName: mediaData.fileName,
-          mimeType: mediaData.mimeType,
-          viewUrl:  mediaData.viewUrl,
-          thumbUrl: mediaData.thumbUrl,
-          embedUrl: mediaData.embedUrl
-        };
-        _saveUpdate(author, text, linkedTask, sessionKey, media);
+  // Clear inputs immediately
+  document.getElementById('new-update-text').value = '';
+  if (taskLinkEl) taskLinkEl.value = '';
+  cancelReply();
+
+  const filesToUpload = [..._pendingMediaFiles];
+  _clearMediaState();
+
+  const btn = document.getElementById('submit-update-btn');
+
+  if (filesToUpload.length > 0) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Uploading…'; }
+    Promise.all(filesToUpload.map(f => uploadOneFileToGAS(f, currentProject, currentDept)))
+      .then(results => {
+        const mediaItems = results.filter(r => r && r.success).map(r => ({
+          fileId: r.fileId, fileName: r.fileName, mimeType: r.mimeType,
+          viewUrl: r.viewUrl, thumbUrl: r.thumbUrl, embedUrl: r.embedUrl
+        }));
+        _saveUpdate(author, authorEmail, text, linkedTask, sessionKey, mediaItems.length ? mediaItems : null, replyRef);
       })
       .catch(err => {
         console.warn('[Media upload failed]', err);
-        // Save update anyway without media
-        _saveUpdate(author, text, linkedTask, sessionKey, null);
+        _saveUpdate(author, authorEmail, text, linkedTask, sessionKey, null, replyRef);
       })
-      .finally(() => {
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Update'; }
-        clearMediaAttachment();
-      });
+      .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Submit Update'; } });
   } else {
-    _saveUpdate(author, text, linkedTask, sessionKey, null);
+    _saveUpdate(author, authorEmail, text, linkedTask, sessionKey, null, replyRef);
   }
-
-  // Clear text immediately for responsiveness
-  document.getElementById('new-update-text').value = '';
-  if (taskLinkEl) taskLinkEl.value = '';
 }
 
-function _saveUpdate(author, text, linkedTask, sessionKey, media) {
-  const update = { text, author, timestamp: new Date().toISOString(), session: sessionKey, linkedTask };
-  if (media) update.media = media;
+function _saveUpdate(author, authorEmail, text, linkedTask, sessionKey, mediaItems, replyRef) {
+  const update = {
+    text, author, authorEmail: authorEmail || null,
+    timestamp: new Date().toISOString(),
+    session: sessionKey, linkedTask,
+    replyTo: replyRef || null,
+    mediaItems: mediaItems || null
+  };
 
   if (_fbReady && _fbDb) {
-    _fbDb.ref('dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey).push(update)
-      .catch(e => console.warn('[Firebase] dept update failed:', e));
+    _fbDb.ref('dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey)
+      .push(update).catch(e => console.warn('[Firebase] dept update failed:', e));
   }
   const key = 'deptupdate:' + currentProject + ':' + currentDept + ':' + sessionKey;
   let updates = JSON.parse(localStorage.getItem(key) || '[]');
@@ -3796,10 +4080,270 @@ function _saveUpdate(author, text, linkedTask, sessionKey, media) {
   localStorage.setItem(key, JSON.stringify(updates));
 
   renderUpdatesList();
-
-  // ── Email alert to admin ──
   sendUpdateAlertEmail(author, currentDept, currentProject, text, linkedTask);
+  maybeSendAdminReplyEmail(author, replyRef, text, currentDept, currentProject);
 }
+
+// ── Render as chat bubbles ──
+function renderUpdatesList() {
+  if (!currentProject || !currentDept) return;
+  const list = document.getElementById('updates-list'); if (!list) return;
+
+  const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
+    ? viewingSessionDate
+    : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
+
+  const fbKey    = 'fb_dept:' + currentProject + ':' + currentDept + ':' + sessionKey;
+  const localKey = 'deptupdate:' + currentProject + ':' + currentDept + ':' + sessionKey;
+  const legacyFb    = 'fb_dept:' + currentProject + ':' + currentDept;
+  const legacyLocal = 'deptupdate:' + currentProject + ':' + currentDept;
+
+  let updates = JSON.parse(localStorage.getItem(fbKey) || localStorage.getItem(localKey) || '[]');
+  if (!updates.length) {
+    const legacy = JSON.parse(localStorage.getItem(legacyFb) || localStorage.getItem(legacyLocal) || '[]');
+    updates = legacy.filter(u => !u.session || u.session === sessionKey);
+  }
+
+  const heading = document.getElementById('team-updates-heading');
+  if (heading) {
+    heading.textContent = (viewingSessionDate === 'current' || !viewingSessionDate)
+      ? 'Team Updates & Pre-Meeting Notes — Current Session'
+      : 'Team Updates & Pre-Meeting Notes — ' + formatSheetName(sessionKey);
+  }
+
+  if (!updates.length) {
+    list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0;">No updates for this session yet. Be the first to post.</div>';
+    return;
+  }
+
+  // Determine current user identity
+  const myEmail = currentUser ? currentUser.email : null;
+  const myName  = currentUser ? (currentUser.displayName || '').split(' ')[0] : null;
+
+  const ADMIN_EMAIL = 'o.olasunkanmi@mixtafrica.com';
+
+  list.innerHTML = updates.map(u => {
+    const isMe = myEmail && (u.authorEmail === myEmail || (!u.authorEmail && myName && u.author && u.author.toLowerCase().includes(myName.toLowerCase())));
+    const side  = isMe ? 'mine' : 'theirs';
+    const color = _avatarColor(u.author || 'A');
+    const initials = _initials(u.author || 'A');
+    const ts = new Date(u.timestamp).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    const tsAttr = u.timestamp.replace(/'/g, '');
+
+    // Quote block
+    let quoteHtml = '';
+    if (u.replyTo) {
+      quoteHtml = `<div class="chat-quote"><strong>${_esc(u.replyTo.author)}</strong><br>${_esc(u.replyTo.preview)}</div>`;
+    }
+
+    // Task tag
+    const taskTag = u.linkedTask ? `<span class="update-task-tag">📌 ${_esc(u.linkedTask)}</span>` : '';
+
+    // Media grid — supports both old single `media` and new `mediaItems` array
+    let mediaHtml = '';
+    const mediaArr = u.mediaItems || (u.media ? [u.media] : []);
+    if (mediaArr.length) {
+      const tiles = mediaArr.map((m, mi) => {
+        const delBtn = diagUnlocked
+          ? `<button class="chat-media-del-btn" onclick="deleteMediaItem('${tsAttr}',${mi},'${m.fileId}')" title="Remove">🗑</button>`
+          : '';
+        if (m.mimeType && m.mimeType.startsWith('image/')) {
+          return `<div style="position:relative;"><a href="${m.viewUrl}" target="_blank"><img src="${m.thumbUrl}" alt="${_esc(m.fileName)}" loading="lazy"></a>${delBtn}</div>`;
+        } else if (m.mimeType && m.mimeType.startsWith('video/')) {
+          return `<div style="position:relative;"><iframe src="${m.embedUrl}" allowfullscreen></iframe>${delBtn}<a class="chat-media-link" href="${m.viewUrl}" target="_blank">▶ ${_esc(m.fileName)}</a></div>`;
+        } else {
+          return `<div><a class="chat-media-link" href="${m.viewUrl}" target="_blank">📎 ${_esc(m.fileName)}</a>${delBtn}</div>`;
+        }
+      }).join('');
+      mediaHtml = `<div class="chat-media-grid">${tiles}</div>`;
+    }
+
+    // Actions row
+    const replyPreview = (u.text||'').slice(0,80).replace(/'/g, '&#39;');
+    const replyBtn = `<button class="chat-reply-btn" onclick="setReply('${tsAttr}','${_esc(u.author||'Anonymous').replace(/'/g,"&#39;")}','${replyPreview}')">↩ Reply</button>`;
+    const deleteBtn = diagUnlocked
+      ? `<button class="chat-delete-btn" onclick="deleteUpdate('${tsAttr}')" title="Delete message">🗑 Delete</button>`
+      : '';
+    const actionsHtml = `<div class="chat-actions">${replyBtn}${deleteBtn}</div>`;
+
+    const avatar = `<div class="chat-avatar" style="background:${color};">${initials}</div>`;
+    const bubble = `<div class="chat-bubble">
+      <div class="chat-meta"><strong>${_esc(u.author||'Anonymous')}</strong> — ${ts}${taskTag}</div>
+      ${quoteHtml}
+      <div class="chat-text">${_esc(u.text)}</div>
+      ${mediaHtml}
+      ${actionsHtml}
+    </div>`;
+
+    return `<div class="chat-row ${side}">${avatar}${bubble}</div>`;
+  }).join('');
+
+  // Auto-scroll to bottom
+  list.scrollTop = list.scrollHeight;
+}
+
+function _esc(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function deleteUpdate(timestamp) {
+  if (!diagUnlocked) return;
+  if (!confirm('Delete this message? This cannot be undone.')) return;
+
+  const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
+    ? viewingSessionDate
+    : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
+
+  const keysToCheck = [
+    'deptupdate:' + currentProject + ':' + currentDept + ':' + sessionKey,
+    'fb_dept:'    + currentProject + ':' + currentDept + ':' + sessionKey,
+    'deptupdate:' + currentProject + ':' + currentDept,
+    'fb_dept:'    + currentProject + ':' + currentDept,
+  ];
+  keysToCheck.forEach(key => {
+    try {
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
+      const filtered = arr.filter(u => u.timestamp !== timestamp);
+      if (filtered.length !== arr.length) localStorage.setItem(key, JSON.stringify(filtered));
+    } catch(e) {}
+  });
+
+  if (_fbReady && _fbDb) {
+    const ref = _fbDb.ref('dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey);
+    ref.once('value').then(snap => {
+      snap.forEach(child => { if (child.val().timestamp === timestamp) child.ref.remove(); });
+    }).catch(e => console.warn('[Firebase] delete update failed:', e));
+  }
+  renderUpdatesList();
+}
+
+function deleteMediaItem(updateTimestamp, mediaIndex, fileId) {
+  if (!diagUnlocked) return;
+  if (!confirm('Remove this media? It will be moved to Drive trash.')) return;
+
+  const SCRIPT_URL   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL');
+  const SCRIPT_TOKEN = window.APPS_SCRIPT_TOKEN  || localStorage.getItem('APPS_SCRIPT_TOKEN');
+
+  const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
+    ? viewingSessionDate
+    : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
+
+  const keysToCheck = [
+    'deptupdate:' + currentProject + ':' + currentDept + ':' + sessionKey,
+    'fb_dept:'    + currentProject + ':' + currentDept + ':' + sessionKey,
+    'deptupdate:' + currentProject + ':' + currentDept,
+    'fb_dept:'    + currentProject + ':' + currentDept,
+  ];
+  keysToCheck.forEach(key => {
+    try {
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
+      let changed = false;
+      arr.forEach(u => {
+        if (u.timestamp !== updateTimestamp) return;
+        if (u.mediaItems) { u.mediaItems.splice(mediaIndex, 1); changed = true; }
+        else if (u.media)  { delete u.media; changed = true; }
+      });
+      if (changed) localStorage.setItem(key, JSON.stringify(arr));
+    } catch(e) {}
+  });
+
+  if (_fbReady && _fbDb) {
+    const ref = _fbDb.ref('dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey);
+    ref.once('value').then(snap => {
+      snap.forEach(child => {
+        if (child.val().timestamp === updateTimestamp) {
+          const cur = child.val();
+          if (cur.mediaItems) { cur.mediaItems.splice(mediaIndex, 1); child.ref.child('mediaItems').set(cur.mediaItems); }
+          else if (cur.media) child.ref.child('media').remove();
+        }
+      });
+    }).catch(e => console.warn('[Firebase] delete media failed:', e));
+  }
+
+  if (SCRIPT_URL && SCRIPT_TOKEN) {
+    fetch(SCRIPT_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'deleteMedia', token: SCRIPT_TOKEN, fileId })
+    }).catch(e => console.warn('[GAS] Drive trash failed:', e));
+  }
+  renderUpdatesList();
+}
+
+async function uploadOneFileToGAS(file, project, dept) {
+  const SCRIPT_URL   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL');
+  const SCRIPT_TOKEN = window.APPS_SCRIPT_TOKEN  || localStorage.getItem('APPS_SCRIPT_TOKEN');
+  if (!SCRIPT_URL || !SCRIPT_TOKEN) return null;
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const base64 = e.target.result.split(',')[1];
+      try {
+        const res  = await fetch(SCRIPT_URL, {
+          method: 'POST', headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'uploadMedia', token: SCRIPT_TOKEN,
+            fileName: file.name, mimeType: file.type, base64Data: base64, project, dept })
+        });
+        const data = await res.json();
+        if (data.success) resolve(data); else reject(new Error(data.error || 'Upload failed'));
+      } catch(err) { reject(err); }
+    };
+    reader.onerror = () => reject(new Error('FileReader error'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// Admin reply email — only fires when admin (o.olasunkanmi) posts a reply
+function maybeSendAdminReplyEmail(author, replyRef, text, dept, project) {
+  const ADMIN_EMAIL = 'o.olasunkanmi@mixtafrica.com';
+  const myEmail = currentUser ? currentUser.email : null;
+  if (!myEmail || myEmail.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  if (!replyRef) return; // only send for replies, not fresh posts
+
+  // Find the original poster's email from localStorage
+  const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
+    ? viewingSessionDate
+    : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
+  const key = 'deptupdate:' + project + ':' + dept + ':' + sessionKey;
+  let updates = JSON.parse(localStorage.getItem(key) || '[]');
+  const original = updates.find(u => u.timestamp === replyRef.timestamp);
+  const toEmail  = original && original.authorEmail ? original.authorEmail : null;
+  if (!toEmail || toEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) return;
+
+  const SCRIPT_URL   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL');
+  const SCRIPT_TOKEN = window.APPS_SCRIPT_TOKEN  || localStorage.getItem('APPS_SCRIPT_TOKEN');
+  if (!SCRIPT_URL || !SCRIPT_TOKEN) return;
+
+  const projectLabel = project === 'Crossings' ? 'Lakowe Crossings' : 'Lakowe Annexe';
+  const now = new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  const html = `
+<div style="font-family:'DM Sans',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;">
+  <div style="background:#1b5e20;padding:18px 24px;">
+    <p style="margin:0;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">Mixta Africa — Projects Tracker</p>
+    <h2 style="margin:4px 0 0;color:#fff;font-size:18px;font-weight:800;">O. Olasunkanmi replied to your update</h2>
+  </div>
+  <div style="padding:24px;">
+    <p style="margin:0 0 8px;"><strong>Project:</strong> ${projectLabel} — ${dept}</p>
+    <p style="margin:0 0 16px;color:#666;font-size:12px;">${now}</p>
+    <div style="background:#f0f4f0;border-left:3px solid #9e9e9e;border-radius:4px;padding:10px 14px;font-size:12px;color:#666;margin-bottom:14px;">
+      <strong>Your message:</strong> ${replyRef.preview}
+    </div>
+    <div style="background:#f9fafb;border-left:3px solid #1b5e20;border-radius:4px;padding:14px 16px;font-size:14px;line-height:1.6;color:#1a1a1a;">
+      ${text.replace(/\n/g,'<br>')}
+    </div>
+    <p style="margin:16px 0 0;font-size:12px;color:#999;">Reply on the dashboard to continue the conversation.</p>
+  </div>
+</div>`;
+
+  fetch(SCRIPT_URL, {
+    method: 'POST', headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'sendEmail', token: SCRIPT_TOKEN,
+      to: [toEmail], subject: `[${projectLabel} — ${dept}] O. Olasunkanmi replied to your update`,
+      html, reply_to: ADMIN_EMAIL })
+  }).catch(e => console.warn('[Reply email] failed:', e));
+}
+
 
 function sendUpdateAlertEmail(author, dept, project, text, linkedTask) {
   const SCRIPT_URL   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL');
@@ -3843,246 +4387,6 @@ function sendUpdateAlertEmail(author, dept, project, text, linkedTask) {
     })
   }).catch(e => console.warn('[Email alert] Failed to send update notification:', e));
 }
-
-function renderUpdatesList() {
-  if (!currentProject || !currentDept) return;
-  const list = document.getElementById('updates-list'); if(!list) return;
-
-  // Resolve the session we're viewing
-  const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
-    ? viewingSessionDate
-    : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
-
-  // ── Collect updates for this specific session only ──
-  // Prefer Firebase-synced key, then fall back to local key
-  const fbKey    = 'fb_dept:' + currentProject + ':' + currentDept + ':' + sessionKey;
-  const localKey = 'deptupdate:' + currentProject + ':' + currentDept + ':' + sessionKey;
-
-  // Legacy support: also check old un-scoped keys so nothing is lost
-  const legacyFb    = 'fb_dept:' + currentProject + ':' + currentDept;
-  const legacyLocal = 'deptupdate:' + currentProject + ':' + currentDept;
-
-  let updates = JSON.parse(localStorage.getItem(fbKey) || localStorage.getItem(localKey) || '[]');
-
-  // Merge in legacy updates that match this session (so old data isn't orphaned)
-  if (!updates.length) {
-    const legacy = JSON.parse(localStorage.getItem(legacyFb) || localStorage.getItem(legacyLocal) || '[]');
-    updates = legacy.filter(u => !u.session || u.session === sessionKey);
-  }
-
-  // Update section heading to show which session we're viewing
-  const heading = document.getElementById('team-updates-heading');
-  if (heading) {
-    const label = (viewingSessionDate === 'current' || !viewingSessionDate)
-      ? 'Team Updates & Pre-Meeting Notes — Current Session'
-      : 'Team Updates & Pre-Meeting Notes — ' + formatSheetName(sessionKey);
-    heading.textContent = label;
-  }
-
-  if (!updates.length) {
-    list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No pre-meeting updates recorded for this date yet.</div>';
-    return;
-  }
-  list.innerHTML = [...updates].reverse().map(u => {
-    const ts = new Date(u.timestamp).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-    const deleteBtn = diagUnlocked
-      ? `<button onclick="deleteUpdate('${u.timestamp}')" title="Delete this update" class="update-media-delete-btn" style="position:absolute;top:8px;right:8px;">✕ Delete</button>`
-      : '';
-
-    // ── Media preview block ──
-    let mediaHtml = '';
-    if (u.media) {
-      const m = u.media;
-      const isImage = m.mimeType && m.mimeType.startsWith('image/');
-      const isVideo = m.mimeType && m.mimeType.startsWith('video/');
-      const mediaDel = diagUnlocked
-        ? `<button onclick="deleteMedia('${u.timestamp}','${m.fileId}')" class="update-media-delete-btn" style="display:inline-flex;margin-top:6px;">🗑 Remove media</button>`
-        : '';
-      if (isImage) {
-        mediaHtml = `<div class="update-media-preview">
-          <a href="${m.viewUrl}" target="_blank" rel="noopener"><img src="${m.thumbUrl}" alt="${m.fileName}" loading="lazy" title="Click to open in Drive"></a>
-          ${mediaDel}
-        </div>`;
-      } else if (isVideo) {
-        mediaHtml = `<div class="update-media-preview">
-          <iframe src="${m.embedUrl}" frameborder="0" allow="autoplay" allowfullscreen></iframe>
-          <a class="update-media-link" href="${m.viewUrl}" target="_blank" rel="noopener">▶ Open video in Drive — ${m.fileName}</a>
-          ${mediaDel}
-        </div>`;
-      } else {
-        mediaHtml = `<div class="update-media-preview">
-          <a class="update-media-link" href="${m.viewUrl}" target="_blank" rel="noopener">📎 ${m.fileName}</a>
-          ${mediaDel}
-        </div>`;
-      }
-    }
-
-    return `<div class="update-item" style="position:relative;">
-      <div class="update-meta">
-        <strong>${u.author||'Anonymous'}</strong> — ${ts}
-        ${u.linkedTask ? `<span class="update-task-tag">📌 ${u.linkedTask}</span>` : ''}
-      </div>
-      <div style="white-space:pre-wrap;word-break:break-word;${diagUnlocked ? 'padding-right:80px;' : ''}">${u.text}</div>
-      ${mediaHtml}
-      ${deleteBtn}
-    </div>`;
-  }).join('');
-}
-
-function deleteUpdate(timestamp) {
-  if (!diagUnlocked) return;
-  if (!confirm('Delete this update? This cannot be undone.')) return;
-
-  const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
-    ? viewingSessionDate
-    : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
-
-  // ── Remove from all localStorage keys (scoped + legacy) ──
-  const keysToCheck = [
-    'deptupdate:' + currentProject + ':' + currentDept + ':' + sessionKey,
-    'fb_dept:'    + currentProject + ':' + currentDept + ':' + sessionKey,
-    'deptupdate:' + currentProject + ':' + currentDept,
-    'fb_dept:'    + currentProject + ':' + currentDept,
-  ];
-  keysToCheck.forEach(key => {
-    try {
-      const arr = JSON.parse(localStorage.getItem(key) || '[]');
-      const filtered = arr.filter(u => u.timestamp !== timestamp);
-      if (filtered.length !== arr.length) localStorage.setItem(key, JSON.stringify(filtered));
-    } catch(e) {}
-  });
-
-  // ── Remove from Firebase ──
-  if (_fbReady && _fbDb) {
-    const ref = _fbDb.ref('dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey);
-    ref.once('value').then(snap => {
-      snap.forEach(child => {
-        if (child.val().timestamp === timestamp) child.ref.remove();
-      });
-    }).catch(e => console.warn('[Firebase] delete update failed:', e));
-  }
-
-  renderUpdatesList();
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// MEDIA UPLOAD & DELETE
-// ══════════════════════════════════════════════════════════════════════════════
-
-// Holds the selected File object until submit
-let _pendingMediaFile = null;
-
-function onMediaFileSelected(input) {
-  const file = input.files[0];
-  if (!file) return;
-
-  const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
-  if (file.size > MAX_BYTES) {
-    alert('File is too large (' + (file.size / 1024 / 1024).toFixed(1) + ' MB). Maximum size is 50 MB.');
-    input.value = '';
-    return;
-  }
-
-  _pendingMediaFile = file;
-  const nameEl = document.getElementById('update-media-filename');
-  const clearBtn = document.getElementById('update-media-clear');
-  if (nameEl) nameEl.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)';
-  if (clearBtn) clearBtn.style.display = 'inline';
-}
-
-function clearMediaAttachment() {
-  _pendingMediaFile = null;
-  const input = document.getElementById('new-update-media');
-  const nameEl = document.getElementById('update-media-filename');
-  const clearBtn = document.getElementById('update-media-clear');
-  if (input) input.value = '';
-  if (nameEl) nameEl.textContent = '';
-  if (clearBtn) clearBtn.style.display = 'none';
-}
-
-async function uploadMediaToGAS(file, project, dept) {
-  const SCRIPT_URL   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL');
-  const SCRIPT_TOKEN = window.APPS_SCRIPT_TOKEN  || localStorage.getItem('APPS_SCRIPT_TOKEN');
-  if (!SCRIPT_URL || !SCRIPT_TOKEN) return null;
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-      // Strip the data URL prefix to get raw base64
-      const base64 = e.target.result.split(',')[1];
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            action:    'uploadMedia',
-            token:     SCRIPT_TOKEN,
-            fileName:  file.name,
-            mimeType:  file.type,
-            base64Data: base64,
-            project:   project,
-            dept:      dept
-          })
-        });
-        const data = await res.json();
-        if (data.success) resolve(data);
-        else reject(new Error(data.error || 'Upload failed'));
-      } catch(err) { reject(err); }
-    };
-    reader.onerror = () => reject(new Error('FileReader failed'));
-    reader.readAsDataURL(file);
-  });
-}
-
-function deleteMedia(updateTimestamp, fileId) {
-  if (!diagUnlocked) return;
-  if (!confirm('Remove this media? It will be moved to Drive trash.')) return;
-
-  const SCRIPT_URL   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL');
-  const SCRIPT_TOKEN = window.APPS_SCRIPT_TOKEN  || localStorage.getItem('APPS_SCRIPT_TOKEN');
-
-  // Remove media reference from all localStorage keys
-  const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
-    ? viewingSessionDate
-    : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
-
-  const keysToCheck = [
-    'deptupdate:' + currentProject + ':' + currentDept + ':' + sessionKey,
-    'fb_dept:'    + currentProject + ':' + currentDept + ':' + sessionKey,
-    'deptupdate:' + currentProject + ':' + currentDept,
-    'fb_dept:'    + currentProject + ':' + currentDept,
-  ];
-  keysToCheck.forEach(key => {
-    try {
-      const arr = JSON.parse(localStorage.getItem(key) || '[]');
-      let changed = false;
-      arr.forEach(u => { if (u.timestamp === updateTimestamp && u.media) { delete u.media; changed = true; } });
-      if (changed) localStorage.setItem(key, JSON.stringify(arr));
-    } catch(e) {}
-  });
-
-  // Remove from Firebase
-  if (_fbReady && _fbDb) {
-    const ref = _fbDb.ref('dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey);
-    ref.once('value').then(snap => {
-      snap.forEach(child => {
-        if (child.val().timestamp === updateTimestamp) child.ref.child('media').remove();
-      });
-    }).catch(e => console.warn('[Firebase] delete media ref failed:', e));
-  }
-
-  // Trash the Drive file via GAS
-  if (SCRIPT_URL && SCRIPT_TOKEN) {
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'deleteMedia', token: SCRIPT_TOKEN, fileId: fileId })
-    }).catch(e => console.warn('[GAS] Drive trash failed:', e));
-  }
-
-  renderUpdatesList();
-}
-
 async function syncWithGoogleSheet() {
   try {
     document.querySelectorAll('.sync-btn').forEach(btn => btn.classList.add('syncing'));
@@ -4154,7 +4458,7 @@ async function syncWithGoogleSheet() {
     // ── Reset PI + milestones so they regenerate with fresh data ──
     _piGenerated = { Crossings: false, Annexe: false };
     _milestonesLoaded = { Crossings: false, Annexe: false };
-    viewingSessionDate = 'current'; updateDashboardDates(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept(); populateSessionPicker(); if(_dashboardSession!=='latest') refreshDashboardForSession(); renderDynamicCharts(); updateLandingPageMetrics(); setTimeout(renderAllCVIs, 200);
+    viewingSessionDate = 'current'; updateDashboardDates(); renderMetricTiles(); applyPriorityColors(); renderAlertStrips(); updateSidebarCounts(); renderOverduePanels(); if (currentDept) renderCurrentDept(); populateSessionPicker(); if(_dashboardSession!=='latest') refreshDashboardForSession(); renderDynamicCharts(); updateLandingPageMetrics(); setTimeout(renderAllCVIs, 200);
     // 25002500 Run Trend Intelligence Engine 25002500
     setTimeout(function() {
       try { runAndRenderTrend('Crossings'); } catch(e) { console.warn('[TI] Crossings:', e); }
@@ -4441,6 +4745,58 @@ if (/operations|fincon/i.test(lastDept)) {
   renderDiagPanel();
 }
 
+// ── DIRECT METRIC EXTRACTION FROM TASKDATABASE ──
+// Reads Operations/Fincon rows directly instead of relying on intermediate Firebase writes
+function extractMetricsFromOperations(project, session) {
+  const metrics = { inflow: null, units: null, sales: null, balance: null, offers: null };
+  
+  // Find all Operations/Fincon tasks for this project+session
+  const opTasks = taskDatabase.filter(t => 
+    t.project === project && 
+    t.session === session && 
+    /^(operations|fincon)$/i.test(t.dept)
+  );
+  
+  if (opTasks.length === 0) return metrics;
+  
+  // Combine all operations text (action + explanation + resultToAchieve)
+  const combinedText = opTasks.map(t => 
+    (t.action || '') + ' ' + (t.explanation || '') + ' ' + (t.resultToAchieve || '')
+  ).join(' ');
+  
+  // Use existing METRIC_PATTERNS to extract values
+  const inflow = parseExtractedMetric(combinedText.match(METRIC_PATTERNS.inflow), true);
+  const salesVal = parseExtractedMetric(combinedText.match(METRIC_PATTERNS.sales), true);
+  const balance = parseExtractedMetric(combinedText.match(METRIC_PATTERNS.balance), true);
+  const units = parseExtractedMetric(combinedText.match(METRIC_PATTERNS.units), false);
+  const offers = parseExtractedMetric(combinedText.match(METRIC_PATTERNS.offers), false);
+  
+  return {
+    inflow: inflow || null,
+    units: units || null,
+    sales: salesVal || null,
+    balance: balance || null,
+    offers: offers || null
+  };
+}
+
+// ── RENDER METRICS TO DOM ──
+// Called after every sync, reads from taskDatabase directly
+function renderMetricTiles() {
+  if (!currentProject || viewingSessionDate === 'current') return;
+  
+  const metrics = extractMetricsFromOperations(currentProject, viewingSessionDate);
+  
+  const prefix = currentProject === 'Crossings' ? 'cx' : 'annex';
+  if (metrics.inflow) setMetric(`val-${prefix}-inflow`, metrics.inflow);
+  if (metrics.units) setMetric(`val-${prefix}-units`, metrics.units);
+  if (metrics.sales) setMetric(`val-${prefix}-sales`, metrics.sales);
+  if (metrics.balance) setMetric(`val-${prefix}-balance`, metrics.balance);
+  if (metrics.offers) setMetric(`val-${prefix}-offers`, metrics.offers);
+  
+  applyPriorityColors();
+}
+
 function setMetric(id, val) { const el = document.getElementById(id); if (el && val) el.textContent = val; }
 function parseMillions(str) { if (!str) return null; const s = str.replace(/[₦,\s]/g,'').toUpperCase(); const numMatch = s.match(/([\d.]+)([BMK]?)/); if (!numMatch) return null; let val = parseFloat(numMatch[1]); if (numMatch[2] === 'B') val *= 1000; else if (numMatch[2] === 'K') val /= 1000; return val; }
 function balanceColorClass(valStr) { const m = parseMillions(valStr); if (m === null) return 'color-green'; if (m < 50) return 'color-red'; if (m < 100) return 'color-amber'; return 'color-green'; }
@@ -4510,7 +4866,7 @@ function rebuildMobilePills() {
   const latest = availableSessions[currentProject] && availableSessions[currentProject][0];
   container.innerHTML = depts.map(d => { const count = taskDatabase.filter(t => t.project === currentProject && t.dept.toLowerCase() === d.toLowerCase() && t.session === latest).length; const isActive = currentDept === d ? activeClass : ''; return `<button class="mobile-dept-pill ${isActive}" onclick="showDeptMobile('${d}')">${d} <span class="pill-count">${count}</span></button>`; }).join('');
 }
-function showDeptMobile(dept) { currentDept = dept; viewingSessionDate = 'current'; updateSidebarCounts(); renderDeptContent(currentProject, dept); }
+function showDeptMobile(dept) { currentDept = dept; viewingSessionDate = 'current'; _clearMediaState(); cancelReply(); updateSidebarCounts(); renderDeptContent(currentProject, dept); }
 function buildHistoryBar() {
   const bar = document.getElementById('history-bar'); if (!currentProject) return;
   const sessions = availableSessions[currentProject] || []; const monthGroups = {};
@@ -4535,7 +4891,7 @@ function switchSession(val) {
   if (val === 'current') dateLabel.textContent = 'Current'; else if (val.length === 3) dateLabel.textContent = val.charAt(0).toUpperCase() + val.slice(1) + ' Rollup'; else dateLabel.textContent = formatSheetName(val);
   renderCurrentDept();
 }
-function showDept(btn, proj, dept) { currentProject = proj; currentDept = dept; viewingSessionDate = 'current'; document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderDeptContent(proj, dept); }
+function showDept(btn, proj, dept) { currentProject = proj; currentDept = dept; viewingSessionDate = 'current'; _clearMediaState(); cancelReply(); document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderDeptContent(proj, dept); }
 function renderDeptContent(proj, dept) {
   document.getElementById('panel-placeholder').style.display = 'none'; const container = document.getElementById('dynamic-dept-container'); container.style.display = 'block';
   document.getElementById('dynamic-dept-title').textContent = dept; const badge = document.getElementById('dynamic-dept-badge'); badge.textContent = proj; badge.className = 'nav-badge ' + (proj==='Crossings' ? 'badge-cx' : 'badge-annex');
@@ -4841,9 +5197,484 @@ function updateTargetHeaders() {
 
 // Charts initialised in window.onload
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ADMIN PANEL — TAB SYSTEM + HEALTH CHECK + ERROR LOG + WARNING BANNER
+// ══════════════════════════════════════════════════════════════════════════════
+
+const ADMIN_EMAIL_CONST = 'o.olasunkanmi@mixtafrica.com';
+const LOG_KEY  = 'tracker_error_log';
+const LOG_MAX  = 100;
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchDiagTab(tab) {
+  ['sheets','health','log','feed'].forEach(t => {
+    document.getElementById('dtab-' + t)?.classList.remove('active');
+    document.getElementById('dpane-' + t)?.classList.remove('active');
+  });
+  document.getElementById('dtab-' + tab)?.classList.add('active');
+  document.getElementById('dpane-' + tab)?.classList.add('active');
+
+  if (tab === 'feed')   renderAdminFeedPane();
+  if (tab === 'log')    renderErrorLogPane();
+  if (tab === 'health') { /* rendered on demand via button */ }
+}
+
+// ── Error Logger ──────────────────────────────────────────────────────────────
+function _logEntry(level, system, plain, tech) {
+  try {
+    const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+    log.unshift({ ts: new Date().toISOString(), level, system, plain, tech: tech || '' });
+    if (log.length > LOG_MAX) log.length = LOG_MAX;
+    localStorage.setItem(LOG_KEY, JSON.stringify(log));
+    _updateLogBadge();
+    _checkBannerConditions();
+  } catch(e) {}
+}
+
+function _updateLogBadge() {
+  try {
+    const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+    const errs = log.filter(e => e.level === 'error').length;
+    const badge = document.getElementById('dtab-log-badge');
+    if (badge) { badge.textContent = errs; badge.classList.toggle('show', errs > 0); }
+    document.getElementById('log-count-label') && (document.getElementById('log-count-label').textContent = log.length + ' / ' + LOG_MAX + ' entries');
+  } catch(e) {}
+}
+
+function clearErrorLog() {
+  localStorage.removeItem(LOG_KEY);
+  _updateLogBadge();
+  renderErrorLogPane();
+  const badge = document.getElementById('dtab-log-badge');
+  if (badge) badge.classList.remove('show');
+}
+
+function renderErrorLogPane() {
+  const body = document.getElementById('error-log-body'); if (!body) return;
+  _updateLogBadge();
+  let log = [];
+  try { log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch(e) {}
+  if (!log.length) { body.innerHTML = '<div class="log-empty">No errors logged yet. The system is watching.</div>'; return; }
+
+  body.innerHTML = log.map(e => {
+    const t = new Date(e.ts).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    return `<div class="log-entry">
+      <div class="log-entry-header">
+        <span class="log-badge ${e.level}">${e.level}</span>
+        <span class="log-system">${e.system}</span>
+        <span class="log-time">${t}</span>
+      </div>
+      <div class="log-plain">${e.plain}</div>
+      ${e.tech ? `<details class="health-tech"><summary>Technical detail</summary>${e.tech}</details>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Warning Banner (admin-only) ────────────────────────────────────────────────
+let _bannerDismissed = new Set();
+
+function _checkBannerConditions() {
+  const myEmail = currentUser ? currentUser.email : null;
+  if (!myEmail || myEmail.toLowerCase() !== ADMIN_EMAIL_CONST.toLowerCase()) return;
+
+  let log = [];
+  try { log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch(e) {}
+
+  // Collect recent critical errors (last 30 min, not dismissed)
+  const cutoff = Date.now() - 30 * 60 * 1000;
+  const active = log.filter(e =>
+    e.level === 'error' &&
+    new Date(e.ts).getTime() > cutoff &&
+    !_bannerDismissed.has(e.ts)
+  ).slice(0, 3); // max 3 in banner
+
+  const banner = document.getElementById('admin-warning-banner');
+  if (!banner) return;
+
+  if (!active.length) { banner.classList.remove('show'); banner.innerHTML = ''; return; }
+
+  banner.innerHTML = active.map(e =>
+    `<div class="banner-item">
+      <div class="banner-dot err"></div>
+      <div class="banner-text">
+        <div class="banner-title">${e.system} failure</div>
+        <div class="banner-sub">${e.plain}</div>
+      </div>
+      <button class="banner-dismiss" onclick="_dismissBanner('${e.ts}')" title="Dismiss">✕</button>
+    </div>`
+  ).join('');
+  banner.classList.add('show');
+}
+
+function _dismissBanner(ts) {
+  _bannerDismissed.add(ts);
+  _checkBannerConditions();
+}
+
+// ── Health Check System ────────────────────────────────────────────────────────
+const _HC = {}; // stores last results keyed by system name
+
+function _hCard(id, name, status, plain, tech) {
+  _HC[id] = { status, plain, tech };
+  const el = document.getElementById('hc-' + id);
+  if (!el) return;
+  el.className = 'health-card ' + status;
+  el.querySelector('.health-card-status').textContent = status === 'checking' ? '…' : status.toUpperCase();
+  el.querySelector('.health-plain').textContent = plain;
+  const techEl = el.querySelector('.health-tech');
+  if (techEl) techEl.innerHTML = `<details><summary>Technical detail</summary>${tech || '—'}</details>`;
+  if (status === 'err') _logEntry('error', name, plain, tech);
+  if (status === 'warn') _logEntry('warn',  name, plain, tech);
+
+  // Update health tab badge
+  const errCount = Object.values(_HC).filter(h => h.status === 'err').length;
+  const badge = document.getElementById('dtab-health-badge');
+  if (badge) { badge.textContent = errCount; badge.classList.toggle('show', errCount > 0); }
+}
+
+function _hCardHtml(id, name) {
+  return `<div class="health-card checking" id="hc-${id}">
+    <div class="health-card-header">
+      <span class="health-card-name">${name}</span>
+      <span class="health-card-status">…</span>
+    </div>
+    <div class="health-plain">Checking…</div>
+    <div class="health-tech"></div>
+  </div>`;
+}
+
+async function runHealthCheck() {
+  const body = document.getElementById('health-body'); if (!body) return;
+  const btn = document.getElementById('health-run-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="health-spinner"></span> Checking…'; }
+
+  body.innerHTML = `
+    <div class="health-section">
+      <div class="health-section-title">Firebase</div>
+      ${_hCardHtml('fb-auth','Firebase Auth')}
+      ${_hCardHtml('fb-db','Firebase Database')}
+    </div>
+    <div class="health-section">
+      <div class="health-section-title">Data Sources</div>
+      ${_hCardHtml('sheets-cx','Google Sheets — Crossings')}
+      ${_hCardHtml('sheets-ax','Google Sheets — Annexe')}
+    </div>
+    <div class="health-section">
+      <div class="health-section-title">Services</div>
+      ${_hCardHtml('gas','Apps Script Endpoint')}
+      ${_hCardHtml('groq','Groq AI')}
+    </div>
+    <div class="health-section">
+      <div class="health-section-title">Local Storage</div>
+      ${_hCardHtml('ls-quota','Storage Quota')}
+      ${_hCardHtml('ls-integrity','Data Integrity')}
+    </div>
+    <div class="health-section">
+      <div class="health-section-title">Session Data</div>
+      ${_hCardHtml('session-tasks','Task Database')}
+      ${_hCardHtml('session-bleed','Project Isolation')}
+    </div>
+    <div class="health-section">
+      <div class="health-section-title">Presence</div>
+      ${_hCardHtml('presence','Active Users System')}
+    </div>`;
+
+  // Run all checks in parallel where possible
+  await Promise.allSettled([
+    _checkFirebaseAuth(),
+    _checkFirebaseDB(),
+    _checkSheets(),
+    _checkGAS(),
+    _checkGroq(),
+    _checkLocalStorage(),
+    _checkSessionData(),
+    _checkPresence()
+  ]);
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Run Check'; }
+  _checkBannerConditions();
+}
+
+async function _checkFirebaseAuth() {
+  try {
+    if (!window.firebase) { _hCard('fb-auth','Firebase Auth','err','Firebase SDK not loaded on this page.','window.firebase is undefined'); return; }
+    const user = firebase.auth().currentUser;
+    if (user) {
+      _hCard('fb-auth','Firebase Auth','ok',`Signed in as ${user.email}.`,`uid: ${user.uid} | provider: ${user.providerData[0]?.providerId}`);
+    } else {
+      _hCard('fb-auth','Firebase Auth','warn','No user currently signed in.','firebase.auth().currentUser is null');
+    }
+  } catch(e) { _hCard('fb-auth','Firebase Auth','err','Firebase Auth check failed unexpectedly.',e.message); }
+}
+
+async function _checkFirebaseDB() {
+  try {
+    if (!_fbDb) { _hCard('fb-db','Firebase Database','err','Firebase DB not initialised. Real-time sync is offline.','_fbDb is null or undefined'); return; }
+    const testRef = _fbDb.ref('.info/connected');
+    const snap = await Promise.race([
+      testRef.once('value'),
+      new Promise((_,rej) => setTimeout(() => rej(new Error('Timeout')), 5000))
+    ]);
+    if (snap.val() === true) {
+      _hCard('fb-db','Firebase Database','ok','Connected to Firebase Realtime Database.','ref: .info/connected = true');
+    } else {
+      _hCard('fb-db','Firebase Database','warn','Firebase is reachable but reports offline.','snap.val() = ' + snap.val());
+    }
+  } catch(e) { _hCard('fb-db','Firebase Database','err','Cannot reach Firebase. Real-time updates will not sync.',e.message); }
+}
+
+async function _checkSheets() {
+  const checks = [
+    { id: 'sheets-cx', name: 'Google Sheets — Crossings', url: (typeof SHEET_CROSSINGS !== 'undefined' ? SHEET_CROSSINGS : null) || window.SHEET_CROSSINGS || localStorage.getItem('SHEET_CROSSINGS') },
+    { id: 'sheets-ax', name: 'Google Sheets — Annexe',    url: (typeof SHEET_ANNEXE    !== 'undefined' ? SHEET_ANNEXE    : null) || window.SHEET_ANNEXE    || localStorage.getItem('SHEET_ANNEXE') }
+  ];
+  for (const c of checks) {
+    if (!c.url || c.url.startsWith('__')) { _hCard(c.id, c.name,'warn','Sheet URL not configured. Sync will not work.',`URL value: "${c.url}"`); continue; }
+    try {
+      const res = await Promise.race([
+        fetch(c.url, { method: 'HEAD' }),
+        new Promise((_,rej) => setTimeout(() => rej(new Error('Timeout after 8s')), 8000))
+      ]);
+      if (res.ok || res.status === 302 || res.status === 200) {
+        _hCard(c.id, c.name,'ok','Sheet URL is reachable and responding correctly.',`HTTP ${res.status} | url: ${c.url.slice(0,60)}…`);
+      } else {
+        _hCard(c.id, c.name,'warn',`Sheet returned unexpected status ${res.status}. Sync may be unreliable.`,`HTTP ${res.status} | url: ${c.url.slice(0,60)}…`);
+      }
+    } catch(e) { _hCard(c.id, c.name,'err','Cannot reach sheet URL. Sync will fail — check if the sheet is still published.',e.message); }
+  }
+}
+
+async function _checkGAS() {
+  const url = window.APPS_SCRIPT_URL || localStorage.getItem('APPS_SCRIPT_URL');
+  if (!url || url.startsWith('__')) {
+    _hCard('gas','Apps Script Endpoint','err',
+      'GAS URL not configured. Email, media upload and delete will not work. Check APPS_SCRIPT_URL in GitHub Secrets.',
+      'window.APPS_SCRIPT_URL is empty or still a placeholder');
+    return;
+  }
+  try {
+    const res = await Promise.race([
+      fetch(url, { method: 'GET' }),
+      new Promise((_,rej) => setTimeout(() => rej(new Error('TIMEOUT')), 10000))
+    ]);
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { data = null; }
+    if (data && data.status === 'ok') {
+      _hCard('gas','Apps Script Endpoint','ok',
+        'GAS endpoint is live and responding correctly. Email and media are operational.',
+        `status: ${data.status} | service: ${data.service}`);
+    } else if (res.ok) {
+      _hCard('gas','Apps Script Endpoint','warn',
+        'GAS endpoint responded but returned unexpected format. The script may not have the doGet handler — check that the latest version is deployed.',
+        `HTTP ${res.status} | response: ${text.slice(0,120)}`);
+    } else {
+      _hCard('gas','Apps Script Endpoint','err',
+        `GAS endpoint returned HTTP ${res.status}. Email and uploads will fail.`,
+        `HTTP ${res.status} | body: ${text.slice(0,120)}`);
+    }
+  } catch(e) {
+    const isTimeout = e.message === 'TIMEOUT';
+    _hCard('gas','Apps Script Endpoint', isTimeout ? 'warn' : 'err',
+      isTimeout
+        ? 'GAS endpoint timed out. This usually means the deployment URL in GitHub Secrets is outdated — when you create a new GAS deployment it generates a new URL. Update APPS_SCRIPT_URL secret with the current deployment URL and redeploy.'
+        : 'Cannot reach GAS endpoint. Email and media are offline.',
+      `url: ${url.slice(0,80)} | error: ${e.message}`);
+  }
+}
+
+async function _checkGroq() {
+  const key = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
+  if (!key || key.startsWith('__')) { _hCard('groq','Groq AI','warn','Groq API key not configured. AI features (Predictive, Trends) are disabled.','GROQ_API_KEY is not set'); return; }
+  try {
+    const res = await Promise.race([
+      fetch('https://api.groq.com/openai/v1/models', { headers: { Authorization: 'Bearer ' + key } }),
+      new Promise((_,rej) => setTimeout(() => rej(new Error('Timeout after 8s')), 8000))
+    ]);
+    if (res.ok) {
+      const d = await res.json();
+      _hCard('groq','Groq AI','ok','Groq API key is valid. AI features are operational.',`Models available: ${d.data?.length || '?'} | HTTP ${res.status}`);
+    } else if (res.status === 401) {
+      _hCard('groq','Groq AI','err','Groq API key is invalid or revoked. AI features will not work.',`HTTP 401 Unauthorized`);
+    } else {
+      _hCard('groq','Groq AI','warn',`Groq returned HTTP ${res.status}. AI features may be degraded.`,`HTTP ${res.status}`);
+    }
+  } catch(e) { _hCard('groq','Groq AI','err','Cannot reach Groq API. Check network or API key.',e.message); }
+}
+
+function _checkLocalStorage() {
+  // Quota check
+  try {
+    const used = Object.keys(localStorage).reduce((n,k) => n + (localStorage.getItem(k)||'').length + k.length, 0);
+    const usedKB = (used / 1024).toFixed(1);
+    const usedMB = (used / 1024 / 1024).toFixed(2);
+    const pct = (used / (5 * 1024 * 1024) * 100).toFixed(1);
+    if (parseFloat(pct) > 85) {
+      _hCard('ls-quota','Storage Quota','err',`Storage ${pct}% full (${usedMB} MB of ~5 MB). Clear old data soon or the dashboard may stop saving.`,`used: ${usedKB} KB | keys: ${localStorage.length}`);
+    } else if (parseFloat(pct) > 60) {
+      _hCard('ls-quota','Storage Quota','warn',`Storage ${pct}% used (${usedMB} MB). Room to grow but worth monitoring.`,`used: ${usedKB} KB | keys: ${localStorage.length}`);
+    } else {
+      _hCard('ls-quota','Storage Quota','ok',`Storage is healthy — ${pct}% used (${usedMB} MB of ~5 MB).`,`used: ${usedKB} KB | keys: ${localStorage.length}`);
+    }
+  } catch(e) { _hCard('ls-quota','Storage Quota','err','Could not read localStorage quota.',e.message); }
+
+  // Integrity check — look for corrupt JSON keys
+  let corrupted = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k) continue;
+    const v = localStorage.getItem(k);
+    if (v && (v.startsWith('[') || v.startsWith('{'))) {
+      try { JSON.parse(v); } catch(e) { corrupted.push(k); }
+    }
+  }
+  if (corrupted.length) {
+    _hCard('ls-integrity','Data Integrity','err',`${corrupted.length} corrupted localStorage key(s) found. Some data may be lost.`,`Keys: ${corrupted.join(', ')}`);
+  } else {
+    _hCard('ls-integrity','Data Integrity','ok','All localStorage data keys parsed correctly. No corruption detected.',`${localStorage.length} keys scanned`);
+  }
+}
+
+function _checkSessionData() {
+  // Task database
+  if (!taskDatabase || taskDatabase.length === 0) {
+    _hCard('session-tasks','Task Database','warn','No tasks loaded. Sync with Google Sheets to populate the dashboard.','taskDatabase.length = 0');
+  } else {
+    const cx = taskDatabase.filter(t => t.project === 'Crossings').length;
+    const ax = taskDatabase.filter(t => t.project === 'Annexe').length;
+    _hCard('session-tasks','Task Database','ok',`${taskDatabase.length} tasks loaded — Crossings: ${cx}, Annexe: ${ax}.`,`taskDatabase.length = ${taskDatabase.length}`);
+  }
+
+  // Project isolation — check for any tasks with missing or invalid project
+  const bleed = (taskDatabase||[]).filter(t => t.project !== 'Crossings' && t.project !== 'Annexe');
+  if (bleed.length) {
+    _hCard('session-bleed','Project Isolation','warn',`${bleed.length} task(s) have an unrecognised project label. They may not display correctly.`,`projects found: ${[...new Set(bleed.map(t=>t.project))].join(', ')}`);
+  } else {
+    _hCard('session-bleed','Project Isolation','ok','All tasks are correctly assigned to Crossings or Annexe. No data bleed detected.','');
+  }
+}
+
+function _checkPresence() {
+  if (!_fbDb) { _hCard('presence','Active Users System','warn','Presence system is offline — Firebase is not connected.','_fbDb is null'); return; }
+  if (!_presenceRef) { _hCard('presence','Active Users System','warn','Presence ref not initialised. You may not appear as online to others.','_presenceRef is null'); return; }
+  _hCard('presence','Active Users System','ok','Presence system is active. You are visible to other users.',`presenceKey: ${_myPresenceKey || 'unknown'}`);
+}
+
+// ── Full End-to-End Test (on demand) ──────────────────────────────────────────
+async function runFullEndToEndTest() {
+  const btn = document.getElementById('health-fulltest-btn');
+  const body = document.getElementById('health-body');
+  if (!body) return;
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="health-spinner"></span> Testing…'; }
+
+  const url   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL');
+  const token = window.APPS_SCRIPT_TOKEN || localStorage.getItem('APPS_SCRIPT_TOKEN');
+
+  // Append E2E section to body
+  const e2eDiv = document.createElement('div');
+  e2eDiv.className = 'health-section';
+  e2eDiv.innerHTML = `<div class="health-section-title">End-to-End Live Tests</div>
+    ${_hCardHtml('e2e-email','Email Send Test')}
+    ${_hCardHtml('e2e-upload','Drive Upload Test')}
+    ${_hCardHtml('e2e-delete','Drive Delete Test')}`;
+  body.appendChild(e2eDiv);
+
+  if (!url || !token || url.startsWith('__')) {
+    ['e2e-email','e2e-upload','e2e-delete'].forEach(id => _hCard(id,'E2E Test','err','GAS URL or token not configured. Cannot run live tests.',''));
+    if (btn) { btn.disabled = false; btn.innerHTML = '✓ Full E2E Test'; }
+    return;
+  }
+
+  // 1 — Email test
+  try {
+    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'sendEmail', token, to:[ADMIN_EMAIL_CONST],
+        subject:'[Tracker] Health Check — Email Test', html:'<p>This is an automated health check email from the Mixta Africa Projects Tracker. If you received this, email delivery is working correctly.</p>', reply_to: ADMIN_EMAIL_CONST }) });
+    const d = await r.json();
+    if (d.success) { _hCard('e2e-email','Email Send Test','ok','Test email sent successfully to ' + ADMIN_EMAIL_CONST + '. Check your inbox.',`sent: ${d.sent}`); _logEntry('info','E2E Email','Test email delivered successfully',''); }
+    else { _hCard('e2e-email','Email Send Test','err','Email send failed: ' + (d.error||'Unknown error'),JSON.stringify(d)); }
+  } catch(e) { _hCard('e2e-email','Email Send Test','err','Email test request failed.',e.message); }
+
+  // 2 — Drive upload test (tiny text blob)
+  let testFileId = null;
+  try {
+    const tiny = btoa('Tracker health check ' + new Date().toISOString());
+    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'uploadMedia', token, fileName:'tracker_health_check.txt',
+        mimeType:'text/plain', base64Data: tiny, project:'HealthCheck', dept:'Test' }) });
+    const d = await r.json();
+    if (d.success) {
+      testFileId = d.fileId;
+      _hCard('e2e-upload','Drive Upload Test','ok','Test file uploaded to Drive successfully.',`fileId: ${d.fileId}`);
+      _logEntry('info','E2E Upload','Test file uploaded successfully',`fileId: ${d.fileId}`);
+    } else { _hCard('e2e-upload','Drive Upload Test','err','Drive upload failed: ' + (d.error||'Unknown'),JSON.stringify(d)); }
+  } catch(e) { _hCard('e2e-upload','Drive Upload Test','err','Upload test request failed.',e.message); }
+
+  // 3 — Drive delete test (trash the file we just uploaded)
+  if (testFileId) {
+    try {
+      const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'},
+        body: JSON.stringify({ action:'deleteMedia', token, fileId: testFileId }) });
+      const d = await r.json();
+      if (d.success) { _hCard('e2e-delete','Drive Delete Test','ok','Test file trashed from Drive successfully. Full upload/delete cycle confirmed.',`fileId: ${d.fileId}`); }
+      else { _hCard('e2e-delete','Drive Delete Test','warn','Upload worked but delete failed: ' + (d.error||'Unknown'),JSON.stringify(d)); }
+    } catch(e) { _hCard('e2e-delete','Drive Delete Test','err','Delete test request failed.',e.message); }
+  } else {
+    _hCard('e2e-delete','Drive Delete Test','warn','Skipped — upload test did not produce a file ID.','');
+  }
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Full E2E Test'; }
+  _checkBannerConditions();
+}
+
+// ── Passive background monitoring ─────────────────────────────────────────────
+function _startPassiveMonitor() {
+  // Run a lightweight passive check every 5 minutes
+  setInterval(() => {
+    if (!diagUnlocked) return; // only monitor when admin is active in this session
+    _passiveFirebaseCheck();
+    _passiveGASCheck();
+    _passiveLocalStorageCheck();
+  }, 5 * 60 * 1000);
+}
+
+async function _passiveFirebaseCheck() {
+  try {
+    if (!_fbDb) { _logEntry('error','Firebase','Firebase DB lost connection — real-time sync is offline.','_fbDb is null'); return; }
+    const snap = await Promise.race([_fbDb.ref('.info/connected').once('value'), new Promise((_,rej)=>setTimeout(()=>rej(new Error('Timeout')),5000))]);
+    if (snap.val() !== true) _logEntry('warn','Firebase','Firebase reports offline. Real-time sync may be delayed.','snap.val() = ' + snap.val());
+  } catch(e) { _logEntry('error','Firebase','Firebase connection check failed — possible network issue.',e.message); }
+}
+
+async function _passiveGASCheck() {
+  const url = window.APPS_SCRIPT_URL || localStorage.getItem('APPS_SCRIPT_URL');
+  if (!url || url.startsWith('__')) return;
+  try {
+    const res = await Promise.race([fetch(url,{method:'GET'}), new Promise((_,rej)=>setTimeout(()=>rej(new Error('Timeout')),8000))]);
+    if (!res.ok) _logEntry('warn','Apps Script','GAS endpoint returned HTTP ' + res.status + '. Email/upload may be degraded.','HTTP ' + res.status);
+  } catch(e) { _logEntry('error','Apps Script','GAS endpoint unreachable during passive check. Email and media uploads will fail.',e.message); }
+}
+
+function _passiveLocalStorageCheck() {
+  try {
+    const used = Object.keys(localStorage).reduce((n,k) => n + (localStorage.getItem(k)||'').length + k.length, 0);
+    const pct = used / (5 * 1024 * 1024) * 100;
+    if (pct > 85) _logEntry('error','Local Storage','Storage is over 85% full. The dashboard may stop saving data soon. Clear old logs.','used: ' + (used/1024).toFixed(1) + ' KB');
+    else if (pct > 70) _logEntry('warn','Local Storage','Storage is over 70% full. Consider clearing old data.','used: ' + (used/1024).toFixed(1) + ' KB');
+  } catch(e) {}
+}
+
+// ── Updates feed pane ─────────────────────────────────────────────────────────
+function renderAdminFeedPane() {
+  const body = document.getElementById('admin-feed-body'); if (!body) return;
+  body.innerHTML = renderAdminUpdatesFeed();
+}
+
 function renderDiagPanel() {
-  const body = document.getElementById('diag-body'); const badge = document.getElementById('admin-badge');
-  if (!body) return; const sheets = Object.keys(sheetDiag);
+  const body = document.getElementById('diag-body');
+  const badge = document.getElementById('admin-badge');
+  if (!body) return;
+  const sheets = Object.keys(sheetDiag);
   let totalIssues = 0; let html = '';
 
   if (sheets.length === 0) {
@@ -4858,13 +5689,17 @@ function renderDiagPanel() {
     });
   }
 
-  // ── Team Updates Feed ──
-  html += renderAdminUpdatesFeed();
+  body.innerHTML = html;
+  if (badge) { badge.textContent = totalIssues; }
+  if (totalIssues > 0 && diagUnlocked) { badge && badge.classList.add('has-issues'); const _dp=document.getElementById('diag-panel'); if(!_dp.classList.contains('minimized')) _dp.classList.add('open'); }
+  else if (totalIssues > 0) badge && badge.classList.add('has-issues');
+  else badge && badge.classList.remove('has-issues');
 
-  body.innerHTML = html; badge.textContent = totalIssues;
-  if (totalIssues > 0 && diagUnlocked) { badge.classList.add('has-issues'); const _dp=document.getElementById('diag-panel'); if(!_dp.classList.contains('minimized')) _dp.classList.add('open'); }
-  else if (totalIssues > 0) badge.classList.add('has-issues');
-  else badge.classList.remove('has-issues');
+  // Also update sheet tab badge
+  const sheetsBadge = document.getElementById('dtab-sheets-badge');
+  if (sheetsBadge) { sheetsBadge.textContent = totalIssues; sheetsBadge.classList.toggle('show', totalIssues > 0); }
+
+  _updateLogBadge();
 }
 
 function renderAdminUpdatesFeed() {
@@ -7013,24 +7848,15 @@ function refreshDashboardForSession() {
   const proj = currentProject;
   const pfx = proj === 'Crossings';
 
-  const latestSession = availableSessions[proj][0];
+  // Use new direct extraction from taskDatabase instead of Firebase cache
+  const metrics = extractMetricsFromOperations(proj, session);
   
-  // Pull directly from our Firebase cache safely
-  const selectedMetrics = (window._firebaseMetrics && window._firebaseMetrics[proj]) ? window._firebaseMetrics[proj][session] || {} : {};
-  const latestMetrics = (window._firebaseMetrics && window._firebaseMetrics[proj]) ? window._firebaseMetrics[proj][latestSession] || {} : {};
-
-  // Fallbacks: Use selected -> then latest -> then '...'
-  const finalInflow = selectedMetrics.inflow || latestMetrics.inflow || '...';
-  const finalUnits = selectedMetrics.units || latestMetrics.units || '...';
-  const finalSales = selectedMetrics.sales || latestMetrics.sales || '...';
-  const finalBalance = selectedMetrics.balance || latestMetrics.balance || '...';
-  const finalOffers = selectedMetrics.offers || latestMetrics.offers || '...';
-
-  document.getElementById(pfx?'val-cx-inflow':'val-annex-inflow').textContent = finalInflow;
-  document.getElementById(pfx?'val-cx-units':'val-annex-units').textContent = finalUnits;
-  document.getElementById(pfx?'val-cx-sales':'val-annex-sales').textContent = finalSales;
-  document.getElementById(pfx?'val-cx-balance':'val-annex-balance').textContent = finalBalance;
-  document.getElementById(pfx?'val-cx-offers':'val-annex-offers').textContent = finalOffers;
+  const prefix = proj === 'Crossings' ? 'cx' : 'annex';
+  document.getElementById(`val-${prefix}-inflow`).textContent = metrics.inflow || '...';
+  document.getElementById(`val-${prefix}-units`).textContent = metrics.units || '...';
+  document.getElementById(`val-${prefix}-sales`).textContent = metrics.sales || '...';
+  document.getElementById(`val-${prefix}-balance`).textContent = metrics.balance || '...';
+  document.getElementById(`val-${prefix}-offers`).textContent = metrics.offers || '...';
 
   applyPriorityColors();
 
