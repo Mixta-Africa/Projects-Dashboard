@@ -487,6 +487,46 @@ body.users-bar-visible .dept-sidebar {
 .media-chip button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 11px; padding: 0; line-height: 1; }
 .media-chip button:hover { color: var(--brand-red); }
 
+/* ── Upload progress bar ── */
+.upload-progress-wrap {
+  display: none; flex-direction: column; gap: 6px;
+  padding: 10px 12px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin-top: 6px;
+}
+.upload-progress-wrap.visible { display: flex; }
+.upload-progress-header {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; font-weight: 700; color: var(--text-secondary);
+}
+.upload-progress-label { font-size: 11px; color: var(--text-muted); }
+.upload-progress-track {
+  height: 5px; background: var(--border); border-radius: 3px; overflow: hidden;
+}
+.upload-progress-fill {
+  height: 100%; background: var(--active-theme-color, var(--cx-color));
+  border-radius: 3px; transition: width 0.3s ease; width: 0%;
+}
+.upload-file-row {
+  display: flex; align-items: center; gap: 8px; font-size: 11px;
+  color: var(--text-secondary); padding: 3px 0;
+}
+.upload-file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-file-status { font-size: 10px; font-weight: 700; white-space: nowrap; }
+.upload-file-status.uploading { color: var(--active-theme-color, var(--cx-color)); }
+.upload-file-status.done { color: #2e7d32; }
+.upload-file-status.error { color: #c62828; }
+/* GAS config banner */
+.gas-config-banner {
+  background: #fff8e1; border: 1px solid #ffe082; border-radius: var(--radius-sm);
+  padding: 10px 14px; font-size: 12px; color: #795548; display: none;
+  align-items: flex-start; gap: 10px; margin-bottom: 10px;
+}
+.gas-config-banner.visible { display: flex; }
+.gas-config-banner svg { flex-shrink: 0; margin-top: 1px; stroke: #e65100; }
+.gas-config-banner strong { color: #e65100; }
+.gas-config-link { font-weight: 700; color: #e65100; text-decoration: underline; cursor: pointer; }
+
+
 .update-task-tag { display: inline-block; margin-left: 6px; background: var(--active-theme-color, var(--cx-color)); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; vertical-align: middle; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .update-input-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; }
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; color: var(--text-muted); background: var(--white); border: 1px dashed var(--border-md); border-radius: var(--radius); }
@@ -1949,7 +1989,7 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
   <div class="nav-right">
     <span class="nav-date" id="last-updated-text">Last updated: Waiting for Sync</span>
     <select id="dashboard-session-picker" onchange="onSessionPickerChange(this.value)" title="View a specific meeting date" style="display:none;font-size:11px;font-weight:700;color:var(--text-primary);background:var(--brand-grey-light);border:1px solid var(--border-md);border-radius:var(--radius-sm);padding:4px 8px;cursor:pointer;font-family:inherit;max-width:170px;">
-      <option value="latest">📅 Latest</option>
+      <option value="latest"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Latest</option>
     </select>
     <span class="nav-badge badge-cx nav-project-btn" id="btn-nav-cx" onclick="selectProject('Crossings')">Crossings</span>
     <span class="nav-badge badge-annex nav-project-btn" id="btn-nav-annex" onclick="selectProject('Annexe')">Annexe</span>
@@ -2006,7 +2046,7 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
   </button>
 </div>
 <div id="active-users-bar" class="hidden">
-  <span class="active-users-label">🟢 Online now</span>
+  <span class="active-users-label"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:5px;vertical-align:middle;box-shadow:0 0 6px #22c55e88;"></span>Online now</span>
   <div class="active-users-list" id="active-users-list"></div>
   <span class="au-count" id="active-users-count"></span>
 </div>
@@ -2052,8 +2092,8 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
       <div class="metric-card"><div class="metric-label">Total Inflow</div><div class="metric-value" id="val-cx-inflow">Syncing...</div><div class="metric-delta">Live Synced</div></div>
       <div class="metric-card"><div class="metric-label">Units Sold</div><div class="metric-value" id="val-cx-units">Syncing...</div><div class="metric-delta">Live Synced</div></div>
       <div class="metric-card"><div class="metric-label">Value of Sales</div><div class="metric-value" id="val-cx-sales">Syncing...</div><div class="metric-delta">Live Synced</div></div>
-      <div class="metric-card priority-card color-amber" id="card-cx-offers"><div class="priority-tag">★ Priority</div><div class="metric-label">Active Offer Letters</div><div class="metric-value" id="val-cx-offers">Syncing...</div><div class="metric-delta" id="delta-cx-offers">Live Synced</div></div>
-      <div class="metric-card priority-card color-red" id="card-cx-balance"><div class="priority-tag">★ Priority</div><div class="metric-label">Account Balance</div><div class="metric-value" id="val-cx-balance">Syncing...</div><div class="metric-delta" id="delta-cx-balance">Live Synced</div></div>
+      <div class="metric-card priority-card color-amber" id="card-cx-offers"><div class="priority-tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Priority</div><div class="metric-label">Active Offer Letters</div><div class="metric-value" id="val-cx-offers">Syncing...</div><div class="metric-delta" id="delta-cx-offers">Live Synced</div></div>
+      <div class="metric-card priority-card color-red" id="card-cx-balance"><div class="priority-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Priority</div><div class="metric-label">Account Balance</div><div class="metric-value" id="val-cx-balance">Syncing...</div><div class="metric-delta" id="delta-cx-balance">Live Synced</div></div>
     </div>
     <div id="overdue-cx"></div>
     <div class="charts-row">
@@ -2139,7 +2179,7 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
 
   <!-- Verdict callout -->
   <div class="cvi-verdict" id="cvi-cx-verdict">
-    <div class="cvi-verdict-icon">⚡</div>
+    <div class="cvi-verdict-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
     <div class="cvi-verdict-text" id="cvi-cx-verdict-text">Sync data to generate commercial velocity analysis.</div>
   </div>
 </div>
@@ -2174,8 +2214,8 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
       <div class="metric-card"><div class="metric-label">Total Inflow</div><div class="metric-value" id="val-annex-inflow">Syncing...</div><div class="metric-delta">Live Synced</div></div>
       <div class="metric-card"><div class="metric-label">Units Sold</div><div class="metric-value" id="val-annex-units">Syncing...</div><div class="metric-delta">Live Synced</div></div>
       <div class="metric-card"><div class="metric-label">Value of Sales</div><div class="metric-value" id="val-annex-sales">Syncing...</div><div class="metric-delta">Live Synced</div></div>
-      <div class="metric-card priority-card color-amber" id="card-annex-offers"><div class="priority-tag">★ Priority</div><div class="metric-label">Active Offer Letters</div><div class="metric-value" id="val-annex-offers">Syncing...</div><div class="metric-delta" id="delta-annex-offers">Live Synced</div></div>
-      <div class="metric-card priority-card color-green" id="card-annex-balance"><div class="priority-tag">★ Priority</div><div class="metric-label">Account Balance</div><div class="metric-value" id="val-annex-balance">Syncing...</div><div class="metric-delta" id="delta-annex-balance">Live Synced</div></div>
+      <div class="metric-card priority-card color-amber" id="card-annex-offers"><div class="priority-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Priority</div><div class="metric-label">Active Offer Letters</div><div class="metric-value" id="val-annex-offers">Syncing...</div><div class="metric-delta" id="delta-annex-offers">Live Synced</div></div>
+      <div class="metric-card priority-card color-green" id="card-annex-balance"><div class="priority-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Priority</div><div class="metric-label">Account Balance</div><div class="metric-value" id="val-annex-balance">Syncing...</div><div class="metric-delta" id="delta-annex-balance">Live Synced</div></div>
     </div>
     <div id="overdue-annex"></div>
     <div class="charts-row">
@@ -2261,7 +2301,7 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
 
   <!-- Verdict callout -->
   <div class="cvi-verdict" id="cvi-annex-verdict">
-    <div class="cvi-verdict-icon">⚡</div>
+    <div class="cvi-verdict-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
     <div class="cvi-verdict-text" id="cvi-annex-verdict-text">Sync data to generate commercial velocity analysis.</div>
   </div>
 </div>
@@ -2350,11 +2390,11 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
         </div>
         <div class="filter-tabs" id="filter-tabs">
           <button class="filter-tab active" data-filter="all" onclick="setFilter('all',this)">All</button>
-          <button class="filter-tab" data-filter="ontrack" onclick="setFilter('ontrack',this)">● On Track</button>
-          <button class="filter-tab" data-filter="delayed" onclick="setFilter('delayed',this)">● Delayed</button>
-          <button class="filter-tab" data-filter="onhold" onclick="setFilter('onhold',this)">● On Hold</button>
-          <button class="filter-tab" data-filter="update" onclick="setFilter('update',this)">▶ Update</button>
-          <button class="filter-tab" data-filter="achieved" onclick="setFilter('achieved',this)">✓ Achieved</button>
+          <button class="filter-tab" data-filter="ontrack" onclick="setFilter('ontrack',this)">On Track</button>
+          <button class="filter-tab" data-filter="delayed" onclick="setFilter('delayed',this)">Delayed</button>
+          <button class="filter-tab" data-filter="onhold" onclick="setFilter('onhold',this)">On Hold</button>
+          <button class="filter-tab" data-filter="update" onclick="setFilter('update',this)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Update</button>
+          <button class="filter-tab" data-filter="achieved" onclick="setFilter('achieved',this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Achieved</button>
         </div>
         <div class="next-steps-list" id="dynamic-tasks-list"></div>
         <div class="team-updates-section">
@@ -2364,10 +2404,10 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
             <!-- Reply-to preview strip -->
             <div class="reply-preview-strip" id="reply-preview-strip">
               Replying to <strong id="reply-preview-author"></strong>: <span id="reply-preview-text"></span>
-              <button class="cancel-reply" onclick="cancelReply()" title="Cancel reply">✕</button>
+              <button class="cancel-reply" onclick="cancelReply()" title="Cancel reply"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
             <select id="new-update-task-link" class="update-task-select">
-              <option value="">📌 Link to a task (optional)</option>
+              <option value="">Link to a task (optional)</option>
             </select>
             <textarea id="new-update-text" placeholder="Type your update or reply here..."></textarea>
             <!-- Multi-file attach -->
@@ -2378,6 +2418,20 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
               </label>
               <input type="file" id="new-update-media" accept="image/*,video/*" multiple style="display:none;" onchange="onMediaFilesSelected(this)">
               <div class="media-file-chips" id="media-file-chips"></div>
+            </div>
+            <!-- GAS not configured warning -->
+            <div class="gas-config-banner" id="gas-config-banner">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div><strong>Media upload unavailable.</strong> The Apps Script URL is not configured. Files will be posted as text-only updates. <span class="gas-config-link" onclick="openGasConfigModal()">Configure GAS URL</span></div>
+            </div>
+            <!-- Upload progress -->
+            <div class="upload-progress-wrap" id="upload-progress-wrap">
+              <div class="upload-progress-header">
+                <span>Uploading to Google Drive</span>
+                <span id="upload-progress-count">0 / 0</span>
+              </div>
+              <div class="upload-progress-track"><div class="upload-progress-fill" id="upload-progress-fill"></div></div>
+              <div id="upload-file-rows"></div>
             </div>
             <div class="update-author-row">
               <input type="text" id="new-update-author" placeholder="Your Name (auto-filled if logged in)" readonly style="background:var(--bg);color:var(--text-muted);cursor:default;">
@@ -2589,7 +2643,7 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
 
   <!-- Word-style toolbar -->
   <div class="uh-toolbar">
-    <span class="uh-toolbar-title">📋 CEO Briefing Document</span>
+    <span class="uh-toolbar-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> CEO Briefing Document</span>
     <div class="uh-toolbar-group">
       <span class="uh-toolbar-label">Project</span>
       <select id="uh-proj" onchange="renderUpdatesDoc()">
@@ -2615,7 +2669,7 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
       </select>
     </div>
     <div class="uh-toolbar-group" style="margin-left:auto;">
-      <button class="uh-dl-btn secondary" onclick="copyUpdatesDoc()">📋 Copy</button>
+      <button class="uh-dl-btn secondary" onclick="copyUpdatesDoc()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
       <button class="uh-dl-btn" onclick="downloadUpdatesDoc()">⬇ Download .txt</button>
     </div>
   </div>
@@ -2733,7 +2787,7 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
 
 <div class="admin-modal-overlay" id="admin-modal">
   <div class="admin-modal" style="position: relative;">
-    <button class="auth-modal-close" onclick="closeAdminModal()">✕</button>
+    <button class="auth-modal-close" onclick="closeAdminModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 
     <div id="admin-login-form">
       <h3>Admin Authentication</h3>
@@ -2761,6 +2815,7 @@ body.project-annexe .ti-page-icon { background: var(--annex-color); }
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
 // ═══════════════════════════════════════════════
 // STATE & GOOGLE SHEETS SETUP
@@ -2818,11 +2873,11 @@ function _getDeptUpdates(proj, dept, session) {
 function _statusChip(st) {
   const map = {
     ontrack:  { label: 'On Track',  cls: 'green' },
-    achieved: { label: '✓ Done',    cls: 'green' },
-    delayed:  { label: '⚠ Delayed', cls: 'red'   },
-    atrisk:   { label: '⚠ At Risk', cls: 'red'   },
-    onhold:   { label: '⏸ On Hold', cls: 'grey'  },
-    paused:   { label: '⏸ Paused',  cls: 'grey'  },
+    achieved: { label: 'Done',      cls: 'green' },
+    delayed:  { label: 'Delayed',   cls: 'red'   },
+    atrisk:   { label: 'At Risk', cls: 'red'   },
+    onhold:   { label: 'On Hold',   cls: 'grey'  },
+    paused:   { label: 'Paused',  cls: 'grey'  },
   };
   return map[st] || { label: st || 'On Track', cls: 'grey' };
 }
@@ -2925,7 +2980,7 @@ function renderUpdatesDoc() {
             updateHtml += `
               <div class="uh-update-block">
                 <div class="uh-update-meta">${u.author || 'Anonymous'} · ${ts}
-                  ${u.linkedTask ? ' · 📌 ' + u.linkedTask : ''}</div>
+                  ${u.linkedTask ? ' · ' + u.linkedTask : ''}</div>
                 <div class="uh-update-text">${u.text}</div>
               </div>`;
           });
@@ -3131,7 +3186,7 @@ function copyUpdatesDoc() {
     const btn = document.querySelector('.uh-dl-btn.secondary');
     if (btn) {
       const orig = btn.textContent;
-      btn.textContent = '✓ Copied!';
+      btn.textContent = 'Copied!';
       setTimeout(() => btn.textContent = orig, 1800);
     }
   }).catch(() => {
@@ -3347,32 +3402,70 @@ function initFirebase() {
         if (currentDept) renderCurrentDept();
       });
 
+      // ── Full snapshot sync (on connect + whenever any update changes) ────────
       _fbDb.ref('dept_updates').on('value', snap => {
         const all = snap.val() || {};
+        let needsRender = false;
         Object.entries(all).forEach(([proj, depts]) => {
           Object.entries(depts).forEach(([dept, sessionsOrUpdates]) => {
-            // New schema: dept_updates/{proj}/{dept}/{session}/{pushId} = update
-            // Detect whether the first-level children are session keys or direct update objects
+            if (!sessionsOrUpdates || typeof sessionsOrUpdates !== 'object') return;
             const firstVal = Object.values(sessionsOrUpdates)[0];
             if (firstVal && typeof firstVal === 'object' && ('text' in firstVal || 'timestamp' in firstVal)) {
-              // Legacy flat schema — store under the legacy key
+              // Legacy flat schema
               const arr = Object.values(sessionsOrUpdates).sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
               try { localStorage.setItem('fb_dept:' + proj + ':' + dept, JSON.stringify(arr)); } catch(e){}
             } else {
-              // New session-scoped schema
+              // Session-scoped schema: dept_updates/{proj}/{dept}/{session}/{pushId}
               Object.entries(sessionsOrUpdates).forEach(([sessionKey, pushItems]) => {
+                if (!pushItems || typeof pushItems !== 'object') return;
                 const arr = Object.values(pushItems).sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
                 try { localStorage.setItem('fb_dept:' + proj + ':' + dept + ':' + sessionKey, JSON.stringify(arr)); } catch(e){}
-              // Live-refresh the updates panel if this is the currently viewed dept/project
-              if (proj === currentProject && dept === currentDept) {
-                renderUpdatesList();
-              }
+                if (proj === currentProject && dept === currentDept) needsRender = true;
               });
             }
           });
         });
-        if (currentDept) renderUpdatesList();
+        // Only re-render once after all keys are written, and only if relevant dept is active
+        if (needsRender && currentDept) renderUpdatesList();
+        else if (!needsRender && currentDept) renderUpdatesList(); // first load: always render
       });
+
+      // ── Child-added listener for instant cross-device push ───────────────────
+      // Fires immediately when any new update is pushed (without waiting for full snapshot)
+      (function _subscribeCurrentDeptUpdates() {
+        let _deptRef = null;
+        let _deptRefPath = null;
+        window._resubscribeDeptUpdates = function() {
+          if (!_fbReady || !_fbDb || !currentProject || !currentDept) return;
+          const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
+            ? viewingSessionDate
+            : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
+          const path = 'dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey;
+          if (path === _deptRefPath) return; // already subscribed to this path
+          // Unsubscribe from old path
+          if (_deptRef) { try { _deptRef.off('child_added'); } catch(e){} }
+          _deptRef = _fbDb.ref(path);
+          _deptRefPath = path;
+          _deptRef.on('child_added', childSnap => {
+            const update = childSnap.val();
+            if (!update || !update.timestamp) return;
+            // Write into fb_dept: localStorage key
+            const fbKey = 'fb_dept:' + currentProject + ':' + currentDept + ':' + sessionKey;
+            try {
+              const existing = JSON.parse(localStorage.getItem(fbKey) || '[]');
+              const alreadyIn = existing.some(u => u.timestamp === update.timestamp);
+              if (!alreadyIn) {
+                existing.push(update);
+                existing.sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
+                localStorage.setItem(fbKey, JSON.stringify(existing));
+                renderUpdatesList(); // instant re-render on receiving new message
+              }
+            } catch(e){}
+          }, err => console.warn('[Firebase] child_added error:', err));
+        };
+        // Subscribe now and re-subscribe whenever dept/project/session changes
+        setTimeout(window._resubscribeDeptUpdates, 500);
+      })();
 
       // Sync task_update_meta from Firebase into localStorage so updater stamps are cross-device
       _fbDb.ref('task_update_meta').on('value', snap => {
@@ -3495,7 +3588,7 @@ function applyDeptTabLocks() {
       if (!btn.querySelector('.tab-lock-icon')) {
         const lock = document.createElement('span');
         lock.className = 'tab-lock-icon';
-        lock.textContent = ' 🔒';
+        lock.innerHTML = ' ' + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
         lock.style.cssText = 'font-size:10px; opacity:0.6;';
         btn.appendChild(lock);
       }
@@ -3909,9 +4002,9 @@ function populateTaskLinkDropdown(tasks) {
   const prev = sel.value;
   // Show ongoing (ontrack, delayed, onhold) tasks as options
   const linkable = (tasks || []).filter(t => t.status !== 'achieved');
-  sel.innerHTML = '<option value="">📌 Link to a task (optional)</option>' +
+  sel.innerHTML = '<option value="">Link to a task (optional)</option>' +
     linkable.map(t => {
-      const icon = t.status === 'delayed' ? '🔴' : t.status === 'onhold' ? '🟡' : '🟢';
+      const icon = t.status === 'delayed' ? '⬥' : t.status === 'onhold' ? '◈' : '◆';
       const label = (t.action || '').substring(0, 70) + (t.action && t.action.length > 70 ? '…' : '');
       const val = (t.action || '').substring(0, 100);
       return `<option value="${val.replace(/"/g,'&quot;')}">${icon} ${label}</option>`;
@@ -3977,6 +4070,14 @@ function cancelReply() {
 let _pendingMediaFiles = []; // array of File objects
 
 function onMediaFilesSelected(input) {
+  // Gate: if GAS not configured, prompt user to set it up before accepting files
+  const gasUrl = window.APPS_SCRIPT_URL || localStorage.getItem('APPS_SCRIPT_URL') || '';
+  const gasToken = window.APPS_SCRIPT_TOKEN || localStorage.getItem('APPS_SCRIPT_TOKEN') || '';
+  if (!gasUrl || gasUrl.startsWith('__') || !gasToken) {
+    input.value = ''; // clear selection
+    openGasConfigModal();
+    return;
+  }
   const MAX = 50 * 1024 * 1024;
   const chipsEl = document.getElementById('media-file-chips');
   Array.from(input.files).forEach(file => {
@@ -3993,7 +4094,7 @@ function _renderMediaChips() {
   if (!chipsEl) return;
   chipsEl.innerHTML = _pendingMediaFiles.map((f, i) =>
     `<span class="media-chip">${f.name.length > 22 ? f.name.slice(0,20)+'…' : f.name}
-      <button onclick="_removeMediaFile(${i})" title="Remove">✕</button>
+      <button onclick="_removeMediaFile(${i})" title="Remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </span>`
   ).join('');
 }
@@ -4046,7 +4147,8 @@ function submitTeamUpdate() {
 
   if (filesToUpload.length > 0) {
     if (btn) { btn.disabled = true; btn.textContent = 'Uploading…'; }
-    Promise.all(filesToUpload.map(f => uploadOneFileToGAS(f, currentProject, currentDept)))
+    _initUploadProgress(filesToUpload);
+    Promise.all(filesToUpload.map((f, i) => uploadOneFileToGAS(f, currentProject, currentDept, i).catch(err => null)))
       .then(results => {
         const mediaItems = results.filter(r => r && r.success).map(r => ({
           fileId: r.fileId, fileName: r.fileName, mimeType: r.mimeType,
@@ -4101,10 +4203,29 @@ function renderUpdatesList() {
   const legacyFb    = 'fb_dept:' + currentProject + ':' + currentDept;
   const legacyLocal = 'deptupdate:' + currentProject + ':' + currentDept;
 
-  let updates = JSON.parse(localStorage.getItem(fbKey) || localStorage.getItem(localKey) || '[]');
+  // Merge fb_dept (synced from Firebase) + deptupdate (locally written) so:
+  // — The posting device sees the update instantly (from localKey)
+  // — Other devices see it as soon as Firebase listener fires (from fbKey)
+  // Deduplicate by timestamp to avoid doubles
+  const fromFb    = JSON.parse(localStorage.getItem(fbKey)    || '[]');
+  const fromLocal = JSON.parse(localStorage.getItem(localKey) || '[]');
+  const seen = new Set();
+  let updates = [...fromFb, ...fromLocal].filter(u => {
+    if (!u || !u.timestamp) return false;
+    if (seen.has(u.timestamp)) return false;
+    seen.add(u.timestamp); return true;
+  }).sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
+
   if (!updates.length) {
-    const legacy = JSON.parse(localStorage.getItem(legacyFb) || localStorage.getItem(legacyLocal) || '[]');
-    updates = legacy.filter(u => !u.session || u.session === sessionKey);
+    const legacyFbArr    = JSON.parse(localStorage.getItem(legacyFb)    || '[]');
+    const legacyLocalArr = JSON.parse(localStorage.getItem(legacyLocal) || '[]');
+    const legacySeen = new Set();
+    updates = [...legacyFbArr, ...legacyLocalArr].filter(u => {
+      if (!u || !u.timestamp || seen.has(u.timestamp)) return false;
+      if (legacySeen.has(u.timestamp)) return false;
+      legacySeen.add(u.timestamp); return true;
+    }).filter(u => !u.session || u.session === sessionKey)
+      .sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
   }
 
   const heading = document.getElementById('team-updates-heading');
@@ -4140,7 +4261,7 @@ function renderUpdatesList() {
     }
 
     // Task tag
-    const taskTag = u.linkedTask ? `<span class="update-task-tag">📌 ${_esc(u.linkedTask)}</span>` : '';
+    const taskTag = u.linkedTask ? `<span class="update-task-tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${_esc(u.linkedTask)}</span>` : '';
 
     // Media grid — supports both old single `media` and new `mediaItems` array
     let mediaHtml = '';
@@ -4148,14 +4269,14 @@ function renderUpdatesList() {
     if (mediaArr.length) {
       const tiles = mediaArr.map((m, mi) => {
         const delBtn = diagUnlocked
-          ? `<button class="chat-media-del-btn" onclick="deleteMediaItem('${tsAttr}',${mi},'${m.fileId}')" title="Remove">🗑</button>`
+          ? `<button class="chat-media-del-btn" onclick="deleteMediaItem('${tsAttr}',${mi},'${m.fileId}')" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>`
           : '';
         if (m.mimeType && m.mimeType.startsWith('image/')) {
           return `<div style="position:relative;"><a href="${m.viewUrl}" target="_blank"><img src="${m.thumbUrl}" alt="${_esc(m.fileName)}" loading="lazy"></a>${delBtn}</div>`;
         } else if (m.mimeType && m.mimeType.startsWith('video/')) {
-          return `<div style="position:relative;"><iframe src="${m.embedUrl}" allowfullscreen></iframe>${delBtn}<a class="chat-media-link" href="${m.viewUrl}" target="_blank">▶ ${_esc(m.fileName)}</a></div>`;
+          return `<div style="position:relative;"><iframe src="${m.embedUrl}" allowfullscreen></iframe>${delBtn}<a class="chat-media-link" href="${m.viewUrl}" target="_blank"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> ${_esc(m.fileName)}</a></div>`;
         } else {
-          return `<div><a class="chat-media-link" href="${m.viewUrl}" target="_blank">📎 ${_esc(m.fileName)}</a>${delBtn}</div>`;
+          return `<div><a class="chat-media-link" href="${m.viewUrl}" target="_blank"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> ${_esc(m.fileName)}</a>${delBtn}</div>`;
         }
       }).join('');
       mediaHtml = `<div class="chat-media-grid">${tiles}</div>`;
@@ -4163,9 +4284,9 @@ function renderUpdatesList() {
 
     // Actions row
     const replyPreview = (u.text||'').slice(0,80).replace(/'/g, '&#39;');
-    const replyBtn = `<button class="chat-reply-btn" onclick="setReply('${tsAttr}','${_esc(u.author||'Anonymous').replace(/'/g,"&#39;")}','${replyPreview}')">↩ Reply</button>`;
+    const replyBtn = `<button class="chat-reply-btn" onclick="setReply('${tsAttr}','${_esc(u.author||'Anonymous').replace(/'/g,"&#39;")}','${replyPreview}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg> Reply</button>`;
     const deleteBtn = diagUnlocked
-      ? `<button class="chat-delete-btn" onclick="deleteUpdate('${tsAttr}')" title="Delete message">🗑 Delete</button>`
+      ? `<button class="chat-delete-btn" onclick="deleteUpdate('${tsAttr}')" title="Delete message"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete</button>`
       : '';
     const actionsHtml = `<div class="chat-actions">${replyBtn}${deleteBtn}</div>`;
 
@@ -4272,26 +4393,167 @@ function deleteMediaItem(updateTimestamp, mediaIndex, fileId) {
   renderUpdatesList();
 }
 
-async function uploadOneFileToGAS(file, project, dept) {
+// ── Upload progress helpers ──────────────────────────────────────────
+let _uploadTotal = 0;
+let _uploadDone  = 0;
+
+function _initUploadProgress(files) {
+  _uploadTotal = files.length;
+  _uploadDone  = 0;
+  const wrap = document.getElementById('upload-progress-wrap');
+  const fill = document.getElementById('upload-progress-fill');
+  const count = document.getElementById('upload-progress-count');
+  const rows  = document.getElementById('upload-file-rows');
+  if (!wrap) return;
+  wrap.classList.add('visible');
+  fill.style.width = '0%';
+  count.textContent = '0 / ' + files.length;
+  rows.innerHTML = files.map((f, i) =>
+    `<div class="upload-file-row" id="upload-row-${i}">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="upload-file-name">${f.name}</span>
+      <span class="upload-file-status uploading" id="upload-status-${i}">Uploading…</span>
+    </div>`
+  ).join('');
+}
+
+function _updateUploadProgress(index, success, errorMsg) {
+  _uploadDone++;
+  const fill  = document.getElementById('upload-progress-fill');
+  const count = document.getElementById('upload-progress-count');
+  const st    = document.getElementById('upload-status-' + index);
+  if (fill)  fill.style.width = Math.round((_uploadDone / _uploadTotal) * 100) + '%';
+  if (count) count.textContent = _uploadDone + ' / ' + _uploadTotal;
+  if (st) {
+    st.textContent = success ? 'Done' : ('Failed: ' + (errorMsg || 'error'));
+    st.className = 'upload-file-status ' + (success ? 'done' : 'error');
+  }
+  // Auto-hide after last file completes
+  if (_uploadDone >= _uploadTotal) {
+    setTimeout(() => {
+      const wrap = document.getElementById('upload-progress-wrap');
+      if (wrap) wrap.classList.remove('visible');
+    }, 2200);
+  }
+}
+
+function _resetUploadProgress() {
+  const wrap = document.getElementById('upload-progress-wrap');
+  const fill = document.getElementById('upload-progress-fill');
+  if (wrap) wrap.classList.remove('visible');
+  if (fill) fill.style.width = '0%';
+  _uploadTotal = 0; _uploadDone = 0;
+}
+
+function _checkGasBanner() {
+  const url   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL');
+  const token = window.APPS_SCRIPT_TOKEN || localStorage.getItem('APPS_SCRIPT_TOKEN');
+  const banner = document.getElementById('gas-config-banner');
+  if (banner) banner.classList.toggle('visible', !url || !token || url.startsWith('__'));
+}
+
+// GAS config modal helpers
+function openGasConfigModal() {
+  const modal = document.getElementById('gas-config-modal');
+  if (!modal) return;
+  document.getElementById('gas-url-input').value   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL')   || '';
+  document.getElementById('gas-token-input').value = window.APPS_SCRIPT_TOKEN || localStorage.getItem('APPS_SCRIPT_TOKEN') || '';
+  modal.classList.add('open');
+}
+
+async function saveGasConfig() {
+  const url   = document.getElementById('gas-url-input').value.trim();
+  const token = document.getElementById('gas-token-input').value.trim();
+  const status = document.getElementById('gas-config-status');
+  if (!url || !token) { status.textContent = 'Both fields are required.'; return; }
+
+  // Persist to localStorage (survives page refresh without a redeploy)
+  localStorage.setItem('APPS_SCRIPT_URL', url);
+  localStorage.setItem('APPS_SCRIPT_TOKEN', token);
+  window.APPS_SCRIPT_URL   = url;
+  window.APPS_SCRIPT_TOKEN = token;
+
+  status.textContent = 'Testing connection…';
+  try {
+    const res  = await fetch(url, { method: 'GET' });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      status.style.color = '#2e7d32';
+      status.textContent = 'Connection successful! GAS is live.';
+      setTimeout(() => {
+        document.getElementById('gas-config-modal').classList.remove('open');
+        _checkGasBanner();
+      }, 1400);
+    } else {
+      status.style.color = '#c62828';
+      status.textContent = 'GAS responded but returned unexpected data: ' + JSON.stringify(data);
+    }
+  } catch(err) {
+    status.style.color = '#c62828';
+    status.textContent = 'Connection failed: ' + err.message + '. Check the URL is correct and the deployment is set to "Anyone".';
+  }
+}
+
+function clearGasConfig() {
+  localStorage.removeItem('APPS_SCRIPT_URL');
+  localStorage.removeItem('APPS_SCRIPT_TOKEN');
+  window.APPS_SCRIPT_URL = '';
+  window.APPS_SCRIPT_TOKEN = '';
+  document.getElementById('gas-url-input').value   = '';
+  document.getElementById('gas-token-input').value = '';
+  document.getElementById('gas-config-status').textContent = 'Cleared.';
+  _checkGasBanner();
+}
+
+// ── Per-file upload with progress tracking ────────────────────────
+async function uploadOneFileToGAS(file, project, dept, fileIndex) {
   const SCRIPT_URL   = window.APPS_SCRIPT_URL   || localStorage.getItem('APPS_SCRIPT_URL');
   const SCRIPT_TOKEN = window.APPS_SCRIPT_TOKEN  || localStorage.getItem('APPS_SCRIPT_TOKEN');
-  if (!SCRIPT_URL || !SCRIPT_TOKEN) return null;
+  if (!SCRIPT_URL || !SCRIPT_TOKEN || SCRIPT_URL.startsWith('__')) {
+    _updateUploadProgress(fileIndex, false, 'GAS not configured');
+    return null;
+  }
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async e => {
       const base64 = e.target.result.split(',')[1];
+      // Abort controller for 60-second timeout
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 60000);
       try {
-        const res  = await fetch(SCRIPT_URL, {
-          method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'uploadMedia', token: SCRIPT_TOKEN,
-            fileName: file.name, mimeType: file.type, base64Data: base64, project, dept })
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'uploadMedia', token: SCRIPT_TOKEN,
+            fileName: file.name, mimeType: file.type,
+            base64Data: base64, project, dept,
+            updateTimestamp: new Date().toISOString()
+          }),
+          signal: ctrl.signal
         });
+        clearTimeout(timer);
         const data = await res.json();
-        if (data.success) resolve(data); else reject(new Error(data.error || 'Upload failed'));
-      } catch(err) { reject(err); }
+        if (data.success) {
+          _updateUploadProgress(fileIndex, true);
+          resolve(data);
+        } else {
+          _updateUploadProgress(fileIndex, false, data.error || 'Upload failed');
+          reject(new Error(data.error || 'Upload failed'));
+        }
+      } catch(err) {
+        clearTimeout(timer);
+        const msg = err.name === 'AbortError' ? 'Timed out (60s)' : err.message;
+        _updateUploadProgress(fileIndex, false, msg);
+        console.warn('[GAS upload error]', file.name, msg);
+        reject(err);
+      }
     };
-    reader.onerror = () => reject(new Error('FileReader error'));
+    reader.onerror = () => {
+      _updateUploadProgress(fileIndex, false, 'File read error');
+      reject(new Error('FileReader error'));
+    };
     reader.readAsDataURL(file);
   });
 }
@@ -4740,8 +5002,8 @@ if (/operations|fincon/i.test(lastDept)) {
   const d = sheetDiag[sheetName];
   
   // Adjust admin pane diagnostics warnings
-  if (tasksAdded === 0 && rowsScanned > 20) d.warnings.push('⚠ Zero tasks extracted — check that action column mapped correctly (current: col ' + colMap.action + ')');
-  if (isLatest && targetsAdded === 0 && rowsScanned > 30) d.warnings.push('⚠ No targets extracted — ensure targets are placed in Explanation Notes with "Target" as Dept');
+  if (tasksAdded === 0 && rowsScanned > 20) d.warnings.push('Zero tasks extracted — check that action column mapped correctly (current: col ' + colMap.action + ')');
+  if (isLatest && targetsAdded === 0 && rowsScanned > 30) d.warnings.push('No targets extracted — ensure targets are placed in Explanation Notes with "Target" as Dept');
   
   if (d.headerRow && d.colMap) { const actionHeader = d.headerRow[d.colMap.action] || '(empty)'; const dueHeader = d.headerRow[d.colMap.due] || '(empty)'; d.info = `action col ${d.colMap.action} → "${actionHeader}" | due col ${d.colMap.due} → "${dueHeader}"`; }
   
@@ -4869,7 +5131,7 @@ function rebuildMobilePills() {
   const latest = availableSessions[currentProject] && availableSessions[currentProject][0];
   container.innerHTML = depts.map(d => { const count = taskDatabase.filter(t => t.project === currentProject && t.dept.toLowerCase() === d.toLowerCase() && t.session === latest).length; const isActive = currentDept === d ? activeClass : ''; return `<button class="mobile-dept-pill ${isActive}" onclick="showDeptMobile('${d}')">${d} <span class="pill-count">${count}</span></button>`; }).join('');
 }
-function showDeptMobile(dept) { currentDept = dept; viewingSessionDate = 'current'; _clearMediaState(); cancelReply(); updateSidebarCounts(); renderDeptContent(currentProject, dept); }
+function showDeptMobile(dept) { currentDept = dept; viewingSessionDate = 'current'; _clearMediaState(); cancelReply(); updateSidebarCounts(); renderDeptContent(currentProject, dept); if(window._resubscribeDeptUpdates) window._resubscribeDeptUpdates(); }
 function buildHistoryBar() {
   const bar = document.getElementById('history-bar'); if (!currentProject) return;
   const sessions = availableSessions[currentProject] || []; const monthGroups = {};
@@ -4892,9 +5154,9 @@ function expandMonth(m) { const sessions = availableSessions[currentProject] || 
 function switchSession(val) {
   viewingSessionDate = val; buildHistoryBar(); const dateLabel = document.getElementById('viewing-date-label');
   if (val === 'current') dateLabel.textContent = 'Current'; else if (val.length === 3) dateLabel.textContent = val.charAt(0).toUpperCase() + val.slice(1) + ' Rollup'; else dateLabel.textContent = formatSheetName(val);
-  renderCurrentDept();
+  renderCurrentDept(); if(window._resubscribeDeptUpdates) window._resubscribeDeptUpdates();
 }
-function showDept(btn, proj, dept) { currentProject = proj; currentDept = dept; viewingSessionDate = 'current'; _clearMediaState(); cancelReply(); document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderDeptContent(proj, dept); }
+function showDept(btn, proj, dept) { currentProject = proj; currentDept = dept; viewingSessionDate = 'current'; _clearMediaState(); cancelReply(); document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderDeptContent(proj, dept); if(window._resubscribeDeptUpdates) window._resubscribeDeptUpdates(); }
 function renderDeptContent(proj, dept) {
   document.getElementById('panel-placeholder').style.display = 'none'; const container = document.getElementById('dynamic-dept-container'); container.style.display = 'block';
   document.getElementById('dynamic-dept-title').textContent = dept; const badge = document.getElementById('dynamic-dept-badge'); badge.textContent = proj; badge.className = 'nav-badge ' + (proj==='Crossings' ? 'badge-cx' : 'badge-annex');
@@ -4945,12 +5207,12 @@ function renderCurrentDept() {
       // ── Action buttons — hidden/disabled if user lacks edit rights for this dept ──
       const userCanEdit = canEdit(t);
       const actionButtons = !isHistory ? (userCanEdit ? `<div class="status-actions" onclick="event.stopPropagation()">
-        <button class="status-btn btn-achieved" onclick="askConfirm('${id}','achieved')">✓ Achieved</button>
-        <button class="status-btn btn-delayed"  onclick="askConfirm('${id}','delayed')">⚠ Delayed</button>
-        <button class="status-btn btn-onhold"   onclick="askConfirm('${id}','onhold')">● On Hold</button>
-        <button class="status-btn btn-update"   onclick="askConfirm('${id}','update')">▶ Update</button>
-        <button class="status-btn btn-ontrack"  onclick="askConfirm('${id}','ontrack')">▲ On Track</button>
-      </div>${status === 'achieved' ? '<div class="revert-note">↩ To undo, click any status button above and confirm</div>' : ''}` : `<div class="no-edit-notice">🔒 View only — contact your Commercial Strategy admin to update this task</div>`) : '';
+        <button class="status-btn btn-achieved" onclick="askConfirm('${id}','achieved')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Achieved</button>
+        <button class="status-btn btn-delayed"  onclick="askConfirm('${id}','delayed')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Delayed</button>
+        <button class="status-btn btn-onhold"   onclick="askConfirm('${id}','onhold')">On Hold</button>
+        <button class="status-btn btn-update"   onclick="askConfirm('${id}','update')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Update</button>
+        <button class="status-btn btn-ontrack"  onclick="askConfirm('${id}','ontrack')">On Track</button>
+      </div>${status === 'achieved' ? '<div class="revert-note"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg> To undo, click any status button above and confirm</div>' : ''}` : `<div class="no-edit-notice"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> View only — contact your Commercial Strategy admin to update this task</div>`) : '';
  
       return `<div class="step-card s-${status}" onclick="this.classList.toggle('expanded')" id="card-${id}">
         ${t.resultToAchieve ? `<div class="step-context">${t.resultToAchieve}</div>` : ''}
@@ -4982,11 +5244,11 @@ let _pendingStatusId = null;
 let _pendingStatus = null;
 
 const _statusMeta = {
-  achieved: { label: '✓ Achieved', bg: 'rgba(21,101,192,0.1)', color: '#1565c0', desc: 'This marks the task as complete. You can always undo this by selecting a different status.' },
-  delayed:  { label: '⚠ Delayed',  bg: 'rgba(198,40,40,0.1)',  color: '#c62828', desc: 'This flags the task as running behind schedule. The team lead will see this in the overdue panel.' },
-  onhold:   { label: '● On Hold',  bg: 'rgba(97,97,97,0.1)',   color: '#616161', desc: 'This pauses the task. Use this when progress is blocked and needs a decision.' },
-  update:   { label: '▶ Needs Update', bg: 'rgba(237,108,2,0.1)', color: '#ed6c02', desc: 'This flags the task as needing a status update before the next meeting.' },
-  ontrack:  { label: '▲ On Track', bg: 'rgba(46,125,50,0.1)',  color: '#2e7d32', desc: 'This marks the task as progressing normally with no blockers.' }
+  achieved: { label: 'Achieved', bg: 'rgba(21,101,192,0.1)', color: '#1565c0', desc: 'This marks the task as complete. You can always undo this by selecting a different status.' },
+  delayed:  { label: 'Delayed',    bg: 'rgba(198,40,40,0.1)',  color: '#c62828', desc: 'This flags the task as running behind schedule. The team lead will see this in the overdue panel.' },
+  onhold:   { label: 'On Hold',    bg: 'rgba(97,97,97,0.1)',   color: '#616161', desc: 'This pauses the task. Use this when progress is blocked and needs a decision.' },
+  update:   { label: 'Needs Update', bg: 'rgba(237,108,2,0.1)', color: '#ed6c02', desc: 'This flags the task as needing a status update before the next meeting.' },
+  ontrack:  { label: 'On Track',   bg: 'rgba(46,125,50,0.1)',  color: '#2e7d32', desc: 'This marks the task as progressing normally with no blockers.' }
 };
 
 function askConfirm(id, status) {
@@ -5016,7 +5278,7 @@ function askConfirm(id, status) {
     const descEl = document.getElementById('confirm-desc');
     if (descEl && descEl.parentNode) descEl.parentNode.insertBefore(updaterEl, descEl.nextSibling);
   }
-  updaterEl.textContent = `✍ Updating as: ${updater.name}${updater.email ? ' (' + updater.email + ')' : ''}`;
+  updaterEl.textContent = `Updating as: ${updater.name}${updater.email ? ' (' + updater.email + ')' : ''}`;
 
   document.getElementById('confirm-overlay').classList.add('open');
 }
@@ -5303,7 +5565,7 @@ function _checkBannerConditions() {
         <div class="banner-title">${e.system} failure</div>
         <div class="banner-sub">${e.plain}</div>
       </div>
-      <button class="banner-dismiss" onclick="_dismissBanner('${e.ts}')" title="Dismiss">✕</button>
+      <button class="banner-dismiss" onclick="_dismissBanner('${e.ts}')" title="Dismiss"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>`
   ).join('');
   banner.classList.add('show');
@@ -5584,7 +5846,7 @@ async function runFullEndToEndTest() {
 
   if (!url || !token || url.startsWith('__')) {
     ['e2e-email','e2e-upload','e2e-delete'].forEach(id => _hCard(id,'E2E Test','err','GAS URL or token not configured. Cannot run live tests.',''));
-    if (btn) { btn.disabled = false; btn.innerHTML = '✓ Full E2E Test'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Full E2E Test'; }
     return;
   }
 
@@ -5685,7 +5947,7 @@ function renderDiagPanel() {
   } else {
     sheets.forEach(name => {
       const d = sheetDiag[name]; const hasWarn = d.warnings && d.warnings.length > 0; if (hasWarn) totalIssues += d.warnings.length;
-      html += `<div class="diag-sheet"><div class="diag-sheet-name">📄 ${name} <span style="color:#546e7a;font-weight:400;">[${d.proj}${d.isLatest?' · latest':''}]</span></div><div class="diag-stat">Rows scanned: ${d.rowsScanned} &nbsp;|&nbsp; Tasks: <span style="color:${d.tasksAdded>0?'#81c784':'#ef9a9a'}">${d.tasksAdded}</span> &nbsp;|&nbsp; Targets: <span style="color:${d.targetsAdded>0?'#81c784':'#ffb74d'}">${d.targetsAdded}</span></div>`;
+      html += `<div class="diag-sheet"><div class="diag-sheet-name"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> ${name} <span style="color:#546e7a;font-weight:400;">[${d.proj}${d.isLatest?' · latest':''}]</span></div><div class="diag-stat">Rows scanned: ${d.rowsScanned} &nbsp;|&nbsp; Tasks: <span style="color:${d.tasksAdded>0?'#81c784':'#ef9a9a'}">${d.tasksAdded}</span> &nbsp;|&nbsp; Targets: <span style="color:${d.targetsAdded>0?'#81c784':'#ffb74d'}">${d.targetsAdded}</span></div>`;
       if (d.info) html += `<div class="diag-info">${d.info}</div>`;
       if (hasWarn) { d.warnings.forEach(w => { const cls = w.startsWith('❌') ? 'diag-err' : 'diag-warn'; html += `<div class="${cls}">${w}</div>`; }); } else { html += `<div class="diag-ok">✓ No issues detected</div>`; }
       html += `</div>`;
@@ -5756,7 +6018,7 @@ function renderAdminUpdatesFeed() {
   });
 
   if (allUpdates.length === 0) {
-    return `<div class="admin-feed-section"><div class="admin-feed-proj-label">📋 Team Updates — All Departments</div><div class="admin-feed-empty">No team updates have been submitted yet across any department.</div></div>`;
+    return `<div class="admin-feed-section"><div class="admin-feed-proj-label">Team Updates — All Departments</div><div class="admin-feed-empty">No team updates have been submitted yet across any department.</div></div>`;
   }
 
   // Sort newest first
@@ -5764,7 +6026,7 @@ function renderAdminUpdatesFeed() {
 
   let html = `<div class="admin-feed-section">
     <div class="admin-feed-proj-label" style="display:flex; justify-content:space-between; align-items:center;">
-      <span>📋 Team Updates — All Departments (${allUpdates.length})</span>
+      <span>Team Updates — All Departments (${allUpdates.length})</span>
       <button class="admin-feed-refresh" onclick="renderDiagPanel()">↻ Refresh</button>
     </div>`;
 
@@ -5907,7 +6169,7 @@ async function fetchAndRenderMilestones() {
         sheetName = wb.SheetNames.find(n => /KD/i.test(n.trim()) && (job.hasActual ? !/P$/i.test(n) : /P$/i.test(n)));
       }
       if (!sheetName) {
-        document.getElementById(job.loadEl).innerHTML = `<span style="color:var(--status-orange)">⚠ Tab matching "${job.proj === 'Crossings' ? 'KD P' : 'KD'}" not found. Available: ${wb.SheetNames.join(', ')}</span>`;
+        document.getElementById(job.loadEl).innerHTML = `<span style="color:var(--status-orange)">Tab matching "${job.proj === 'Crossings' ? 'KD P' : 'KD'}" not found. Available: ${wb.SheetNames.join(', ')}</span>`;
         return;
       }
 
@@ -5916,7 +6178,7 @@ async function fetchAndRenderMilestones() {
 
       renderMilestonesPanel(rows, job);
     } catch (err) {
-      document.getElementById(job.loadEl).textContent = '⚠ Failed to load milestone data: ' + err.message;
+      document.getElementById(job.loadEl).textContent = 'Failed to load milestone data: ' + err.message;
     }
   }));
 }
@@ -6166,7 +6428,7 @@ function buildPISnapshot(proj) {
   const burnRate = proj === 'Annexe' ? 35 : 18; // ₦M/week
   const runwayWks = balNum > 0 ? (balNum / burnRate).toFixed(1) : '< 1';
 
-  const topDelayed = byStatus.delayed.slice(0,8).map(t=>`[${t.dept}] ${t.action}${isOverdue(t)?' ⚠OVERDUE':''}`).join('\n');
+  const topDelayed = byStatus.delayed.slice(0,8).map(t=>`[${t.dept}] ${t.action}${isOverdue(t)?' [OVERDUE]':''}`).join('\n');
   const topAchieved = byStatus.achieved.slice(0,5).map(t=>`[${t.dept}] ${t.action}`).join('\n');
   const deptSummary = Object.entries(deptMap).map(([d,c])=>`${d}: ${c.ontrack||0} on-track, ${c.delayed||0} delayed, ${c.achieved||0} achieved`).join('\n');
 
@@ -6232,7 +6494,7 @@ YOUR TASK:
 Output EXACTLY these HTML blocks (using the exact class names provided) to inject into the dashboard:
 
 <div class="pi-insight-block" style="border-top:3px solid ${accentColor};margin-top:0">
-  <div class="pi-insight-headline"><i data-lucide="map-pin" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;"></i> Liquidity & Sales Correlation</div>
+  <div class="pi-insight-headline">Liquidity &amp; Sales Correlation</div>
   <div class="pi-insight-text">[1-2 punchy sentences. How does the current cash liquidity and offer letter pipeline directly impact our immediate construction ability?]</div>
 </div>
 
@@ -6244,12 +6506,12 @@ Output EXACTLY these HTML blocks (using the exact class names provided) to injec
 </div>
 
 <div class="pi-insight-block">
-  <div class="pi-insight-headline"><i data-lucide="alert-triangle" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;"></i> Milestone Delivery Risks</div>
+  <div class="pi-insight-headline">Milestone Delivery Risks</div>
   <div class="pi-insight-text">[1-2 sentences identifying exactly what milestone is at risk right now due to the bottlenecks or cash position.]</div>
 </div>
 
 <div class="pi-insight-block">
-  <div class="pi-insight-headline"><i data-lucide="target" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;"></i> Immediate Required Executive Action</div>
+  <div class="pi-insight-headline">Immediate Required Executive Action</div>
   <div class="pi-insight-text">[1-2 sentences. What exact decision must the board make THIS WEEK to unblock the project? Name it clearly.]</div>
 </div>
 
@@ -6259,7 +6521,7 @@ Output ONLY the HTML, nothing else before or after it.`;
   const GROQ_KEY = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
   const CEREBRAS_KEY = window.CEREBRAS_API_KEY || localStorage.getItem('CEREBRAS_API_KEY');
   if (!GROQ_KEY && !CEREBRAS_KEY) {
-    if (loadEl) loadEl.innerHTML = '<span style="color:var(--status-orange);font-size:12px">⚠ No AI API key configured (GROQ_API_KEY or CEREBRAS_API_KEY).</span>';
+    if (loadEl) loadEl.innerHTML = '<span style="color:var(--status-orange);font-size:12px">No AI API key configured (GROQ_API_KEY or CEREBRAS_API_KEY).</span>';
     return;
   }
   const _piMessages1 = [
@@ -6299,7 +6561,7 @@ Output ONLY the HTML, nothing else before or after it.`;
     _piGenerated[proj] = true;
     _piCache[proj] = clean;
   } catch(err) {
-    if (loadEl) loadEl.innerHTML = `<span style="color:var(--status-orange);font-size:12px">⚠ Intelligence generation failed: ${err.message}. <button onclick="generateDynamicPI('${proj}')" style="margin-left:8px;font-size:11px;padding:4px 10px;border:1px solid #e4e4e7;border-radius:4px;cursor:pointer;background:#fff;font-family:inherit">Retry</button></span>`;
+    if (loadEl) loadEl.innerHTML = `<span style="color:var(--status-orange);font-size:12px">Intelligence generation failed: ${err.message}. <button onclick="generateDynamicPI('${proj}')" style="margin-left:8px;font-size:11px;padding:4px 10px;border:1px solid #e4e4e7;border-radius:4px;cursor:pointer;background:#fff;font-family:inherit">Retry</button></span>`;
   }
 }
 
@@ -6585,15 +6847,15 @@ function runTrendAnalysis(proj) {
       const n = matchedRepeated.sessionsPresent.length;
       const wks = matchedRepeated.weeksOpen;
       const wkLabel = wks !== null ? ` · ${wks}w` : '';
-      badges.push({ type: n >= 5 ? 'chronic' : 'recurring', label: `🔁 Repeated ${n}×${wkLabel}` });
+      badges.push({ type: n >= 5 ? 'chronic' : 'recurring', label: `Repeated ${n}×${wkLabel}` });
     }
 
     // Chronic / escalated delay?
     const delKey = (t.dept + '__' + t.action).substring(0, 100);
     if (delayedCount[delKey]) {
       const dc = delayedCount[delKey].sessions.length;
-      if (dc >= 3) badges.push({ type: 'escalated', label: `🚨 Stuck · ${dc}× delayed` });
-      else if (dc >= 2) badges.push({ type: 'escalated', label: `⚠ Delayed again · ${dc}×` });
+      if (dc >= 3) badges.push({ type: 'escalated', label: `Stuck · ${dc}× delayed` });
+      else if (dc >= 2) badges.push({ type: 'escalated', label: `Delayed again · ${dc}×` });
     }
 
     if (badges.length) trendBadgeMap[tid] = badges;
@@ -6680,7 +6942,7 @@ function renderTrendPanel(proj, result) {
       const wks = tiWeeksOpen(entry.sessions[0], entry.sessions[entry.sessions.length-1]);
       const bucket = result.timeBucket(n);
       allAlerts.push({ bucket, priority: 0, html: alertRow(
-        'escalation', '🚨', 'escalation',
+        'escalation', '!', 'escalation',
         `Stuck Task — ${n} meetings, ${wks !== null ? wks + ' weeks' : 'multiple weeks'}`,
         entry.action,
         `<strong>${escHtml(entry.dept)}</strong> · This item has been flagged as delayed or overdue at <strong>${n} separate meetings</strong>: ${entry.sessions.map(s => formatSheetName(s)).join(' → ')}. This is no longer a follow-up item — it needs a formal decision or a named person to unblock it.`,
@@ -6691,7 +6953,7 @@ function renderTrendPanel(proj, result) {
     // Escalating (2× delayed including latest)
     result.escalated.slice(0, 4).forEach(entry => {
       allAlerts.push({ bucket: 'recent', priority: 1, html: alertRow(
-        'escalation', '⚠️', 'escalation',
+        'escalation', '!', 'escalation',
         'Delayed Again This Session',
         entry.action,
         `<strong>${escHtml(entry.dept)}</strong> · Was delayed before and came back delayed this session: ${entry.sessions.map(s => formatSheetName(s)).join(' → ')}. Act before it becomes a long-running item.`,
@@ -6709,7 +6971,7 @@ function renderTrendPanel(proj, result) {
       const bucket = result.timeBucket(n);
       const sessStr = r.sessionsPresent.map(s => formatSheetName(s)).join(' → ');
       allAlerts.push({ bucket, priority: 2, html: alertRow(
-        'recurring', '🔁', 'recurring',
+        'recurring', '↺', 'recurring',
         `Task repeated ${n} times — not yet closed`,
         r.action,
         `<strong>${escHtml(r.lastDept || r.dept)}</strong> · This task has appeared at <strong>${n} meetings</strong>${wks !== null ? ` over ${wks} weeks` : ''}: ${sessStr}. It is still open (status: ${r.lastStatus}). If this is genuinely in progress, it may need a sub-task breakdown or an owner update. If it is stuck, it needs escalation.`,
@@ -6720,7 +6982,7 @@ function renderTrendPanel(proj, result) {
     // New delays this session
     result.newDelayed.slice(0, 3).forEach(t => {
       allAlerts.push({ bucket: 'recent', priority: 3, html: alertRow(
-        'velocity', '📍', 'velocity',
+        'velocity', '', 'velocity',
         `New delay — first time flagged this session`,
         t.action,
         `<strong>${escHtml(t.dept)}</strong> · This is the first time this item has been flagged as delayed or overdue. Due: ${t.due}. Catch it now before it becomes a pattern.`,
@@ -6732,7 +6994,7 @@ function renderTrendPanel(proj, result) {
     result.resolvedByAbsence.slice(0, 5).forEach(r => {
       const n = r.sessionsPresent.length;
       allAlerts.push({ bucket: 'resolved', priority: 10, html: alertRow(
-        'velocity', '✅', 'velocity',
+        'velocity', '', 'velocity',
         `Closed — no longer on the agenda`,
         r.action,
         `<strong>${escHtml(r.lastDept || r.dept)}</strong> · This task appeared at ${n} meeting${n > 1 ? 's' : ''} and was removed from the sheet after ${formatSheetName(r.lastSess)} without being marked achieved — treated as resolved. Last known status: ${r.lastStatus}.`,
@@ -6747,7 +7009,7 @@ function renderTrendPanel(proj, result) {
       const diff = last.pct - prev.pct;
       const trendLabel = diff > 0 ? `↑ Up ${diff} points` : diff < 0 ? `↓ Down ${Math.abs(diff)} points` : '→ Unchanged';
       const trendClass = diff > 5 ? 'velocity' : diff < -5 ? 'escalation' : 'velocity';
-      const trendIcon = diff > 5 ? '📈' : diff < -5 ? '📉' : '📊';
+      const trendIcon = diff > 5 ? '↑' : diff < -5 ? '↓' : '—';
       const verdict = result.velocityTrend === 'stalled'
         ? 'Delivery pace is critically low across the board — very few tasks are being closed at each meeting.'
         : result.velocityTrend === 'declining'
@@ -6783,7 +7045,7 @@ function renderTrendPanel(proj, result) {
     });
 
     if (!html) {
-      html = '<div class="ti-digest-empty">✓ No patterns detected across current sessions. Continue monitoring.</div>';
+      html = '<div class="ti-digest-empty">No patterns detected across current sessions. Continue monitoring.</div>';
     }
     digestEl.innerHTML = html;
   }
@@ -6920,12 +7182,12 @@ function reminderProjectChanged() {
 
   // "All Departments" option
   const allOpt = document.createElement('option');
-  allOpt.value = '__ALL__'; allOpt.textContent = '📨 All Departments';
+  allOpt.value = '__ALL__'; allOpt.textContent = 'All Departments';
   deptSel.appendChild(allOpt);
 
   // NEW: "Active Departments Only" option
   const activeOpt = document.createElement('option');
-  activeOpt.value = '__ACTIVE__'; activeOpt.textContent = '💡Active Departments Only';
+  activeOpt.value = '__ACTIVE__'; activeOpt.textContent = 'Active Departments Only';
   deptSel.appendChild(activeOpt);
 
   Object.keys(MAILING_LIST[_reminderProject]).forEach(dept => {
@@ -6986,8 +7248,8 @@ function reminderDeptChanged() {
     document.getElementById('reminder-recipients').innerHTML = `
       <div class="email-meta-row"><span class="email-meta-key">Mode:</span>
       <span class="email-meta-val">${document.getElementById('reminder-mode').value === 'test'
-        ? '🧪 TEST — all emails go to ' + TEST_EMAIL
-        : '🚀 LIVE — each dept gets its own email to its mailing list'}</span></div>
+        ? 'TEST — all emails go to ' + TEST_EMAIL
+        : 'LIVE — each dept gets its own email to its mailing list'}</span></div>
       <div class="email-meta-row"><span class="email-meta-key">Depts:</span>
       <span class="email-meta-val">${activeDeptsCount} department(s) will receive reminders</span></div>`;
     document.getElementById('reminder-email-preview').textContent = activeDeptsCount > 0 ? 'Click "Compose Reminders" to preview the email for each department.' : 'Nothing to compose.';
@@ -7019,17 +7281,17 @@ function reminderDeptChanged() {
         </div>`;
       });
     };
-    addRows(tasks.delayed, '🔴', 'Delayed / Overdue');
-    addRows(tasks.ontrack, '🟢', 'On Track');
-    addRows(tasks.onhold,  '⏸', 'On Hold — due within 7 days');
+    addRows(tasks.delayed, '', 'Delayed / Overdue');
+    addRows(tasks.ontrack, '', 'On Track');
+    addRows(tasks.onhold,  '', 'On Hold — due within 7 days');
     taskListEl.innerHTML = html;
   }
 
   document.getElementById('reminder-recipients').innerHTML = `
     <div class="email-meta-row"><span class="email-meta-key">To:</span><span class="email-meta-val">${recipients.join(', ')}</span></div>
     <div class="email-meta-row"><span class="email-meta-key">Mode:</span><span class="email-meta-val">${mode === 'test'
-      ? '🧪 TEST — real list has ' + (MAILING_LIST[_reminderProject][_reminderDept] || []).length + ' recipient(s)'
-      : '🚀 LIVE'}</span></div>`;
+      ? 'TEST — real list has ' + (MAILING_LIST[_reminderProject][_reminderDept] || []).length + ' recipient(s)'
+      : 'LIVE'}</span></div>`;
 
   document.getElementById('reminder-email-preview').textContent = 'Click "Compose Reminder Email" to generate the email.';
   document.getElementById('reminder-dept-preview').style.display = 'block';
@@ -7257,7 +7519,7 @@ function sendReminderEmail() {
   const SCRIPT_TOKEN = window.APPS_SCRIPT_TOKEN  || localStorage.getItem('APPS_SCRIPT_TOKEN');
 
   if (!SCRIPT_URL || !SCRIPT_TOKEN) {
-    statusEl.textContent = '⚠ APPS_SCRIPT_URL or APPS_SCRIPT_TOKEN not configured.';
+    statusEl.textContent = 'Apps Script URL or token not configured.';
     return;
   }
 
@@ -7336,9 +7598,9 @@ function sendReminderEmail() {
     if (idx >= emailsToSend.length) {
       var currentMode = document.getElementById('reminder-mode').value;
       statusEl.textContent = failCount === 0
-        ? '✓ ' + sentCount + ' email' + (sentCount !== 1 ? 's' : '') + ' sent successfully' + (currentMode === 'test' ? ' (test mode)' : '')
+        ? sentCount + ' email' + (sentCount !== 1 ? 's' : '') + ' sent successfully' + (currentMode === 'test' ? ' (test mode)' : '')
         : sentCount + ' sent, ' + failCount + ' failed. Check browser console for details.';
-      btn.innerHTML = '📨 Send Email' + (emailsToSend.length > 1 ? 's' : '');
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Email' + (emailsToSend.length > 1 ? 's' : '');
       btn.disabled = false;
       return;
     }
@@ -7615,7 +7877,7 @@ Write in a direct, analytical tone for executive leadership. Use specific number
     const groqKey = window.GROQ_API_KEY || localStorage.getItem('GROQ_API_KEY');
     const cerebrasKey = window.CEREBRAS_API_KEY || localStorage.getItem('CEREBRAS_API_KEY');
     if (!groqKey && !cerebrasKey) {
-      statusEl.textContent = '⚠ No AI API key configured (GROQ_API_KEY or CEREBRAS_API_KEY).';
+      statusEl.textContent = 'No AI API key configured (GROQ_API_KEY or CEREBRAS_API_KEY).';
       return;
     }
     const _reportMessages = [
@@ -7824,7 +8086,7 @@ ${body}
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  statusEl.textContent = '✓ Downloaded — open in Microsoft Word or Google Docs';
+  statusEl.textContent = 'Downloaded — open in Microsoft Word or Google Docs';
 }
 
 // Close modals on overlay click
@@ -7843,7 +8105,7 @@ function populateSessionPicker() {
   const picker = document.getElementById('dashboard-session-picker');
   if (!picker || !currentProject) return;
   const sessions = availableSessions[currentProject] || [];
-  picker.innerHTML = '<option value="latest">\uD83D\uDCC5 Latest</option>';
+  picker.innerHTML = '<option value="latest">Latest</option>';
   sessions.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s;
@@ -8079,8 +8341,8 @@ function renderCVI(proj) {
     }
 
     // Status
-    if (currentBal < 50) { statusText = '⚠ Critical'; statusClass = 'critical'; }
-    else if (gap === 0)  { statusText = '✓ Threshold Met'; statusClass = 'healthy'; }
+    if (currentBal < 50) { statusText = 'Critical'; statusClass = 'critical'; }
+    else if (gap === 0)  { statusText = 'Threshold Met'; statusClass = 'healthy'; }
     else if (weeksToThreshold !== null && weeksToThreshold <= 12) { statusText = 'In Range'; statusClass = 'warning'; }
     else { statusText = 'Off Track'; statusClass = 'critical'; }
 
@@ -8090,7 +8352,7 @@ function renderCVI(proj) {
     const balStr  = balDelta < 0 ? `Account balance fell by <strong>${fmtM(Math.abs(balDelta))}</strong> since last session.` : balDelta > 0 ? `Account balance rose by <strong>${fmtM(balDelta)}</strong> since last session.` : `Account balance unchanged since last session.`;
     verdictHtml = `${balStr} With <strong>${fmtM(gap)}</strong> remaining to the civil mobilisation threshold and ${paceStr}, ${etsStr}. Main civil infrastructure work remains locked until this threshold is crossed.`;
     if (droughtSessions >= 4) {
-      droughtStrip = `<div class="cvi-drought-strip">🔴 Inflow drought: no new collections recorded for ${droughtSessions} consecutive sessions. Civil works mobilisation is not progressing.</div>`;
+      droughtStrip = `<div class="cvi-drought-strip">Inflow drought: no new collections recorded for ${droughtSessions} consecutive sessions. Civil works mobilisation is not progressing.</div>`;
     }
   } else {
     // Annexe: collections gap (Value of Sales vs Inflow)
@@ -8121,7 +8383,7 @@ function renderCVI(proj) {
     runwayValue = runwayWks + 'w';
 
     // Status
-    if (currentBal < 50)      { statusText = '⚠ Critical'; statusClass = 'critical'; }
+    if (currentBal < 50)      { statusText = 'Critical'; statusClass = 'critical'; }
     else if (currentBal < 100){ statusText = 'Low Balance'; statusClass = 'warning'; }
     else                       { statusText = 'Stable';      statusClass = 'healthy'; }
 
@@ -8489,53 +8751,98 @@ function renderDynamicCharts() {
     return { labels, inflowData, salesValueData };
   }
 
-  const baseOpts = { 
-    responsive: true, 
+
+  // ── Chart gradient helper (light fills under vibrant lines) ──────────────────
+  function neonGrad(ctx, colorTop, colorBottom) {
+    const chart = ctx.chart;
+    const { top, bottom } = chart.chartArea || { top: 0, bottom: 300 };
+    const gradient = chart.ctx.createLinearGradient(0, top, 0, bottom);
+    gradient.addColorStop(0,   colorTop);
+    gradient.addColorStop(1,   colorBottom);
+    return gradient;
+  }
+
+  const baseOpts = {
+    responsive: true,
     maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false
-    },
-    plugins: { 
-      legend: { 
-        display: true, position: 'bottom', 
-        labels: { font: { size: 11, weight: '700', family: "'DM Sans', sans-serif" }, color: '#5f6368', usePointStyle: true, pointStyleWidth: 12, boxWidth: 8, padding: 20 } 
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        display: true, position: 'bottom',
+        labels: {
+          font: { size: 11, weight: '700', family: "'DM Sans', sans-serif" },
+          color: '#5f6368', usePointStyle: true,
+          pointStyleWidth: 10, boxWidth: 8, padding: 20
+        }
       },
       tooltip: {
-        backgroundColor: '#ffffff', titleColor: '#202124', bodyColor: '#5f6368', borderColor: '#dadce0', borderWidth: 1, padding: 12, boxPadding: 6, usePointStyle: true,
-        titleFont: { size: 13, weight: 'bold', family: "'DM Sans', sans-serif" },
-        bodyFont: { size: 12, weight: 'bold', family: "'DM Sans', sans-serif" },
+        backgroundColor: '#ffffff',
+        titleColor: '#202124',
+        bodyColor:  '#5f6368',
+        borderColor: '#e0e0e0',
+        borderWidth: 1, padding: 14, boxPadding: 8, usePointStyle: true,
+        titleFont: { size: 13, weight: '800', family: "'DM Sans', sans-serif" },
+        bodyFont:  { size: 12, weight: '600', family: "'DM Sans', sans-serif" },
         callbacks: {
-          label: function(ctx) { return ' ' + ctx.dataset.label + ': ₦' + (ctx.parsed.y / 1000).toFixed(2) + 'B'; }
+          label: function(ctx) {
+            return '  ' + ctx.dataset.label + ':  ₦' + (ctx.parsed.y / 1000).toFixed(2) + 'B';
+          }
         }
       }
-    }, 
-    scales: { 
-      x: { 
-        ticks: { color: '#9aa0a6', font: { size: 10, weight: '600' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, 
+    },
+    scales: {
+      x: {
+        ticks: { color: '#9aa0a6', font: { size: 10, weight: '600' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
         grid: { display: false },
         border: { display: false }
-      }, 
-      y: { 
-        ticks: { color: '#9aa0a6', font: { size: 10, weight: '600' }, callback: function(value) { return '₦' + (value / 1000).toFixed(1) + 'B'; } }, 
+      },
+      y: {
+        ticks: { color: '#9aa0a6', font: { size: 10, weight: '600' }, callback: function(v) { return '₦' + (v/1000).toFixed(1) + 'B'; } },
         grid: { color: '#f1f3f4', drawBorder: false },
-        border: { display: false, dash: [3,3] }
-      } 
-    } 
+        border: { display: false }
+      }
+    }
   };
+
+  // White card background for chart canvases (override any previous dark theme)
+  document.querySelectorAll('.chart-card').forEach(el => {
+    el.style.background = '';
+    el.style.boxShadow = '';
+    el.style.border = '';
+    el.querySelectorAll('h3, .chart-card-subtitle').forEach(t => { t.style.color = ''; });
+    el.querySelectorAll('.legend-dot').forEach(d => { d.style.color = ''; });
+  });
 
   // RENDER ANNEXE CHART
   const annData = buildChartData('Annexe');
-  const annRadius = annData.labels.length > 40 ? 0 : (annData.labels.length > 20 ? 1 : 4);
+  const annRadius = annData.labels.length > 40 ? 0 : (annData.labels.length > 20 ? 1 : 0);
 
   const ctxAnnexe = document.getElementById('c1');
   if (ctxAnnexe && annData.labels.length) {
     if (annexChartInstance) annexChartInstance.destroy();
     annexChartInstance = new Chart(ctxAnnexe, {
-      type: 'line', 
-      data: { labels: annData.labels, datasets: [ 
-        { label: 'Sales Value', data: annData.salesValueData, borderColor: '#1a73e8', backgroundColor: 'transparent', borderWidth: 2, pointRadius: annRadius, pointBackgroundColor: '#1a73e8', pointBorderColor: '#fff', pointBorderWidth: 2, pointHoverRadius: 6, fill: false, tension: 0.35, borderDash: [5, 4] },
-        { label: 'Total Inflow', data: annData.inflowData, borderColor: '#D32F2F', backgroundColor: 'rgba(211,47,47,0.07)', borderWidth: 2.5, pointRadius: annRadius, pointBackgroundColor: '#D32F2F', pointBorderColor: '#fff', pointBorderWidth: 2, pointHoverRadius: 6, fill: true, tension: 0.35 } 
+      type: 'line',
+      data: { labels: annData.labels, datasets: [
+        {
+          label: 'Sales Value',
+          data: annData.salesValueData,
+          borderColor: 'rgba(139,92,246,1)',
+          backgroundColor: function(ctx) { return neonGrad(ctx, 'rgba(139,92,246,0.35)', 'rgba(139,92,246,0)'); },
+          borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 6,
+          pointHoverBackgroundColor: 'rgba(139,92,246,1)',
+          pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2,
+          fill: true, tension: 0.4, borderDash: [5, 4]
+        },
+        {
+          label: 'Total Inflow',
+          data: annData.inflowData,
+          borderColor: 'rgba(239,68,68,1)',
+          backgroundColor: function(ctx) { return neonGrad(ctx, 'rgba(239,68,68,0.30)', 'rgba(239,68,68,0)'); },
+          borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 6,
+          pointHoverBackgroundColor: 'rgba(239,68,68,1)',
+          pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2,
+          fill: true, tension: 0.4
+        }
       ]},
       options: baseOpts
     });
@@ -8543,16 +8850,34 @@ function renderDynamicCharts() {
 
   // RENDER CROSSINGS CHART
   const cxData = buildChartData('Crossings');
-  const cxRadius = cxData.labels.length > 40 ? 0 : (cxData.labels.length > 20 ? 1 : 4);
+  const cxRadius = cxData.labels.length > 40 ? 0 : (cxData.labels.length > 20 ? 1 : 0);
 
   const ctxCx = document.getElementById('c3');
   if (ctxCx && cxData.labels.length) {
     if (cxChartInstance) cxChartInstance.destroy();
     cxChartInstance = new Chart(ctxCx, {
-      type: 'line', 
-      data: { labels: cxData.labels, datasets: [ 
-        { label: 'Sales Value', data: cxData.salesValueData, borderColor: '#1a73e8', backgroundColor: 'transparent', borderWidth: 2, pointRadius: cxRadius, pointBackgroundColor: '#1a73e8', pointBorderColor: '#fff', pointBorderWidth: 2, pointHoverRadius: 6, fill: false, tension: 0.35, borderDash: [5, 4] },
-        { label: 'Total Inflow', data: cxData.inflowData, borderColor: '#1b5e20', backgroundColor: 'rgba(27,94,32,0.07)', borderWidth: 2.5, pointRadius: cxRadius, pointBackgroundColor: '#1b5e20', pointBorderColor: '#fff', pointBorderWidth: 2, pointHoverRadius: 6, fill: true, tension: 0.35 } 
+      type: 'line',
+      data: { labels: cxData.labels, datasets: [
+        {
+          label: 'Sales Value',
+          data: cxData.salesValueData,
+          borderColor: 'rgba(34,211,238,1)',
+          backgroundColor: function(ctx) { return neonGrad(ctx, 'rgba(34,211,238,0.28)', 'rgba(34,211,238,0)'); },
+          borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 6,
+          pointHoverBackgroundColor: 'rgba(34,211,238,1)',
+          pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2,
+          fill: true, tension: 0.4, borderDash: [5, 4]
+        },
+        {
+          label: 'Total Inflow',
+          data: cxData.inflowData,
+          borderColor: 'rgba(74,222,128,1)',
+          backgroundColor: function(ctx) { return neonGrad(ctx, 'rgba(74,222,128,0.28)', 'rgba(74,222,128,0)'); },
+          borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 6,
+          pointHoverBackgroundColor: 'rgba(74,222,128,1)',
+          pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2,
+          fill: true, tension: 0.4
+        }
       ]},
       options: baseOpts
     });
@@ -8796,8 +9121,8 @@ function mgmtAddUser() {
   const mailing = document.getElementById('mgmt-new-mailing').value.trim().toLowerCase() || email;
   const statusEl = document.getElementById('mgmt-user-status');
 
-  if (!email || !name) { statusEl.textContent = '⚠ Email and name are required.'; return; }
-  if (!email.includes('@')) { statusEl.textContent = '⚠ Enter a valid email address.'; return; }
+  if (!email || !name) { statusEl.textContent = 'Email and name are required.'; return; }
+  if (!email.includes('@')) { statusEl.textContent = 'Enter a valid email address.'; return; }
 
   const custom = mgmtGetCustomUsers();
   custom[email] = { name, role, dept: dept || null, project, mailingEmail: mailing };
@@ -8818,7 +9143,7 @@ function mgmtAddUser() {
   document.getElementById('mgmt-new-role').value = 'editor';
   document.getElementById('mgmt-new-project').value = 'Both';
 
-  statusEl.textContent = `✓ ${name} added successfully as ${role}`;
+  statusEl.textContent = `${name} added successfully as ${role}`;
   mgmtRenderUsers();
 }
 
@@ -8830,7 +9155,7 @@ function mgmtDeleteUser(email) {
   delete USER_ROLES[email];
   if (_fbReady && _fbDb) _fbDb.ref('mgmt_users/' + email.replace(/\./g,'_')).remove();
   mgmtRenderUsers();
-  document.getElementById('mgmt-user-status').textContent = '✓ User removed';
+  document.getElementById('mgmt-user-status').textContent = 'User removed';
 }
 
 function mgmtRenderUsers() {
@@ -8857,7 +9182,7 @@ function mgmtAddDept() {
   const project = document.getElementById('mgmt-new-dept-project').value;
   const statusEl = document.getElementById('mgmt-dept-status');
 
-  if (!name) { statusEl.textContent = '⚠ Department name is required.'; return; }
+  if (!name) { statusEl.textContent = 'Department name is required.'; return; }
 
   const custom = mgmtGetCustomDepts();
   const projects = project === 'Both' ? ['Crossings','Annexe'] : [project];
@@ -8875,7 +9200,7 @@ function mgmtAddDept() {
   if (_fbReady && _fbDb) _fbDb.ref('mgmt_depts').set(custom);
 
   document.getElementById('mgmt-new-dept-name').value = '';
-  statusEl.textContent = `✓ "${name}" added to ${project}`;
+  statusEl.textContent = `"${name}" added to ${project}`;
   mgmtRenderDepts();
   mgmtPopulateDeptDropdown();
   updateSidebarCounts();
@@ -8979,7 +9304,7 @@ function mgmtLoadTasks() {
         <strong>[${t.dept}]</strong> ${t.action}
         <div class="mgmt-task-meta">${t.session} · Due: ${t.due} · <span style="text-transform:uppercase;font-weight:700;">${st}</span></div>
       </div>
-      <button class="mgmt-delete-btn" onclick="mgmtDeleteTask('${id}')">🗑 Delete</button>
+      <button class="mgmt-delete-btn" onclick="mgmtDeleteTask('${id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete</button>
     </div>`;
   }).join('');
 }
@@ -9006,7 +9331,7 @@ function mgmtDeleteTask(id) {
   if (currentDept) renderCurrentDept();
   updateSidebarCounts();
 
-  document.getElementById('mgmt-task-status').textContent = '✓ Task hidden from dashboard';
+  document.getElementById('mgmt-task-status').textContent = 'Task hidden from dashboard';
 }
 
 // ── On load: apply custom users, depts, mailing and sync deleted tasks from Firebase ──
@@ -9082,6 +9407,7 @@ window.onload = function () {
   
   mgmtInitOnLoad();
   updateTargetHeaders();
+  setTimeout(_checkGasBanner, 800); // Show GAS warning if URL not configured
   initFirebase();
 
   if (!window.onAuthGateReady) {
@@ -9090,6 +9416,78 @@ window.onload = function () {
       applyPriorityColors();
       syncWithGoogleSheet();
       setInterval(syncWithGoogleSheet, AUTO_SYNC_MINUTES * 60 * 1000);
+
+      // ── localStorage → Firebase reconciliation ──────────────────────────────
+      // Runs every 5 minutes on ALL logged-in devices (not admin-only).
+      // Scans every deptupdate: key in localStorage, reads the corresponding
+      // Firebase node, and pushes any local updates that Firebase doesn't have.
+      // This is a passive safety net: if Firebase was offline when an update
+      // was saved, the next reconciliation cycle will catch it and push it up.
+      // ────────────────────────────────────────────────────────────────────────
+      function _reconcileLocalToFirebase() {
+        if (!_fbReady || !_fbDb) return; // Firebase not ready yet — skip this cycle
+
+        // Collect all deptupdate: keys (new session-scoped schema only)
+        const localKeys = [];
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            // Match: deptupdate:{proj}:{dept}:{session}
+            if (k && k.startsWith('deptupdate:') && k.split(':').length === 4) {
+              localKeys.push(k);
+            }
+          }
+        } catch(e) { return; }
+
+        if (!localKeys.length) return;
+
+        localKeys.forEach(key => {
+          let localUpdates;
+          try { localUpdates = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { return; }
+          if (!localUpdates.length) return;
+
+          // Parse: deptupdate:{proj}:{dept}:{session}
+          const parts = key.split(':');
+          const proj    = parts[1];
+          const dept    = parts[2];
+          const session = parts[3];
+
+          const fbPath = 'dept_updates/' + proj + '/' + dept + '/' + session;
+
+          // Read what Firebase already has for this path
+          _fbDb.ref(fbPath).once('value').then(snap => {
+            const fbData = snap.val() || {};
+            // Build a set of timestamps already in Firebase
+            const fbTimestamps = new Set(
+              Object.values(fbData)
+                .filter(v => v && v.timestamp)
+                .map(v => v.timestamp)
+            );
+
+            // Push only updates whose timestamp isn't already in Firebase
+            const missing = localUpdates.filter(u => u && u.timestamp && !fbTimestamps.has(u.timestamp));
+            if (!missing.length) return;
+
+            missing.forEach(update => {
+              _fbDb.ref(fbPath).push(update).catch(e =>
+                console.warn('[Reconcile] Failed to push update to Firebase:', e.message)
+              );
+            });
+
+            if (missing.length > 0) {
+              console.log('[Reconcile] Pushed ' + missing.length + ' missing update(s) to Firebase →', fbPath);
+            }
+          }).catch(e => console.warn('[Reconcile] Firebase read failed for', fbPath, e.message));
+        });
+      }
+
+      // Run once on load (after a short delay so Firebase connection is ready)
+      // then every 5 minutes in sync with the sheet sync cycle
+      setTimeout(_reconcileLocalToFirebase, 8000);
+      setInterval(_reconcileLocalToFirebase, AUTO_SYNC_MINUTES * 60 * 1000);
+
+      // Expose globally so it can be triggered manually if needed
+      window._reconcileLocalToFirebase = _reconcileLocalToFirebase;
     };
   }
 
@@ -9159,10 +9557,10 @@ label = '₦' + (bVal.endsWith('.00') ? bVal.slice(0, -3) : bVal) + 'Bn';
   <div class="tool-modal">
     <div class="tool-modal-header">
       <div>
-        <h2>📧 Send Task Reminders</h2>
+        <h2><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Task Reminders</h2>
         <p>Compose personalised reminder emails — one department or all at once</p>
       </div>
-      <button class="tool-modal-close" onclick="closeReminderModal()">✕</button>
+      <button class="tool-modal-close" onclick="closeReminderModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="tool-modal-body">
 
@@ -9170,7 +9568,7 @@ label = '₦' + (bVal.endsWith('.00') ? bVal.slice(0, -3) : bVal) + 'Bn';
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <span><strong>Test Mode is on.</strong> All emails will go only to <strong>o.olasunkanmi@mixtafrica.com</strong>. Switch to Live Mode when ready.
         <br><br>
-        ✅ <strong>EmailJS is configured and ready.</strong> Clicking "Send Email" will deliver directly to recipients' inboxes — no mail app needed. Use Live Mode to send to the real mailing list.</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Apps Script is configured and ready.</strong> Clicking "Send Email" will deliver directly to recipients' inboxes — no mail app needed. Use Live Mode to send to the real mailing list.</span>
       </div>
 
       <div class="tool-field">
@@ -9192,8 +9590,8 @@ label = '₦' + (bVal.endsWith('.00') ? bVal.slice(0, -3) : bVal) + 'Bn';
       <div class="tool-field">
         <label>Send Mode</label>
         <select id="reminder-mode" onchange="reminderModeChanged()">
-          <option value="test">🧪 Test — send to o.olasunkanmi@mixtafrica.com only</option>
-          <option value="live">🚀 Live — send to department mailing list</option>
+          <option value="test">Test — send to o.olasunkanmi@mixtafrica.com only</option>
+          <option value="live">Live — send to department mailing list</option>
         </select>
       </div>
 
@@ -9212,13 +9610,13 @@ label = '₦' + (bVal.endsWith('.00') ? bVal.slice(0, -3) : bVal) + 'Bn';
     </div>
     <div class="tool-modal-footer">
       <button class="sync-btn" id="reminder-generate-btn" onclick="generateReminderEmail()" style="display:none;">
-        ✉ Compose Reminder Email(s)
+        Compose Reminder Email(s)
       </button>
       <button class="sync-btn" id="reminder-send-btn" onclick="sendReminderEmail()" style="display:none; background: var(--status-green);">
-        📨 Send Email
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Email
       </button>
       <button class="sync-btn" id="reminder-copy-btn" onclick="copyReminderEmail()" style="display:none; background: var(--status-blue);">
-        📋 Copy Email Body
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Email Body
       </button>
       <span style="font-size:11px; color:var(--text-muted); margin-left:auto;" id="reminder-status-text"></span>
     </div>
@@ -9232,10 +9630,10 @@ label = '₦' + (bVal.endsWith('.00') ? bVal.slice(0, -3) : bVal) + 'Bn';
   <div class="tool-modal">
     <div class="tool-modal-header">
       <div>
-        <h2>📄 Generate Monthly Report</h2>
+        <h2>Generate Monthly Report</h2>
         <p>Generates a complete performance report from live dashboard data — download as a Word document</p>
       </div>
-      <button class="tool-modal-close" onclick="closeReportModal()">✕</button>
+      <button class="tool-modal-close" onclick="closeReportModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="tool-modal-body">
 
@@ -9243,11 +9641,11 @@ label = '₦' + (bVal.endsWith('.00') ? bVal.slice(0, -3) : bVal) + 'Bn';
         <label>Select project</label>
         <div class="report-type-grid">
           <button class="report-type-btn" id="report-btn-annexe" onclick="selectReportProject('Annexe')">
-            <div class="report-type-label"><i data-lucide="home" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Lakowe Annexe</div>
+            <div class="report-type-label">Lakowe Annexe</div>
             <div class="report-type-sub">78 units · ₦6.27B inflow · 35.3% complete</div>
           </button>
           <button class="report-type-btn" id="report-btn-crossings" onclick="selectReportProject('Crossings')">
-            <div class="report-type-label"><i data-lucide="hammer" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Lakowe Crossings</div>
+            <div class="report-type-label">Lakowe Crossings</div>
             <div class="report-type-sub">6 units · ₦1.72B inflow · 27.8% complete</div>
           </button>
         </div>
@@ -9276,7 +9674,7 @@ label = '₦' + (bVal.endsWith('.00') ? bVal.slice(0, -3) : bVal) + 'Bn';
     </div>
     <div class="tool-modal-footer">
       <button class="sync-btn" id="report-generate-btn" onclick="generateReport()" style="display:none;">
-        📊 Build Report from Dashboard Data
+        Build Report from Dashboard Data
       </button>
       <button class="sync-btn" id="report-download-btn" onclick="downloadReport()" style="display:none; background: var(--status-green);">
         ⬇ Download Word Document
@@ -9301,6 +9699,11 @@ window.onAuthGateReady = window.onAuthGateReady || function () {
   applyPriorityColors();
   syncWithGoogleSheet();
   setInterval(syncWithGoogleSheet, AUTO_SYNC_MINUTES * 60 * 1000);
+  // Reconciler fallback — in case this code path fired instead of the primary one
+  if (window._reconcileLocalToFirebase) {
+    setTimeout(window._reconcileLocalToFirebase, 8000);
+    setInterval(window._reconcileLocalToFirebase, AUTO_SYNC_MINUTES * 60 * 1000);
+  }
 };
 
 window.onAuthGateSignedIn = window.onAuthGateSignedIn || function(user, access) {
@@ -9334,13 +9737,13 @@ window._authSafetyTimer = setTimeout(function() {
 <div class="mgmt-overlay" id="mgmt-overlay">
   <div class="mgmt-panel">
     <div class="mgmt-header">
-      <h2>⚙ Admin Management</h2>
-      <button class="mgmt-close" onclick="closeMgmtPanel()">✕</button>
+      <h2><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Admin Management</h2>
+      <button class="mgmt-close" onclick="closeMgmtPanel()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="mgmt-tabs">
-      <button class="mgmt-tab active" onclick="switchMgmtTab('users',this)"><i data-lucide="users" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Users</button>
-      <button class="mgmt-tab" onclick="switchMgmtTab('depts',this)"><i data-lucide="building-2" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Departments</button>
-      <button class="mgmt-tab" onclick="switchMgmtTab('tasks',this)"><i data-lucide="trash-2" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Delete Tasks</button>
+      <button class="mgmt-tab active" onclick="switchMgmtTab('users',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Users</button>
+      <button class="mgmt-tab" onclick="switchMgmtTab('depts',this)">Departments</button>
+      <button class="mgmt-tab" onclick="switchMgmtTab('tasks',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete Tasks</button>
     </div>
     <div class="mgmt-body">
 
@@ -9434,10 +9837,10 @@ window._authSafetyTimer = setTimeout(function() {
         <div class="chatbot-subtitle">Lakowe Crossings &amp; Annexe · All Sessions</div>
       </div>
     </div>
-    <button class="chatbot-close-btn" onclick="closeChatbot()" aria-label="Close">✕</button>
+    <button class="chatbot-close-btn" onclick="closeChatbot()" aria-label="Close"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   </div>
   <div class="chatbot-welcome" id="chatbot-welcome">
-    <div class="chatbot-welcome-emoji"><i data-lucide="building" style="width: 28px; height: 28px; margin: 0 auto;"></i></div>
+    <div class="chatbot-welcome-emoji"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><line x1="12" y1="12" x2="12" y2="12"/></svg></div>
     <h3>Welcome! How may I assist you today?</h3>
     <p>I have full access to all tasks, deadlines, financial data,<br>and meeting notes across every session in both projects.</p>
   </div>
@@ -9456,6 +9859,39 @@ window._authSafetyTimer = setTimeout(function() {
   </div>
 </div>
 
+
+<!-- GAS Config Modal (admin shortcut when secrets aren't injected) -->
+<div class="tool-modal-overlay" id="gas-config-modal">
+  <div class="tool-modal" style="max-width:460px;">
+    <div class="tool-modal-header">
+      <div>
+        <h2>Configure Apps Script</h2>
+        <p>Set the GAS Web App URL &amp; token to enable media uploads and email sending</p>
+      </div>
+      <button class="tool-modal-close" onclick="document.getElementById('gas-config-modal').classList.remove('open')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="tool-modal-body">
+      <div class="tool-field">
+        <label>Apps Script Web App URL</label>
+        <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px;">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Deploy your GAS project → Web App → Copy URL here</div>
+      </div>
+      <div class="tool-field">
+        <label>Secret Token</label>
+        <input type="text" id="gas-token-input" placeholder="MixtaMail2026" style="font-size:12px;">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Must match SECRET_TOKEN in your GAS script</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="sync-btn" onclick="saveGasConfig()" style="flex:1;">Save &amp; Test Connection</button>
+        <button class="sync-btn" onclick="clearGasConfig()" style="background:var(--bg);color:var(--text-secondary);border:1px solid var(--border);">Clear</button>
+      </div>
+      <div id="gas-config-status" style="margin-top:10px;font-size:12px;color:var(--text-muted);min-height:18px;"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════════════════
      ONBOARDING TOUR + HELP SYSTEM
      ══════════════════════════════════════════════════════ -->
@@ -9464,15 +9900,15 @@ window._authSafetyTimer = setTimeout(function() {
 /* ── Floating Help Button ── */
 .help-fab {
   position: fixed; bottom: 24px; right: 24px; z-index: 9000;
-  width: 46px; height: 46px; border-radius: 50%;
+  width: 48px; height: 48px; border-radius: 50%;
   background: var(--active-theme-color, var(--cx-color));
   color: #fff; border: none; cursor: pointer;
   box-shadow: 0 4px 16px rgba(0,0,0,0.22);
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 800; font-family: inherit;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   user-select: none;
 }
+.help-fab svg { stroke: #fff; width: 22px; height: 22px; }
 .help-fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(0,0,0,0.28); }
 .help-fab-label {
   position: absolute; right: 54px; background: #1a1a1a; color: #fff;
@@ -9543,24 +9979,29 @@ window._authSafetyTimer = setTimeout(function() {
 .help-guide-icon-wrap {
   width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
   background: var(--active-theme-color, var(--cx-color));
-  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0;
 }
+.help-guide-icon-wrap svg { width: 18px; height: 18px; stroke: #fff; }
 .help-guide-text { flex: 1; }
 .help-guide-title { font-size: 13px; font-weight: 800; color: #1a1a1a; margin-bottom: 3px; }
 .help-guide-desc { font-size: 12px; color: #666; line-height: 1.6; }
 
 .help-tip-badge {
-  display: inline-flex; align-items: center; gap: 5px;
+  display: inline-flex; align-items: center; gap: 6px;
   font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
-  padding: 2px 8px; border-radius: 20px; margin-bottom: 8px;
+  padding: 3px 10px; border-radius: 20px; margin-bottom: 8px;
   background: #fff8e1; color: #e65100;
 }
+.help-tip-badge svg { width: 12px; height: 12px; stroke: #e65100; }
 
 .help-restart-btn {
   width: 100%; padding: 12px; border: 2px dashed #ddd; border-radius: 10px;
   background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #888;
   font-family: inherit; margin-top: 16px; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
 }
+.help-restart-btn svg { width: 14px; height: 14px; stroke: currentColor; }
 .help-restart-btn:hover { border-color: var(--active-theme-color, var(--cx-color)); color: var(--active-theme-color, var(--cx-color)); background: #fafafa; }
 
 /* ── First-Visit Tour ── */
@@ -9595,8 +10036,11 @@ window._authSafetyTimer = setTimeout(function() {
 }
 .tour-step-pill:hover { border-color: var(--active-theme-color, var(--cx-color)); background: #fff; }
 .tour-step-pill.active { border-color: var(--active-theme-color, var(--cx-color)); background: var(--active-theme-color, var(--cx-color)); color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-.tour-step-emoji { font-size: 20px; }
-.tour-step-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; text-align: center; line-height: 1.3; }
+.tour-step-pill.active svg { stroke: #fff; }
+.tour-step-pill svg { stroke: var(--text-secondary, #666); width: 18px; height: 18px; }
+.tour-step-icon { display: flex; align-items: center; justify-content: center; }
+.tour-step-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; } .tour-step-icon svg { width: 18px; height: 18px; }
+.tour-step-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; text-align: center; line-height: 1.3; color: var(--text-secondary, #666); }
 .tour-step-pill.active .tour-step-label { color: rgba(255,255,255,0.9); }
 
 .tour-content { padding: 22px 28px; min-height: 120px; }
@@ -9632,8 +10076,8 @@ window._authSafetyTimer = setTimeout(function() {
 
 <!-- Floating Help Button -->
 <button class="help-fab" onclick="openHelpPanel()" aria-label="Help">
-  <span class="help-fab-label">Help & Guide</span>
-  ?
+  <span class="help-fab-label">Help &amp; Guide</span>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
 </button>
 
 <!-- Help Panel -->
@@ -9644,7 +10088,7 @@ window._authSafetyTimer = setTimeout(function() {
         <div class="help-panel-title">Dashboard Guide</div>
         <div class="help-panel-sub">Learn how to navigate and use every feature</div>
       </div>
-      <button class="help-close-btn" onclick="closeHelpPanelDirect()">✕</button>
+      <button class="help-close-btn" onclick="closeHelpPanelDirect()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="help-tabs">
       <button class="help-tab active" onclick="switchHelpTab('overview', this)">Overview</button>
@@ -9659,61 +10103,61 @@ window._authSafetyTimer = setTimeout(function() {
       <!-- OVERVIEW -->
       <div class="help-section active" id="help-overview">
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🏠</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">What is this dashboard?</div>
             <div class="help-guide-desc">This is the Mixta Africa Projects Tracker — a live, real-time dashboard for monitoring Lakowe Crossings and Lakowe Annexe. It syncs directly from your project spreadsheets every 5 minutes.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🔁</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Data is live-synced</div>
             <div class="help-guide-desc">The dashboard automatically pulls the latest data from Google Sheets. You'll see a "Last synced" time at the top of the page. No manual refresh needed.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🔐</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">You're signed in to your department</div>
             <div class="help-guide-desc">Your Google account determines which project and department you can see. You only have access to your own department's data — other tabs are locked for privacy.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">📱</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Works on mobile too</div>
             <div class="help-guide-desc">The dashboard adapts to your screen size. On mobile, use the hamburger menu (≡) at the top to switch between pages like Analytics, Milestones, and Trends.</div>
           </div>
         </div>
-        <button class="help-restart-btn" onclick="startTour()">▶ Restart the guided tour</button>
+        <button class="help-restart-btn" onclick="startTour()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Restart the guided tour</button>
       </div>
 
       <!-- PROJECTS -->
       <div class="help-section" id="help-projects">
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🟢</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Lakowe Crossings (Green)</div>
             <div class="help-guide-desc">The Lakowe Crossings project is displayed with a green theme. Click "Crossings" in the top navigation bar to switch to this project view. KPI tiles, charts, and tasks will update to show Crossings data.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🔴</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Lakowe Annexe (Red)</div>
             <div class="help-guide-desc">The Lakowe Annexe project is displayed with a red theme. Click "Annexe" in the navigation to switch. Each project maintains its own task history, financial data, and session logs.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">📅</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Session picker</div>
             <div class="help-guide-desc">Use the date/session dropdown at the top to browse historical meeting data. Each session represents one project meeting. The default view shows the most recent session.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">★</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Priority tiles — Account Balance & Offer Letters</div>
             <div class="help-guide-desc">The two gold-bordered tiles at the top right are the highest-priority KPIs. They change colour automatically: Red = critical, Amber = watch closely, Green = healthy.</div>
@@ -9723,30 +10167,30 @@ window._authSafetyTimer = setTimeout(function() {
 
       <!-- TASKS -->
       <div class="help-section" id="help-tasks">
-        <div class="help-tip-badge">⚡ Key Feature</div>
+        <div class="help-tip-badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Key Feature</div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">📋</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Reading a task card</div>
             <div class="help-guide-desc">Each task card shows the Context/Result bar at the top (so you know WHY the task matters), then the action item below. The left-border colour shows the status: Green = On Track, Red = Delayed, Gold = On Hold, Blue = Done.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">✏️</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Updating task status</div>
             <div class="help-guide-desc">Click any task card to expand it, then use the status buttons to mark it as Done, Delayed, or On Hold. Your update is saved immediately and synced to the shared database.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🚨</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Critical Alert Zone</div>
             <div class="help-guide-desc">The red strip below the KPI tiles collects all Delayed tasks from every department in one place. This is the CEO's first-look summary — check it before every meeting.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🏷️</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Trend badges</div>
             <div class="help-guide-desc">Some tasks show a "Repeated" badge — this means the same action item has appeared in multiple sessions without being marked as Done. These are escalation signals worth reviewing.</div>
@@ -9757,28 +10201,28 @@ window._authSafetyTimer = setTimeout(function() {
       <!-- CHARTS -->
       <div class="help-section" id="help-charts">
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">📈</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Financial Progress Trend chart</div>
             <div class="help-guide-desc">This chart tracks two lines over time: Sales Value (dashed blue) and Total Inflow (solid, project colour). The gap between the two lines represents outstanding receivables — the closer they are, the healthier the cash position.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🎯</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Spreadsheet Targets Status</div>
             <div class="help-guide-desc">The card next to the chart shows this month's targets from the spreadsheet. Green = Done, Orange = Ongoing, Red = At Risk. Scroll within the card to see all targets.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">💰</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Account Balance Trend (CVI)</div>
             <div class="help-guide-desc">Below the charts is the Commercial Velocity Indicator — it shows the trend in account balance, inflow rate, and whether the project is in a "cash drought". Red drought strips signal periods of no inflow.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🔍</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Hovering for details</div>
             <div class="help-guide-desc">Hover over any point on a chart to see an exact value tooltip. The crosshair will snap to the nearest data point for both lines simultaneously.</div>
@@ -9789,28 +10233,28 @@ window._authSafetyTimer = setTimeout(function() {
       <!-- TOOLS -->
       <div class="help-section" id="help-tools">
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">📧</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Send Task Reminders</div>
             <div class="help-guide-desc">Use the envelope icon in the toolbar to compose and send email reminders to any department. Select the project, department, and Test or Live mode — Test sends only to the admin address for preview.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">📄</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Monthly Report</div>
             <div class="help-guide-desc">The report icon generates a structured Word document (.docx) monthly summary for executives. Select the project, click Generate, and download the report for distribution.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🤖</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">AI Project Assistant</div>
             <div class="help-guide-desc">The chat bubble at the bottom opens an AI assistant trained on your project data. Ask it questions like "What are the most delayed tasks?" or "Summarise Annexe progress this month."</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">💬</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Team Updates</div>
             <div class="help-guide-desc">The message icon opens the Team Updates feed — a WhatsApp-style chat log where team members post progress notes, photos, and file attachments by department.</div>
@@ -9821,21 +10265,21 @@ window._authSafetyTimer = setTimeout(function() {
       <!-- ADMIN -->
       <div class="help-section" id="help-admin">
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🔑</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Admin access</div>
             <div class="help-guide-desc">Admin features are only visible to the admin account. If you're an admin, use the lock icon in the toolbar and enter the admin password to unlock the Admin Panel.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🩺</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Health monitoring</div>
             <div class="help-guide-desc">The Admin Panel has a Health tab that runs 9 system checks — Firebase, Sheets sync, GAS relay, Groq API, and more. A warning banner appears automatically if any critical system fails in the last 30 minutes.</div>
           </div>
         </div>
         <div class="help-guide-item">
-          <div class="help-guide-icon-wrap">🗂️</div>
+          <div class="help-guide-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
           <div class="help-guide-text">
             <div class="help-guide-title">Sheets diagnostics</div>
             <div class="help-guide-desc">Admins can inspect raw data from Google Sheets in the Admin Panel to debug sync issues. The Error Log tab shows a rolling history of any sync failures with timestamps.</div>
@@ -9873,46 +10317,46 @@ window._authSafetyTimer = setTimeout(function() {
 // ══════════════════════════════════════════
 const TOUR_STEPS = [
   {
-    icon: 'home',
+    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
     label: 'Welcome',
     title: 'Your project command centre',
     desc: 'This dashboard gives you a real-time view of both Lakowe Crossings and Lakowe Annexe — including tasks, financials, targets, and team updates. Everything updates automatically from Google Sheets every 5 minutes.',
-    tip: '💡 No manual refresh needed. The "Last synced" timestamp at the top tells you how fresh the data is.'
+    tip: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> No manual refresh needed. The "Last synced" timestamp at the top tells you how fresh the data is.'
   },
   {
-    icon: 'arrow-left-right',
+    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
     label: 'Projects',
     title: 'Switch between Crossings & Annexe',
     desc: 'Use the project tabs at the top of the page to switch between Lakowe Crossings (green) and Lakowe Annexe (red). Each project has its own tasks, KPIs, charts, and history.',
-    tip: '💡 Your login email determines which project you have access to by default.'
+    tip: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Your login email determines which project you have access to by default.'
   },
   {
-    icon: 'star',
+    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
     label: 'KPIs',
     title: 'Watch the Priority tiles',
     desc: 'The two gold-bordered tiles — Account Balance and Offer Letters — are the most critical indicators. They change colour automatically: Red means action is needed now, Amber means watch closely, Green means healthy.',
-    tip: '💡 These tiles are the CEO\'s first checkpoint. Keep them green before every meeting.'
+    tip: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> These tiles are the CEO\'s first checkpoint. Keep them green before every meeting.'
   },
   {
-    icon: 'check-square',
+    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
     label: 'Tasks',
     title: 'Click any task to update its status',
     desc: 'Task cards are colour-coded by status: Green = On Track, Red = Delayed, Gold = On Hold, Blue = Done. Click a card to expand it and change the status. The red Alert Zone at the top collects all delayed tasks from every department.',
-    tip: '💡 Updating a task status saves immediately — your team sees it in real time.'
+    tip: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Updating a task status saves immediately — your team sees it in real time.'
   },
   {
-    icon: 'trending-up',
+    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
     label: 'Charts',
     title: 'Track financial progress over time',
     desc: 'The Financial Progress Trend chart shows cash inflow vs. sales value over every project session. The gap between the two lines = receivables outstanding. The Targets card beside it shows this month\'s key spreadsheet objectives.',
-    tip: '💡 Hover over the chart to see exact values at any point in time.'
+    tip: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Hover over the chart to see exact values at any point in time.'
   },
   {
-    icon: 'wrench',
+    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
     label: 'Tools',
     title: 'Reminders, Reports & AI Assistant',
     desc: 'The toolbar contains tools for sending email reminders to departments, generating monthly Word reports, accessing team updates, and asking the AI Assistant project questions. The ? button always brings back this guide.',
-    tip: '💡 Use the AI Assistant to get instant answers like "What\'s the current account balance?" or "Which tasks are most overdue?"'
+    tip: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Use the AI Assistant to get instant answers like "What\'s the current account balance?" or "Which tasks are most overdue?"'
   }
 ];
 
@@ -9926,7 +10370,7 @@ function renderTour() {
 
   strip.innerHTML = TOUR_STEPS.map((s, i) =>
     `<div class="tour-step-pill ${i === _tourStep ? 'active' : ''}" onclick="jumpTourStep(${i})">
-      <span class="tour-step-emoji"><i data-lucide="${s.icon}" style="width: 20px; height: 20px;"></i></span>
+      <span class="tour-step-icon">${s.svg}</span>
       <span class="tour-step-label">${s.label}</span>
     </div>`
   ).join('');
@@ -9943,7 +10387,7 @@ function renderTour() {
   ).join('');
 
   const isLast = _tourStep === TOUR_STEPS.length - 1;
-  nextBtn.textContent = isLast ? '✓ Get started' : 'Next →';
+  nextBtn.innerHTML = isLast ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><polyline points="20 6 9 17 4 12"/></svg> Get started` : 'Next &#8594;';
 }
 
 function jumpTourStep(i) {
@@ -10009,12 +10453,6 @@ function switchHelpTab(section, btn) {
   btn.classList.add('active');
 }
 </script>
-  // Add this at the very end of your scripts, right before </body>
-const iconObserver = new MutationObserver(() => {
-  if (typeof lucide !== 'undefined') lucide.createIcons();
-});
-iconObserver.observe(document.body, { childList: true, subtree: true });
-if (typeof lucide !== 'undefined') lucide.createIcons();
 
 </body>
 
