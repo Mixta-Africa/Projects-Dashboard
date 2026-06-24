@@ -64,7 +64,7 @@
   };
 
   const REQUIRED_DOMAIN = 'mixtafrica.com';
-  const ADMIN_EMAIL     = 'o.olasunkanmi@mixtafrica.com';
+  const ADMIN_EMAIL     = 'o.olasunkanmi@mixtafrica.com', 'c.@mixtafrica.com';
   const APPS_SCRIPT_URL = window.APPS_SCRIPT_URL || '';
 
   // ── STATE ─────────────────────────────────────────────────────────────────
