@@ -3891,33 +3891,71 @@ function initFirebase() {
       (function _subscribeCurrentDeptUpdates() {
         let _deptRef = null;
         let _deptRefPath = null;
+        // Track all active child_added listeners so we can unsubscribe cleanly
+        var _deptRefs = []; // array of {ref, path} for all currently active listeners
+
         window._resubscribeDeptUpdates = function() {
           if (!_fbReady || !_fbDb || !currentProject || !currentDept) return;
-          const sessionKey = (viewingSessionDate && viewingSessionDate !== 'current')
-            ? viewingSessionDate
-            : ((availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current');
-          const path = 'dept_updates/' + currentProject + '/' + currentDept + '/' + sessionKey;
-          if (path === _deptRefPath) return; // already subscribed to this path
-          // Unsubscribe from old path
-          if (_deptRef) { try { _deptRef.off('child_added'); } catch(e){} }
-          _deptRef = _fbDb.ref(path);
-          _deptRefPath = path;
-          _deptRef.on('child_added', childSnap => {
-            const update = childSnap.val();
-            if (!update || !update.timestamp) return;
-            // Write into fb_dept: localStorage key
-            const fbKey = 'fb_dept:' + currentProject + ':' + currentDept + ':' + sessionKey;
-            try {
-              const existing = JSON.parse(localStorage.getItem(fbKey) || '[]');
-              const alreadyIn = existing.some(u => u.timestamp === update.timestamp);
-              if (!alreadyIn) {
-                existing.push(update);
-                existing.sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
-                localStorage.setItem(fbKey, JSON.stringify(existing));
-                renderUpdatesList(); // instant re-render on receiving new message
-              }
-            } catch(e){}
-          }, err => console.warn('[Firebase] child_added error:', err));
+
+          // Build the set of session paths to subscribe to:
+          //   [0] = latest session (or viewingSessionDate if browsing history)
+          //   [1] = previous session — catches updates posted just before a new tab synced
+          var pathsToWatch = [];
+          if (viewingSessionDate && viewingSessionDate !== 'current') {
+            // Viewing a specific historical session — only subscribe to that one
+            pathsToWatch.push({
+              path: 'dept_updates/' + currentProject + '/' + currentDept + '/' + viewingSessionDate,
+              sessionKey: viewingSessionDate
+            });
+          } else {
+            var _ss = availableSessions[currentProject] || [];
+            var _s0 = _ss[0] || 'current';
+            var _s1 = _ss[1] || null;
+            pathsToWatch.push({
+              path: 'dept_updates/' + currentProject + '/' + currentDept + '/' + _s0,
+              sessionKey: _s0
+            });
+            if (_s1) {
+              pathsToWatch.push({
+                path: 'dept_updates/' + currentProject + '/' + currentDept + '/' + _s1,
+                sessionKey: _s1
+              });
+            }
+          }
+
+          // Check if we are already subscribed to exactly these paths
+          var currentPaths = _deptRefs.map(function(r) { return r.path; }).sort().join('|');
+          var newPaths     = pathsToWatch.map(function(p) { return p.path; }).sort().join('|');
+          if (currentPaths === newPaths) return; // already correct, no change needed
+
+          // Unsubscribe all previous listeners
+          _deptRefs.forEach(function(r) { try { r.ref.off('child_added'); } catch(e){} });
+          _deptRefs = [];
+
+          // Subscribe to each path
+          pathsToWatch.forEach(function(target) {
+            var ref = _fbDb.ref(target.path);
+            var sessKey = target.sessionKey;
+            ref.on('child_added', function(childSnap) {
+              var update = childSnap.val();
+              if (!update || !update.timestamp) return;
+              var fbKey = 'fb_dept:' + currentProject + ':' + currentDept + ':' + sessKey;
+              try {
+                var existing = JSON.parse(localStorage.getItem(fbKey) || '[]');
+                var alreadyIn = existing.some(function(u) { return u.timestamp === update.timestamp; });
+                if (!alreadyIn) {
+                  existing.push(update);
+                  existing.sort(function(a,b) { return new Date(a.timestamp) - new Date(b.timestamp); });
+                  localStorage.setItem(fbKey, JSON.stringify(existing));
+                  renderUpdatesList(); // instant re-render on receiving new message
+                }
+              } catch(e){}
+            }, function(err) { console.warn('[Firebase] child_added error:', err); });
+            _deptRefs.push({ ref: ref, path: target.path });
+          });
+          // Update legacy single-ref for any code that still reads _deptRef
+          _deptRef = _deptRefs.length ? _deptRefs[0].ref : null;
+          _deptRefPath = _deptRefs.length ? _deptRefs[0].path : null;
         };
         // Subscribe now and re-subscribe whenever dept/project/session changes
         setTimeout(window._resubscribeDeptUpdates, 500);
@@ -4812,14 +4850,25 @@ function renderUpdatesList() {
   //    "update posted but not showing" bug, without polluting genuine historical buckets.
   const allForDept = _collectDeptUpdates(currentProject, currentDept);
   const histSessions = new Set(availableSessions[currentProject] || []);
-  const latestKey = (availableSessions[currentProject] && availableSessions[currentProject][0]) || 'current';
+  const allSessions  = availableSessions[currentProject] || [];
+  const latestKey    = allSessions[0] || 'current';
+  // Also include the immediately previous session in the "current" view.
+  // Reason: when a new sheet tab syncs, availableSessions[0] shifts to the new
+  // session. Any update posted just before that sync was tagged to allSessions[1]
+  // (the old latest). Without this, those updates pass histSessions.has() and
+  // vanish — they are valid sessions, just no longer [0]. Including [1] permanently
+  // fixes the "email received but update not showing" pattern.
+  const prevKey      = allSessions[1] || null;
   const viewingHistory = !!(viewingSessionDate && viewingSessionDate !== 'current');
 
   let updates = allForDept.filter(u => {
     if (!u.session) return true; // legacy / untagged always shows
     if (viewingHistory) return u.session === sessionKey;
-    // current view:
-    return u.session === latestKey || !histSessions.has(u.session);
+    // current view: show latest session, previous session, AND true orphans
+    // (updates whose session has been completely removed from availableSessions).
+    return u.session === latestKey
+      || (prevKey && u.session === prevKey)
+      || !histSessions.has(u.session);
   });
 
   const heading = document.getElementById('team-updates-heading');
@@ -8925,6 +8974,31 @@ function buildReminderEmailBody(proj, dept, tasks) {
          Add newest entries at the TOP of this list.
          ════════════════════════════════════════════════════════════════ -->
 
+    <!-- v63 fix -->
+    <div class="cl-entry fix">
+      <div class="cl-version">v63 · FIX</div>
+      <div class="cl-date">July 2025</div>
+      <div class="cl-title">Updates posted by team members not appearing on other devices</div>
+      <div class="cl-detail">
+        <span class="cl-tag warning">Root Cause</span>
+        <ul>
+          <li><strong>Session key drift:</strong> when a new Google Sheet tab syncs, <code>availableSessions[proj][0]</code> shifts to the new session. Updates posted just before that sync are tagged to the previous <code>[0]</code> key (now <code>[1]</code>). The <code>renderUpdatesList</code> filter only showed <code>u.session === latestKey</code> or true orphans — so these updates, being valid but non-latest sessions, were permanently invisible on the admin dashboard.</li>
+          <li><strong>Listener gap:</strong> <code>_resubscribeDeptUpdates</code> subscribed to only one Firebase path (the current latest session). The <code>child_added</code> event for updates on the previous session never fired on the viewer's device.</li>
+          <li><strong>Reconciler blind spot:</strong> <code>_reconcileLocalToFirebase</code> used <code>k.split(':').length === 4</code> — silently skipping any dept name containing a colon.</li>
+        </ul>
+        <span class="cl-tag fixed">Three Fixes Applied</span>
+        <ul>
+          <li><strong>Fix 1 — renderUpdatesList filter:</strong> now includes <code>allSessions[1]</code> (previous session) in the "current" view. Updates from the immediately prior session always surface alongside the latest.</li>
+          <li><strong>Fix 2 — _resubscribeDeptUpdates:</strong> now subscribes to Firebase <code>child_added</code> on BOTH <code>[0]</code> and <code>[1]</code> session paths simultaneously. Each listener writes to its own <code>fb_dept:</code> localStorage key and calls <code>renderUpdatesList()</code> independently. Old single-ref (<code>_deptRef</code>/<code>_deptRefPath</code>) preserved as alias for backward compat.</li>
+          <li><strong>Fix 3 — reconciler key filter:</strong> changed from <code>=== 4</code> to <code>>= 4</code> so dept names with colons are no longer silently skipped during the 5-minute reconciliation cycle.</li>
+        </ul>
+        <span class="cl-tag info">Not Affected</span>
+        <ul>
+          <li>Updates already in Firebase (including H. Kacou's previously-missing updates) will appear immediately once the page is refreshed — the full <code>dept_updates.on('value')</code> snapshot listener already retrieved them into localStorage; the filter fix now lets them render.</li>
+        </ul>
+      </div>
+    </div>
+
     <!-- v62 hotfix -->
     <div class="cl-entry hotfix">
       <div class="cl-version">v62 · HOTFIX</div>
@@ -11268,7 +11342,8 @@ window.onload = function () {
           for (let i = 0; i < localStorage.length; i++) {
             const k = localStorage.key(i);
             // Match: deptupdate:{proj}:{dept}:{session}
-            if (k && k.startsWith('deptupdate:') && k.split(':').length === 4) {
+            // Use >= 4 (not === 4) so dept names containing colons are not skipped.
+            if (k && k.startsWith('deptupdate:') && k.split(':').length >= 4) {
               localKeys.push(k);
             }
           }
