@@ -1,0 +1,9 @@
+[build]
+  command = """
+    sed -i "s|__GROQ_API_KEY__|${GROQ_API_KEY}|g" index.html && \
+    sed -i "s|__CEREBRAS_API_KEY__|${CEREBRAS_API_KEY}|g" index.html && \
+    sed -i "s|__APPS_SCRIPT_URL__|${APPS_SCRIPT_URL}|g" index.html && \
+    sed -i "s|__APPS_SCRIPT_TOKEN__|${APPS_SCRIPT_TOKEN}|g" index.html && \
+    sed -i "s|__ADMIN_PASSWORD__|${ADMIN_PASSWORD}|g" index.html
+  """
+  publish = "."
