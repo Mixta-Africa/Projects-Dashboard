@@ -3615,7 +3615,7 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify({error:'Missing toEmail or reminders'})).setMimeType(ContentService.MimeType.JSON);
     }
     const lines = reminders.map(r => `• [${r.project || ''} / ${r.dept || ''}] ${r.taskLabel || 'Task'} — Due: ${r.due || 'see dashboard'}`);
-    const body = `Hi,\n\nHere are your reminder tasks from the Mixta Africa Projects Dashboard:\n\n${lines.join('\n')}\n\nOpen the dashboard to update status: https://mixta-africa.github.io/Projects-Dashboard/\n\n— Automated reminder`;
+    const body = `Hi,\n\nHere are your reminder tasks from the Mixta Africa Projects Dashboard:\n\n${lines.join('\n')}\n\nOpen the dashboard to update status: https://projects-dashboard-epl.pages.dev/\n\n— Automated reminder`;
     MailApp.sendEmail(toEmail, 'Your task reminders — Mixta Africa Dashboard', body);
     return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);
   }
@@ -3646,7 +3646,7 @@ function runScheduledReminders() {
     const toEmail = due[0].email;
     if (!toEmail) return;
     const lines = due.map(r => `• [${r.project || ''} / ${r.dept || ''}] ${r.taskLabel || 'Task'} — Due: ${r.due || 'see dashboard'}`);
-    const body = `Hi,\n\nYour scheduled task reminders for today:\n\n${lines.join('\n')}\n\nOpen the dashboard: https://mixta-africa.github.io/Projects-Dashboard/\n\n— Automated reminder`;
+    const body = `Hi,\n\nYour scheduled task reminders for today:\n\n${lines.join('\n')}\n\nOpen the dashboard: https://projects-dashboard-epl.pages.dev/\n\n— Automated reminder`;
     MailApp.sendEmail(toEmail, 'Your task reminders — Mixta Africa Dashboard', body);
   });
 }
